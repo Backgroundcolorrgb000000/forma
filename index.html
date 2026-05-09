@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V17</title>
+    <title>FORMA CRM ULTRA V18</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -33,14 +33,16 @@
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+        .btn-wa { background: #25D366; color: white; margin-top: 5px; font-size: 10px; padding: 5px; }
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
         .exp-table-row.bought { color: var(--green); opacity: 0.7; }
-        .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
         .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
-        .status-select:disabled { cursor: default; opacity: 0.8; border-style: dashed; }
+        .deadline-box { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 8px; display: inline-block; margin-top: 5px; }
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
+        .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; }
+        .tag-work { background: #f3e5f5; color: #4a148c; }
     </style>
 </head>
 <body>
@@ -50,7 +52,7 @@
         <div class="logo-text">FORMA <span id="role-badge" style="font-size:10px; border:1px solid; padding:2px 5px; border-radius:4px;">...</span></div>
         <div id="cloud-status" style="font-size:9px; font-weight:700;">● OFFLINE</div>
     </div>
-    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск по заказам..." oninput="renderOrders()">
+    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск (изделие, клиент, адрес)..." oninput="renderOrders()">
 </header>
 
 <main>
@@ -59,26 +61,27 @@
     </section>
 
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800;">Финансы и Архив</h2>
+        <h2 style="font-weight: 800;">Финансы и Снабжение</h2>
         <div class="finances admin-only" style="font-size:16px;">
             <div class="fin-row"><span>Общая касса:</span> <b id="stat-rev">0</b></div>
-            <div class="fin-row" style="color:var(--orange)"><span>Все расходы:</span> <b id="stat-expenses">0</b></div>
+            <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
+            <div class="fin-row" style="color:#4a148c"><span>Зарплаты:</span> <b id="stat-work">0</b></div>
             <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
                 <span>ЧИСТАЯ ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
+            <button class="btn btn-shopping" style="margin-top:20px;" onclick="copyGlobalShoppingList()">📦 Копировать ВЕСЬ закуп (все заказы)</button>
         </div>
-        <h3 style="margin-top: 20px;">✅ Готовые заказы:</h3>
+        <h3 style="margin-top: 20px;">✅ Готовые заказы (Архив):</h3>
         <div id="archive-container"></div>
     </section>
 
-    <section id="page-add" class="page">
+    <section id="page-add" class="page admin-only">
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
         <input type="text" id="in-phone" class="custom-input" placeholder="Телефон (998...)" maxlength="12">
         <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
-        <input type="text" id="in-loc-link" class="custom-input" placeholder="Геолокация (ссылка)">
-        <input type="text" id="in-link" class="custom-input" placeholder="Ссылка на дизайн">
+        <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дедлайн (дата сдачи)">
         <div style="display:flex; gap:10px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
             <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
@@ -108,12 +111,7 @@
 
     let orders = [];
     let expanded = new Set();
-
-    db.ref('.info/connected').on('value', s => {
-        const el = document.getElementById('cloud-status');
-        el.innerText = s.val() ? '● ONLINE' : '● OFFLINE';
-        el.style.color = s.val() ? 'var(--green)' : 'var(--red)';
-    });
+    let currentExpCat = 'mat';
 
     db.ref('orders').on('value', snap => {
         orders = snap.val() ? Object.values(snap.val()).reverse() : [];
@@ -134,41 +132,35 @@
         document.getElementById(id).classList.add('active'); el.classList.add('active');
     }
 
-    function editField(id, field, title, isNum) {
-        if(!isAdmin) return;
-        setTimeout(() => {
-            const current = orders.find(o => o.id === id)[field];
-            const val = prompt(title, current);
-            if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
-        }, 100);
+    function getDeadlineStyle(dateStr) {
+        if(!dateStr) return { label: 'Нет даты', color: '#ccc' };
+        const d = new Date(dateStr);
+        const diff = (d - new Date()) / (1000 * 60 * 60 * 24);
+        if(diff < 0) return { label: 'ПРОСРОЧЕНО!', color: 'var(--red)' };
+        if(diff <= 3) return { label: 'СРОЧНО!', color: 'var(--orange)' };
+        return { label: d.toLocaleDateString(), color: 'var(--hint)' };
     }
 
-    function changeStatus(id, newStatus) {
-        if(!isAdmin) return;
-        db.ref(`orders/${id}/status`).set(parseInt(newStatus));
-    }
-
-    function sendShoppingList(id) {
-        if(!isAdmin) return;
+    function notifyWA(id) {
         const o = orders.find(x => x.id === id);
-        if (!o.expenses) return tg.showAlert("Список пуст");
-        const toBuy = o.expenses.filter(e => !e.bought);
-        if (toBuy.length === 0) return tg.showAlert("Все куплено");
-        let text = `📦 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
-        toBuy.forEach((e, i) => text += `${i+1}. ${e.name} — ${e.qty} шт.\n`);
-        navigator.clipboard.writeText(text).then(() => {
-            tg.showAlert("Список скопирован!");
-            tg.HapticFeedback.notificationOccurred('success');
-        });
+        const text = `Здравствуйте, ${o.client}! Ваш заказ "${o.title}" перешел на этап: ${STAGES[o.status]}.`;
+        tg.showAlert("Текст для клиента: \n\n" + text);
     }
 
-    function toggleBought(oid, eidx, currentStatus) {
-        if(!isAdmin) return;
-        db.ref(`orders/${oid}/expenses/${eidx}/bought`).set(!currentStatus);
+    function copyGlobalShoppingList() {
+        let list = "🛒 ОБЩИЙ ЗАКУП (ВСЕ ЗАКАЗЫ):\n\n";
+        orders.filter(o => o.status < 4 && o.expenses).forEach(o => {
+            const toBuy = o.expenses.filter(e => !e.bought && e.cat !== 'work');
+            if(toBuy.length > 0) {
+                list += `🛠 ${o.title}:\n`;
+                toBuy.forEach(e => list += `- ${e.name} (${e.qty} шт)\n`);
+                list += `\n`;
+            }
+        });
+        navigator.clipboard.writeText(list).then(() => tg.showAlert("Общий список скопирован!"));
     }
 
     function createOrder() {
-        if(!isAdmin) return;
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
         if(!title || price <= 0) return;
@@ -178,102 +170,98 @@
             client: document.getElementById('in-client').value,
             phone: document.getElementById('in-phone').value,
             loc: document.getElementById('in-loc').value,
-            locLink: document.getElementById('in-loc-link').value,
-            link: document.getElementById('in-link').value,
+            deadline: document.getElementById('in-deadline').value,
             prepay: extract(document.getElementById('in-prepay').value),
             status: 0, expenses: []
-        }).then(() => {
-            ['in-title', 'in-client', 'in-phone', 'in-loc', 'in-loc-link', 'in-link', 'in-price', 'in-prepay'].forEach(i => document.getElementById(i).value = '');
-            nav('page-list', document.querySelector('.tab-item'));
-        });
+        }).then(() => nav('page-list', document.querySelector('.tab-item')));
     }
 
     function addExp(id) {
-        if(!isAdmin) return;
-        const nInput = document.getElementById(`ex-n-${id}`);
-        const qInput = document.getElementById(`ex-q-${id}`);
-        const pInput = document.getElementById(`ex-p-${id}`);
-        const n = nInput.value;
-        const q = extract(qInput.value) || 1;
-        const p = extract(pInput.value);
+        const n = document.getElementById(`ex-n-${id}`).value;
+        const q = extract(document.getElementById(`ex-q-${id}`).value) || 1;
+        const p = extract(document.getElementById(`ex-p-${id}`).value);
         if(!n || p <= 0) return;
         const o = orders.find(x => x.id === id);
         if(!o.expenses) o.expenses = [];
-        o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false });
-        db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
-            nInput.value = ''; qInput.value = ''; pInput.value = '';
-        });
+        o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false, cat: currentExpCat });
+        db.ref(`orders/${id}/expenses`).set(o.expenses);
     }
 
     function renderOrders() {
         const listContainer = document.getElementById('orders-container');
         const archiveContainer = document.getElementById('archive-container');
-        const query = document.getElementById('main-search').value.toLowerCase();
         listContainer.innerHTML = ''; archiveContainer.innerHTML = '';
-
-        orders.filter(o => (o.title + (o.client||'') + (o.loc || '')).toLowerCase().includes(query)).forEach(o => {
+        
+        orders.forEach(o => {
             const isExp = expanded.has(o.id);
             const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
-            const isArchive = o.status === 4; // ✅ Готово
+            const ds = getDeadlineStyle(o.deadline);
             
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} ${o.locLink ? `<a href="${o.locLink}" target="_blank">📍</a>` : ''} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span> <span class="admin-only edit-icon" onclick="editField(${o.id}, 'locLink', 'Гео:', false)">🔗</span></div>
+                        <div style="font-weight:800; font-size:17px;">${o.title}</div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📍 ${o.loc || '---'}</div>
+                        <div class="deadline-box" style="background:${ds.color}15; color:${ds.color}">📅 ${ds.label}</div>
                     </div>
-                    <select class="status-select" onchange="changeStatus(${o.id}, this.value)" ${!isAdmin ? 'disabled' : ''}>
+                    <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
                         ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
                 </div>
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editField(${o.id}, 'price', 'Общая цена:', true)">${fMoney(o.price)} ✏️</b></div>
+                    <div class="fin-row"><span>ЦЕНА:</span> <b>${fMoney(o.price)}</b></div>
                     <div class="info-grid">
-                        <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);" onclick="editField(${o.id}, 'prepay', 'Аванс:', true)">${fMoney(o.prepay)} ✏️</b></div>
-                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
+                        <div><span style="font-size:10px;">АВАНС:</span><br><b style="color:var(--green);">${fMoney(o.prepay)}</b></div>
+                        <div style="text-align:right;"><span style="font-size:10px;">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
-                        <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
+                        <span>ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
                     </div>
+                    <button class="btn btn-wa" onclick="notifyWA(${o.id})">📲 Уведомить клиента</button>
                 </div>` : ''}
                 <div style="margin-top:15px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
-                    📦 РАСХОДЫ (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
+                    📦 РАСХОДЫ/ЗП (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
                 </div>
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
-                    <div class="exp-table-row header"><div>Наименование</div><div>Кол</div><div>Цена</div><div>Итого</div><div></div></div>
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="exp-table-row ${e.bought?'bought':''}">
-                            <div>${e.name}</div><div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div><div>${Math.round(e.cost).toLocaleString()}</div>
-                            <div onclick="toggleBought(${o.id}, ${i}, ${e.bought})" style="${isAdmin ? 'cursor:pointer' : ''}; text-align:right;">${e.bought?'✅':'⬜'}</div>
+                            <div>${e.cat==='work'?'<span class="cat-tag tag-work">ЗП</span>':''}${e.name}</div><div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div><div>${Math.round(e.cost).toLocaleString()}</div>
+                            <div onclick="${isAdmin ? `db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})` : ''}" style="text-align:right;">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
+                        <div style="display:flex; gap:10px; font-size:9px; margin-bottom:5px;">
+                            <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer">МАТЕРИАЛЫ</span>
+                            <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
+                        </div>
                         <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Наименование">
                         <div style="display:flex; gap:5px;">
-                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:12px;" placeholder="Кол" oninput="formatNumberInput(this)">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2; font-size:12px;" placeholder="Цена" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6;" placeholder="Кол">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2;" placeholder="Цена">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:40px;">+</button>
                         </div>
-                        <button class="btn btn-shopping" onclick="sendShoppingList(${o.id})">🛒 Отправить закуп</button>
                     </div>` : ''}
                 </div>
             `;
-            if(isArchive) archiveContainer.appendChild(card);
+            if(o.status === 4) archiveContainer.appendChild(card);
             else listContainer.appendChild(card);
         });
     }
-    
+
     function renderStats() {
-        let rev = 0, exp = 0;
-        orders.forEach(o => { rev += o.price; if(o.expenses) o.expenses.forEach(e => exp += e.cost); });
+        let rev = 0, mat = 0, work = 0;
+        orders.forEach(o => {
+            rev += o.price;
+            if(o.expenses) o.expenses.forEach(e => { if(e.cat === 'work') work += e.cost; else mat += e.cost; });
+        });
         document.getElementById('stat-rev').innerText = fMoney(rev);
-        document.getElementById('stat-expenses').innerText = fMoney(exp);
-        document.getElementById('stat-profit').innerText = fMoney(rev - exp);
+        document.getElementById('stat-mat').innerText = fMoney(mat);
+        document.getElementById('stat-work').innerText = fMoney(work);
+        document.getElementById('stat-profit').innerText = fMoney(rev - mat - work);
     }
 </script>
 </body>

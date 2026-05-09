@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V21</title>
+    <title>FORMA CRM ULTRA V22</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -18,8 +18,11 @@
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
-        .page { display: none; padding: 15px; min-height: 85vh; }
-        .page.active { display: block; animation: fadeIn 0.2s; }
+        
+        /* СУПЕР ИЗОЛЯЦИЯ СТРАНИЦ */
+        .page { display: none !important; padding: 15px; min-height: 85vh; }
+        .page.active { display: block !important; animation: fadeIn 0.2s; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; }
         .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
@@ -39,8 +42,9 @@
         .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
         .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
         .deadline-box { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 8px; display: inline-block; margin-top: 5px; }
-        .admin-only { display: none; }
-        body.is-admin .admin-only { display: block; }
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only-flex { display: flex !important; }
+        body.is-admin .admin-only-block { display: block !important; }
         .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; }
         .tag-work { background: #f3e5f5; color: #4a148c; }
     </style>
@@ -52,7 +56,7 @@
         <div class="logo-text">FORMA <span id="role-badge" style="font-size:10px; border:1px solid; padding:2px 5px; border-radius:4px;">...</span></div>
         <div id="cloud-status" style="font-size:9px; font-weight:700; color:var(--red);">● OFFLINE</div>
     </div>
-    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск (изделие, клиент, адрес)..." oninput="renderOrders()">
+    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск..." oninput="renderOrders()">
 </header>
 
 <main>
@@ -62,7 +66,7 @@
 
     <section id="page-stats" class="page">
         <h2 style="font-weight: 800;">Финансы и Снабжение</h2>
-        <div class="finances admin-only" style="font-size:16px;">
+        <div class="finances admin-only-block" style="font-size:16px;">
             <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
             <div class="fin-row" style="color:#4a148c"><span>Зарплаты:</span> <b id="stat-work">0</b></div>
@@ -75,25 +79,25 @@
         <div id="archive-container"></div>
     </section>
 
-    <section id="page-add" class="page admin-only">
+    <section id="page-add" class="page">
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <input type="text" id="in-phone" class="custom-input" placeholder="Телефон (998...)" maxlength="12">
+        <input type="tel" id="in-phone" class="custom-input" placeholder="998 99 000 00 00" maxlength="16" oninput="applyPhoneMask(this)">
         <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
         <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дедлайн (дата сдачи)">
         <div style="display:flex; gap:10px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
             <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
         </div>
-        <button class="btn btn-primary" onclick="createOrder()">🚀 СОЗДАТЬ ЗАКАЗ</button>
+        <button class="btn btn-primary" onclick="createOrder()">🚀 СОХРАНИТЬ В ОБЛАКО</button>
     </section>
 </main>
 
 <nav class="tab-bar">
     <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
-    <div class="tab-item admin-only" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
-    <div class="tab-item admin-only" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
+    <div id="tab-fin" class="tab-item admin-only-flex" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
+    <div id="tab-add" class="tab-item admin-only-flex" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
 </nav>
 
 <script>
@@ -131,15 +135,29 @@
 
     function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
     function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; }
+    
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
         el.value = val ? parseInt(val).toLocaleString('ru-RU') : '';
     }
 
+    // МАСКА ТЕЛЕФОНА: 998 99 000 00 00
+    function applyPhoneMask(el) {
+        let val = el.value.replace(/\D/g, '');
+        let masked = '';
+        if (val.length > 0) masked += val.substring(0, 3);
+        if (val.length > 3) masked += ' ' + val.substring(3, 5);
+        if (val.length > 5) masked += ' ' + val.substring(5, 8);
+        if (val.length > 8) masked += ' ' + val.substring(8, 10);
+        if (val.length > 10) masked += ' ' + val.substring(10, 12);
+        el.value = masked;
+    }
+
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active'); el.classList.add('active');
+        document.getElementById(id).classList.add('active'); 
+        el.classList.add('active');
     }
 
     function editField(id, field, title, isNum) {
@@ -194,7 +212,8 @@
     function createOrder() {
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
-        if(!title || price <= 0) return;
+        if(!title || price <= 0) return tg.showAlert("Заполните название и цену!");
+        
         const id = Date.now();
         db.ref('orders/' + id).set({
             id, title, price,
@@ -242,9 +261,9 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
+                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)" style="display:inline">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)" style="display:inline">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)" style="display:inline">✏️</span></div>
                         <div class="deadline-box" style="background:${ds.color}15; color:${ds.color}">📅 ${ds.label}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
@@ -279,8 +298,8 @@
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
                         <div style="display:flex; gap:10px; font-size:9px; margin-bottom:5px;">
-                            <span onclick="currentExpCat='mat'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer">МАТЕРИАЛЫ</span>
-                            <span onclick="currentExpCat='work'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
+                            <span id="cat-mat-${o.id}" onclick="currentExpCat='mat'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer">МАТЕРИАЛЫ</span>
+                            <span id="cat-work-${o.id}" onclick="currentExpCat='work'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
                         </div>
                         <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Наименование">
                         <div style="display:flex; gap:5px;">

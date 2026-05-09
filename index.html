@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V20</title>
+    <title>FORMA CRM ULTRA V21</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -31,7 +31,6 @@
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
         .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 11px; }
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -51,7 +50,7 @@
 <header>
     <div class="logo-area">
         <div class="logo-text">FORMA <span id="role-badge" style="font-size:10px; border:1px solid; padding:2px 5px; border-radius:4px;">...</span></div>
-        <div id="cloud-status" style="font-size:9px; font-weight:700;">● OFFLINE</div>
+        <div id="cloud-status" style="font-size:9px; font-weight:700; color:var(--red);">● OFFLINE</div>
     </div>
     <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск (изделие, клиент, адрес)..." oninput="renderOrders()">
 </header>
@@ -64,7 +63,7 @@
     <section id="page-stats" class="page">
         <h2 style="font-weight: 800;">Финансы и Снабжение</h2>
         <div class="finances admin-only" style="font-size:16px;">
-            <div class="fin-row"><span>Общая касса:</span> <b id="stat-rev">0</b></div>
+            <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
             <div class="fin-row" style="color:#4a148c"><span>Зарплаты:</span> <b id="stat-work">0</b></div>
             <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
@@ -114,6 +113,16 @@
     let expanded = new Set();
     let currentExpCat = 'mat';
 
+    // Исправленный мониторинг сети
+    db.ref(".info/connected").on("value", (snap) => {
+        const el = document.getElementById('cloud-status');
+        if (snap.val() === true) {
+            el.innerText = "● ONLINE"; el.style.color = "var(--green)";
+        } else {
+            el.innerText = "● OFFLINE"; el.style.color = "var(--red)";
+        }
+    });
+
     db.ref('orders').on('value', snap => {
         orders = snap.val() ? Object.values(snap.val()).reverse() : [];
         renderOrders();
@@ -140,7 +149,6 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
     }
 
-    // НОВАЯ ФУНКЦИЯ ПРАВКИ РАСХОДА
     function editExpense(oid, eidx, field, title, isNum) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id === oid);
@@ -155,7 +163,7 @@
     function getDeadlineStyle(dateStr) {
         if(!dateStr) return { label: 'Нет даты', color: '#ccc' };
         const d = new Date(dateStr);
-        const diff = (d - new Date()) / (1000 * 60 * 60 * 24);
+        const diff = (d - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24);
         if(diff < 0) return { label: 'ПРОСРОЧЕНО!', color: 'var(--red)' };
         if(diff <= 3) return { label: 'СРОЧНО!', color: 'var(--orange)' };
         return { label: d.toLocaleDateString(), color: 'var(--hint)' };
@@ -196,7 +204,10 @@
             deadline: document.getElementById('in-deadline').value,
             prepay: extract(document.getElementById('in-prepay').value),
             status: 0, expenses: []
-        }).then(() => nav('page-list', document.querySelector('.tab-item')));
+        }).then(() => {
+            ['in-title', 'in-client', 'in-phone', 'in-loc', 'in-deadline', 'in-price', 'in-prepay'].forEach(k => document.getElementById(k).value = '');
+            nav('page-list', document.querySelectorAll('.tab-item')[0]);
+        });
     }
 
     function addExp(id) {
@@ -245,7 +256,7 @@
                     <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editField(${o.id}, 'price', 'Общая цена:', true)">${fMoney(o.price)} ✏️</b></div>
                     <div class="info-grid">
                         <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);" onclick="editField(${o.id}, 'prepay', 'Аванс:', true)">${fMoney(o.prepay)} ✏️</b></div>
-                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
+                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ КЛИЕНТА:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
                         <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
@@ -268,13 +279,13 @@
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
                         <div style="display:flex; gap:10px; font-size:9px; margin-bottom:5px;">
-                            <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer">МАТЕРИАЛЫ</span>
-                            <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
+                            <span onclick="currentExpCat='mat'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer">МАТЕРИАЛЫ</span>
+                            <span onclick="currentExpCat='work'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
                         </div>
                         <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Наименование">
                         <div style="display:flex; gap:5px;">
-                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6;" placeholder="Кол">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2;" placeholder="Цена">
+                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:12px;" placeholder="Кол" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2; font-size:12px;" placeholder="Цена" oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:40px;">+</button>
                         </div>
                         <button class="btn btn-shopping" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп этого заказа</button>

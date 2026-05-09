@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V8</title>
+    <title>FORMA CRM PRO V9</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -21,7 +21,7 @@
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
         
-        .page { display: none; padding: 15px; min-height: 80vh; }
+        .page { display: none; padding: 15px; min-height: 85vh; }
         .page.active { display: block; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -43,7 +43,6 @@
 
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
-        body.is-admin .tab-admin { display: flex; }
     </style>
 </head>
 <body>
@@ -53,7 +52,7 @@
         <div class="logo-text">FORMA <span id="role-badge" style="font-size:10px; border:1px solid; padding:2px 5px; border-radius:4px;">...</span></div>
         <div id="cloud-status" style="font-size:9px; font-weight:700;">● OFFLINE</div>
     </div>
-    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск..." oninput="renderOrders()">
+    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск по заказам..." oninput="renderOrders()">
 </header>
 
 <main>
@@ -62,31 +61,31 @@
     </section>
 
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800;">Финансы</h2>
+        <h2 style="font-weight: 800;">Аналитика</h2>
         <div class="finances" style="font-size:16px;">
             <div class="fin-row"><span>Общая касса:</span> <b id="stat-rev">0</b></div>
-            <div class="fin-row" style="color:var(--orange)"><span>Закуп/Расходы:</span> <b id="stat-expenses">0</b></div>
+            <div class="fin-row" style="color:var(--orange)"><span>Все расходы:</span> <b id="stat-expenses">0</b></div>
             <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
-                <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
+                <span>ЧИСТАЯ ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
         </div>
     </section>
 
     <section id="page-add" class="page">
         <h2 style="font-weight: 800;">Новый проект</h2>
-        <input type="text" id="in-title" class="custom-input" placeholder="Название изделия">
+        <input type="text" id="in-title" class="custom-input" placeholder="Изделие (например, Кухня)">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <input type="text" id="in-loc" class="custom-input" placeholder="Адрес / Локация">
-        <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Сумма заказа" oninput="formatNumberInput(this)">
+        <input type="text" id="in-loc" class="custom-input" placeholder="Локация / Адрес">
+        <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Общая цена" oninput="formatNumberInput(this)">
         <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
-        <button class="btn btn-primary" onclick="createOrder()">🚀 СОЗДАНИЕ ЗАКАЗА</button>
+        <button class="btn btn-primary" onclick="createOrder()">🚀 СОХРАНИТЬ В ОБЛАКО</button>
     </section>
 </main>
 
 <nav class="tab-bar">
     <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
-    <div class="tab-item admin-only tab-admin" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Аналитика</div></div>
-    <div class="tab-item admin-only tab-admin" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
+    <div class="tab-item admin-only" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Аналитика</div></div>
+    <div class="tab-item admin-only" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
 </nav>
 
 <script>
@@ -103,7 +102,6 @@
 
     let orders = [];
     let expanded = new Set();
-    let currentCat = 'mat';
 
     db.ref('.info/connected').on('value', s => {
         const el = document.getElementById('cloud-status');
@@ -142,7 +140,7 @@
             id, title, client, price,
             loc: document.getElementById('in-loc').value,
             prepay: extract(document.getElementById('in-prepay').value),
-            status: 0, expenses: []
+            expenses: []
         }).then(() => {
             ['in-title', 'in-client', 'in-loc', 'in-price', 'in-prepay'].forEach(i => document.getElementById(i).value = '');
             nav('page-list', document.querySelector('.tab-item'));
@@ -151,11 +149,12 @@
 
     function addExp(id) {
         const n = document.getElementById(`ex-n-${id}`).value;
+        const q = extract(document.getElementById(`ex-q-${id}`).value) || 1;
         const p = extract(document.getElementById(`ex-p-${id}`).value);
         if(!n || p <= 0) return;
         const o = orders.find(x => x.id === id);
         if(!o.expenses) o.expenses = [];
-        o.expenses.push({ name: n, cost: p, bought: false, cat: currentCat });
+        o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false });
         db.ref(`orders/${id}/expenses`).set(o.expenses);
     }
 
@@ -171,15 +170,15 @@
             card.className = 'order-card';
             card.innerHTML = `
                 <div style="font-weight:800; font-size:16px;">${o.title}</div>
-                <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📍 ${o.loc || 'Нет адреса'}</div>
+                <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📍 ${o.loc || 'Адрес не указан'}</div>
 
                 ${isAdmin ? `
                 <div class="finances">
                     <div class="fin-row"><span>ЦЕНА:</span> <b>${fMoney(o.price)}</b></div>
-                    <div class="fin-row" style="color:var(--green)"><span>АВАНС:</span> <b>${fMoney(o.prepay)}</b></div>
-                    <div class="fin-row" style="color:var(--primary); font-weight:700;"><span>РАСХОДЫ:</span> <b>${fMoney(totalExp)}</b></div>
+                    <div class="fin-row" style="color:var(--green)"><span>АВАНС (Инфо):</span> <b>${fMoney(o.prepay)}</b></div>
+                    <div class="fin-row" style="color:var(--primary); font-weight:700;"><span>ВСЕ РАСХОДЫ:</span> <b>- ${fMoney(totalExp)}</b></div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
-                        <span>ОСТАТОК:</span> <b>${fMoney(o.price - o.prepay)}</b>
+                        <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
                     </div>
                 </div>` : ''}
 
@@ -190,7 +189,7 @@
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="expense-item ${e.bought?'bought':''}">
-                            <span>${e.name}</span>
+                            <span>${e.name} (${e.qty} шт)</span>
                             <div>
                                 ${isAdmin?`<b style="margin-right:10px;">${fMoney(e.cost)}</b>`:''}
                                 <span onclick="db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})" style="cursor:pointer;">${e.bought?'✅':'⬜'}</span>
@@ -199,9 +198,10 @@
                     `).join('') : ''}
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
-                        <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Наименование">
+                        <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Что купили?">
                         <div style="display:flex; gap:5px;">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:1;" placeholder="Сумма" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:1;" placeholder="Кол" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:2;" placeholder="Цена за ед." oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:0 15px;">+</button>
                         </div>
                     </div>` : ''}

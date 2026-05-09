@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V6</title>
+    <title>FORMA CRM PRO V7</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -16,7 +16,7 @@
         body.dark-mode { 
             --bg: #121212; --card: #1e1e1e; --text: #f1f1f1; --hint: #aaa; --border: rgba(255,255,255,0.1);
         }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 90px; transition: 0.3s; overflow-x: hidden; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 100px; transition: 0.3s; overflow-x: hidden; }
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 20px; color: var(--primary); }
@@ -27,49 +27,45 @@
         .page.active { display: block; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid transparent; position: relative; }
+        .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; }
         .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
-        .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+        .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; cursor: pointer; }
 
-        .expense-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 10px 6px; font-size: 12px; transition: 0.3s; }
-        .expense-item.bought { background-color: rgba(25, 135, 84, 0.12); border-radius: 8px; color: var(--green) !important; }
+        .expense-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 10px 6px; font-size: 12px; }
+        .expense-item.bought { background-color: rgba(25, 135, 84, 0.1); border-radius: 8px; color: var(--green); }
+        
+        .editable-cell { border-bottom: 1px dashed var(--primary); padding: 2px 4px; }
+
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--hint); flex: 1; text-align: center; }
+        .tab-item.active { color: var(--primary); }
+        .tab-label { font-size: 10px; font-weight: 700; margin-top: 5px; }
+
+        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; font-weight: 500; }
+        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: none; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; }
         
         .cat-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-right: 8px; font-weight: 900; }
         .tag-mat { background: #e3f2fd; color: #0d47a1; }
         .tag-work { background: #f3e5f5; color: #4a148c; }
 
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; padding: 10px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; }
-        .tab-item.active { color: var(--primary); }
-        .tab-label { font-size: 10px; font-weight: 600; margin-top: 4px; }
-
-        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; font-weight: 500; }
-        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: none; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; }
-        
-        .template-box { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
-        .template-item { background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
-        body.is-admin .tab-admin { display: flex; }
-        .tab-admin { display: none; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo-area">
-        <div class="logo-text">FORMA <span id="role-badge" style="opacity: 0.5; font-size: 10px; border: 1px solid; padding: 2px 6px; border-radius: 4px;">LOAD...</span></div>
-        <div style="display:flex; gap:15px; align-items:center;">
-            <div id="cloud-status" style="font-size:10px; color:var(--red); font-weight:700;">● OFFLINE</div>
+        <div class="logo-text">FORMA <span id="role-badge" style="font-size: 9px; border: 1px solid; padding: 1px 5px; border-radius: 4px; vertical-align: middle;">...</span></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <div id="cloud-status" style="font-size:9px; font-weight:700;">● OFFLINE</div>
             <div onclick="toggleTheme()" style="cursor:pointer; font-size:18px;">🌓</div>
         </div>
     </div>
     <div class="search-container">
-        <input type="text" id="main-search" class="search-input" placeholder="Поиск заказа или клиента..." oninput="renderOrders()">
+        <input type="text" id="main-search" class="search-input" placeholder="Поиск заказа, клиента или адреса..." oninput="renderOrders()">
     </div>
 </header>
 
@@ -81,10 +77,10 @@
     <section id="page-stats" class="page admin-only">
         <h2 style="font-weight: 800;">Финансы</h2>
         <div class="finances" style="font-size:16px;">
-            <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
-            <div class="fin-row"><span>Закуп материалов:</span> <b id="stat-mat" style="color:var(--orange)">0</b></div>
-            <div class="fin-row"><span>Зарплаты:</span> <b id="stat-work" style="color:var(--orange)">0</b></div>
-            <div class="fin-row" style="margin-top:15px; border-top:1px solid var(--border); padding-top:15px; color:var(--green); font-size:22px;">
+            <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
+            <div class="fin-row"><span>Материалы:</span> <b id="stat-mat" style="color:var(--orange)">0</b></div>
+            <div class="fin-row"><span>Работа:</span> <b id="stat-work" style="color:var(--orange)">0</b></div>
+            <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:22px;">
                 <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
         </div>
@@ -92,13 +88,9 @@
 
     <section id="page-add" class="page admin-only">
         <h2 style="font-weight: 800;">Новый проект</h2>
-        <div class="template-box">
-            <div class="template-item" onclick="applyTemplate('kitchen')">🍳 Кухня</div>
-            <div class="template-item" onclick="applyTemplate('wardrobe')">👗 Шкаф</div>
-            <div class="template-item" onclick="applyTemplate('office')">💻 Стол</div>
-        </div>
         <input type="text" id="in-title" class="custom-input" placeholder="Название изделия">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
+        <input type="text" id="in-loc" class="custom-input" placeholder="Локация (адрес)">
         <input type="tel" id="in-phone" class="custom-input" value="+998 " oninput="applyPhoneMask(event)">
         <div style="display:flex; gap:10px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Сумма" style="flex:1" oninput="formatNumberInput(this)">
@@ -110,146 +102,97 @@
 </main>
 
 <nav class="tab-bar">
-    <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><span class="tab-label">Заказы</span></div>
-    <div class="tab-item tab-admin" onclick="nav('page-stats', this)"><span>📊</span><span class="tab-label">Аналитика</span></div>
-    <div class="tab-item tab-admin" onclick="nav('page-add', this)"><span>➕</span><span class="tab-label">Создать</span></div>
+    <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
+    <div class="tab-item admin-only" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Аналитика</div></div>
+    <div class="tab-item admin-only" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
 </nav>
 
 <script>
-    // 🔒 ШИФРОВАННЫЕ ДАННЫЕ (ID: 1296940843)
-    const _0xData = [
-        "MTI5Njk0MDg0Mw==", 
-        "ODAwMzU5NTAzODQ0",     
-        "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", 
-        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t", 
-        "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", 
-        "Zm9ybWFjcm0tYTVmZjg=", 
-        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==", 
-        "ODAwMzU5NTAzODQ0", 
-        "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE="
-    ];
-
+    const _0xData = ["MTI5Njk0MDg0Mw==", "ODAwMzU5NTAzODQ0", "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t", "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", "Zm9ybWFjcm0tYTVmZjg=", "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==", "ODAwMzU5NTAzODQ0", "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE="];
     const ADMIN_IDS = [parseInt(atob(_0xData[0])), parseInt(atob(_0xData[1]))];
-    const firebaseConfig = {
-        apiKey: atob(_0xData[2]),
-        authDomain: atob(_0xData[3]),
-        databaseURL: atob(_0xData[4]),
-        projectId: atob(_0xData[5]),
-        storageBucket: atob(_0xData[6]),
-        messagingSenderId: atob(_0xData[7]),
-        appId: atob(_0xData[8])
-    };
-
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp({ apiKey: atob(_0xData[2]), authDomain: atob(_0xData[3]), databaseURL: atob(_0xData[4]), projectId: atob(_0xData[5]), storageBucket: atob(_0xData[6]), messagingSenderId: atob(_0xData[7]), appId: atob(_0xData[8]) });
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
 
     const userId = tg.initDataUnsafe?.user?.id;
     const isAdmin = ADMIN_IDS.includes(userId);
-    
-    if(isAdmin) {
-        document.body.classList.add('is-admin');
-        document.getElementById('role-badge').innerText = 'ADMIN';
-    } else {
-        document.getElementById('role-badge').innerText = 'MASTER';
-        document.getElementById('role-badge').style.borderColor = 'var(--orange)';
-    }
+    if(isAdmin) document.body.classList.add('is-admin');
+    document.getElementById('role-badge').innerText = isAdmin ? 'ADMIN' : 'MASTER';
 
     let orders = [];
     let expandedOrders = new Set();
-    let currentExpCategory = 'mat';
-    const stages = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Сдан"];
+    let currentExpCat = 'mat';
 
-    db.ref('.info/connected').on('value', (s) => {
+    db.ref('.info/connected').on('value', s => {
         const el = document.getElementById('cloud-status');
-        el.innerText = s.val() ? '● CLOUD SYNCED' : '● OFFLINE';
+        el.innerText = s.val() ? '● ONLINE' : '● OFFLINE';
         el.style.color = s.val() ? 'var(--green)' : 'var(--red)';
     });
 
-    db.ref('orders').on('value', (snapshot) => {
-        const data = snapshot.val();
+    db.ref('orders').on('value', snap => {
+        const data = snap.val();
         orders = data ? Object.values(data).reverse() : [];
         renderOrders();
         if(isAdmin) renderStats();
     });
 
     function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
-    function extract(s) { return parseFloat(String(s).replace(/[\s\u00A0]/g, '')) || 0; }
-    
+    function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; }
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
-        if (val !== '') el.value = parseInt(val, 10).toLocaleString('ru-RU');
-    }
-
-    function applyPhoneMask(e) {
-        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
-        e.target.value = !x[1] ? '+998 ' : !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
-    }
-
-    function applyTemplate(type) {
-        const t = { kitchen: "Кухня МДФ", wardrobe: "Шкаф-купе", office: "Офисный стол" };
-        document.getElementById('in-title').value = t[type];
-        tg.HapticFeedback.impactOccurred('light');
+        el.value = val ? parseInt(val).toLocaleString('ru-RU') : '';
     }
 
     function createOrder() {
-        if(!isAdmin) return;
         const title = document.getElementById('in-title').value;
         const client = document.getElementById('in-client').value;
         const price = extract(document.getElementById('in-price').value);
-        const btn = document.getElementById('save-btn');
+        if(!title || !client || price <= 0) return;
 
-        if(!title || !client || price <= 0) return tg.showAlert("Заполните название и цену!");
-
-        btn.disabled = true; btn.innerText = "⏳...";
         const id = Date.now();
-        const newOrder = {
+        db.ref('orders/' + id).set({
             id, title, client, price,
+            loc: document.getElementById('in-loc').value,
             phone: document.getElementById('in-phone').value,
             prepay: extract(document.getElementById('in-prepay').value),
             deadline: document.getElementById('in-deadline').value,
-            status: 0,
-            expenses: []
-        };
-        db.ref('orders/' + id).set(newOrder).then(() => {
-            tg.HapticFeedback.notificationOccurred('success');
-            document.getElementById('in-title').value = '';
-            document.getElementById('in-client').value = '';
-            document.getElementById('in-price').value = '';
-            btn.disabled = false; btn.innerText = "🚀 СОХРАНИТЬ В ОБЛАКО";
+            status: 0, expenses: []
+        }).then(() => {
+            ['in-title', 'in-client', 'in-loc', 'in-price', 'in-prepay'].forEach(i => document.getElementById(i).value = '');
             nav('page-list', document.querySelector('.tab-item'));
         });
     }
 
-    function copyReceipt(oid) {
-        const o = orders.find(x => x.id === oid);
-        const text = `📄 СМЕТА:\n🛠 ${o.title}\n👤 Клиент: ${o.client}\n-------------------------\n💰 Сумма: ${fMoney(o.price)}\n✅ Аванс: ${fMoney(o.prepay)}\n📉 Остаток: ${fMoney(o.price - o.prepay)}\n-------------------------\n📅 Срок: ${o.deadline || 'Уточняется'}`;
-        navigator.clipboard.writeText(text).then(() => {
-            tg.showAlert("Смета скопирована!");
-            tg.HapticFeedback.notificationOccurred('success');
-        });
+    function updateOrderField(id, field, promptText, isNumeric) {
+        if(!isAdmin) return;
+        const current = orders.find(x => x.id === id)[field];
+        const newVal = prompt(promptText, current);
+        if (newVal !== null) {
+            db.ref(`orders/${id}/${field}`).set(isNumeric ? extract(newVal) : newVal);
+        }
     }
 
-    function toggleList(id) { expandedOrders.has(id) ? expandedOrders.delete(id) : expandedOrders.add(id); renderOrders(); }
-
-    function toggleBought(oid, eidx) {
+    function updateExp(oid, eidx, field, promptText, isNumeric) {
+        if(!isAdmin) return;
         const o = orders.find(x => x.id === oid);
-        o.expenses[eidx].bought = !o.expenses[eidx].bought;
-        db.ref('orders/' + oid).set(o);
-        tg.HapticFeedback.selectionChanged();
+        const newVal = prompt(promptText, o.expenses[eidx][field]);
+        if (newVal !== null) {
+            o.expenses[eidx][field] = isNumeric ? extract(newVal) : newVal;
+            if(isNumeric) o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+            db.ref(`orders/${oid}/expenses`).set(o.expenses);
+        }
     }
 
     function addExp(id) {
-        const name = document.getElementById(`ex-n-${id}`).value;
-        const qty = extract(document.getElementById(`ex-q-${id}`).value) || 1;
-        const pr = extract(document.getElementById(`ex-p-${id}`).value) || 0;
-        if(!name) return;
-
+        const n = document.getElementById(`ex-n-${id}`).value;
+        const q = extract(document.getElementById(`ex-q-${id}`).value) || 1;
+        const p = extract(document.getElementById(`ex-p-${id}`).value);
+        if(!n || p <= 0) return;
         const o = orders.find(x => x.id === id);
         if(!o.expenses) o.expenses = [];
-        o.expenses.push({ name, qty, price: pr, cost: qty * pr, bought: false, cat: currentExpCategory });
-        db.ref('orders/' + id).set(o);
+        o.expenses.push({ name: n, qty: q, price: p, cost: q*p, bought: false, cat: currentExpCat });
+        db.ref('orders/' + id + '/expenses').set(o.expenses);
     }
 
     function renderOrders() {
@@ -257,54 +200,54 @@
         const search = document.getElementById('main-search').value.toLowerCase();
         container.innerHTML = '';
 
-        orders.filter(o => o.title.toLowerCase().includes(search) || o.client.toLowerCase().includes(search)).forEach(o => {
-            const isExpanded = expandedOrders.has(o.id);
+        orders.filter(o => (o.title+o.client+o.loc).toLowerCase().includes(search)).forEach(o => {
+            const isExp = expandedOrders.has(o.id);
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div>
-                        <div style="font-size:10px; color:var(--hint); font-weight:700;">${o.client} ${o.phone !== '+998 ' ? o.phone : ''}</div>
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="flex:1">
+                        <div style="font-size:10px; color:var(--hint); font-weight:700;">${o.client} • ${o.phone}</div>
                         <div style="font-weight:800; font-size:16px;">${o.title}</div>
+                        <div style="font-size:11px; opacity:0.7;">📍 ${o.loc || 'Адрес не указан'}</div>
                     </div>
-                    <div style="font-size:9px; font-weight:800; background:rgba(0,0,0,0.05); padding:5px 10px; border-radius:20px;">${stages[o.status]}</div>
+                    ${isAdmin ? `<div onclick="updateOrderField(${o.id}, 'loc', 'Укажите новый адрес:', false)" style="cursor:pointer">✏️</div>` : ''}
                 </div>
-                
+
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>СУММА:</span> <b>${fMoney(o.price)}</b></div>
-                    <div class="fin-row" style="color:var(--green)"><span>АВАНС:</span> <b>${fMoney(o.prepay)}</b></div>
-                    <div class="fin-row" style="color:var(--red); font-weight:700; border-top:1px solid var(--border); padding-top:5px; margin-top:5px;">
+                    <div class="fin-row" onclick="updateOrderField(${o.id}, 'price', 'Общая цена:', true)"><span>СУММА:</span> <b>${fMoney(o.price)} ✏️</b></div>
+                    <div class="fin-row" onclick="updateOrderField(${o.id}, 'prepay', 'Аванс:', true)" style="color:var(--green)"><span>АВАНС:</span> <b>${fMoney(o.prepay)} ✏️</b></div>
+                    <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
                         <span>ОСТАТОК:</span> <b>${fMoney(o.price - o.prepay)}</b>
                     </div>
-                </div>
-                <button class="btn btn-outline" onclick="copyReceipt(${o.id})">🧾 Смета для клиента</button>
-                ` : `<div style="margin-top:10px; font-size:12px;">📅 Срок: <b>${o.deadline || '---'}</b></div>`}
+                </div>` : `<div style="margin-top:10px; font-size:12px;">📅 Срок: <b>${o.deadline || '---'}</b></div>`}
 
-                <div onclick="toggleList(${o.id})" style="font-size:11px; font-weight:700; color:var(--primary); margin-top:15px; cursor:pointer;">
-                    СПИСОК РАСХОДОВ (${o.expenses ? o.expenses.length : 0}) ${isExpanded ? '▲' : '▼'}
+                <div onclick="expandedOrders.has(${o.id}) ? expandedOrders.delete(${o.id}) : expandedOrders.add(${o.id}); renderOrders();" 
+                     style="font-size:11px; font-weight:700; color:var(--primary); margin-top:15px; cursor:pointer;">
+                    РАСХОДЫ (${o.expenses ? o.expenses.length : 0}) ${isExp ? '▲' : '▼'}
                 </div>
 
-                <div id="exp-list-${o.id}" style="display:${isExpanded ? 'block' : 'none'}; margin-top:10px;">
+                <div style="display:${isExp ? 'block' : 'none'}; margin-top:10px;">
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="expense-item ${e.bought ? 'bought' : ''}">
-                            <span><span class="cat-tag ${e.cat==='work'?'tag-work':'tag-mat'}">${e.cat==='work'?'РАБ':'МАТ'}</span>${e.name}</span>
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                ${isAdmin ? `<b>${fMoney(e.cost)}</b>` : ''}
-                                <span onclick="toggleBought(${o.id}, ${i})" style="cursor:pointer; font-size:18px;">${e.bought ? '✅' : '⬜️'}</span>
+                            <span onclick="updateExp(${o.id}, ${i}, 'name', 'Название:', false)"><span class="cat-tag ${e.cat=='work'?'tag-work':'tag-mat'}">${e.cat=='work'?'РАБ':'МАТ'}</span>${e.name}</span>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                ${isAdmin ? `<span onclick="updateExp(${o.id}, ${i}, 'price', 'Цена за ед:', true)"><b>${fMoney(e.cost)}</b></span>` : ''}
+                                <span onclick="db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})" style="font-size:18px; cursor:pointer;">${e.bought ? '✅' : '⬜'}</span>
                             </div>
                         </div>
-                    `).join('') : '<div style="font-size:11px; opacity:0.5;">Список пуст</div>'}
+                    `).join('') : ''}
                     
                     ${isAdmin ? `
                     <div style="background:rgba(0,0,0,0.03); padding:10px; border-radius:12px; margin-top:10px;">
-                        <div style="display:flex; gap:10px; margin-bottom:8px;">
-                            <div style="font-size:10px; font-weight:800; color:var(--primary); cursor:pointer;" onclick="currentExpCategory='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.4">МАТЕРИАЛЫ</div>
-                            <div style="font-size:10px; font-weight:800; color:var(--orange); opacity:0.4; cursor:pointer;" onclick="currentExpCategory='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.4">ЗАРПЛАТА</div>
+                        <div style="display:flex; gap:10px; margin-bottom:8px; font-size:9px; font-weight:800;">
+                            <div onclick="currentExpCat='mat'; renderOrders()" style="color:var(--primary); opacity:${currentExpCat=='mat'?1:0.4}">МАТЕРИАЛЫ</div>
+                            <div onclick="currentExpCat='work'; renderOrders()" style="color:var(--orange); opacity:${currentExpCat=='work'?1:0.4}">ЗАРПЛАТА</div>
                         </div>
-                        <input type="text" id="ex-n-${o.id}" class="custom-input" placeholder="Название..." style="padding:10px; font-size:12px;">
+                        <input type="text" id="ex-n-${o.id}" class="custom-input" placeholder="Что купили?" style="padding:10px; font-size:12px;">
                         <div style="display:flex; gap:5px;">
-                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" placeholder="Кол-во" style="padding:10px; font-size:12px; flex:1" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" placeholder="Кол" style="padding:10px; font-size:12px; flex:1" oninput="formatNumberInput(this)">
                             <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" placeholder="Цена" style="padding:10px; font-size:12px; flex:2" oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:10px; padding:0 15px; font-weight:800;">+</button>
                         </div>
@@ -331,10 +274,13 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active'); el.classList.add('active');
-        if(id === 'page-stats') renderStats();
     }
-
+    
     function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+    function applyPhoneMask(e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
+        e.target.value = !x[1] ? '+998 ' : !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
+    }
 </script>
 </body>
 </html>

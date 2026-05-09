@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V18</title>
+    <title>FORMA CRM ULTRA V19</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -32,11 +32,11 @@
         .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-        .btn-wa { background: #25D366; color: white; margin-top: 5px; font-size: 10px; padding: 5px; }
+        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 11px; }
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
         .exp-table-row.bought { color: var(--green); opacity: 0.7; }
+        .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
         .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
         .deadline-box { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 8px; display: inline-block; margin-top: 5px; }
         .admin-only { display: none; }
@@ -132,6 +132,13 @@
         document.getElementById(id).classList.add('active'); el.classList.add('active');
     }
 
+    function editField(id, field, title, isNum) {
+        if(!isAdmin) return;
+        const o = orders.find(x => x.id === id);
+        const val = prompt(title, o[field]);
+        if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
+    }
+
     function getDeadlineStyle(dateStr) {
         if(!dateStr) return { label: 'Нет даты', color: '#ccc' };
         const d = new Date(dateStr);
@@ -141,10 +148,13 @@
         return { label: d.toLocaleDateString(), color: 'var(--hint)' };
     }
 
-    function notifyWA(id) {
+    function sendIndividualShoppingList(id) {
         const o = orders.find(x => x.id === id);
-        const text = `Здравствуйте, ${o.client}! Ваш заказ "${o.title}" перешел на этап: ${STAGES[o.status]}.`;
-        tg.showAlert("Текст для клиента: \n\n" + text);
+        const toBuy = o.expenses ? o.expenses.filter(e => !e.bought && e.cat !== 'work') : [];
+        if(toBuy.length === 0) return tg.showAlert("Нет позиций для закупа");
+        let text = `🛒 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
+        toBuy.forEach((e, i) => text += `${i+1}. ${e.name} — ${e.qty} шт.\n`);
+        navigator.clipboard.writeText(text).then(() => tg.showAlert("Список заказа скопирован!"));
     }
 
     function copyGlobalShoppingList() {
@@ -177,22 +187,28 @@
     }
 
     function addExp(id) {
-        const n = document.getElementById(`ex-n-${id}`).value;
-        const q = extract(document.getElementById(`ex-q-${id}`).value) || 1;
-        const p = extract(document.getElementById(`ex-p-${id}`).value);
+        const nInput = document.getElementById(`ex-n-${id}`);
+        const qInput = document.getElementById(`ex-q-${id}`);
+        const pInput = document.getElementById(`ex-p-${id}`);
+        const n = nInput.value;
+        const q = extract(qInput.value) || 1;
+        const p = extract(pInput.value);
         if(!n || p <= 0) return;
         const o = orders.find(x => x.id === id);
         if(!o.expenses) o.expenses = [];
         o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false, cat: currentExpCat });
-        db.ref(`orders/${id}/expenses`).set(o.expenses);
+        db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
+            nInput.value=''; qInput.value=''; pInput.value='';
+        });
     }
 
     function renderOrders() {
         const listContainer = document.getElementById('orders-container');
         const archiveContainer = document.getElementById('archive-container');
+        const query = document.getElementById('main-search').value.toLowerCase();
         listContainer.innerHTML = ''; archiveContainer.innerHTML = '';
         
-        orders.forEach(o => {
+        orders.filter(o => (o.title + (o.client||'') + (o.loc || '')).toLowerCase().includes(query)).forEach(o => {
             const isExp = expanded.has(o.id);
             const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
             const ds = getDeadlineStyle(o.deadline);
@@ -202,8 +218,8 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-weight:800; font-size:17px;">${o.title}</div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📍 ${o.loc || '---'}</div>
+                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📍 ${o.loc || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
                         <div class="deadline-box" style="background:${ds.color}15; color:${ds.color}">📅 ${ds.label}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
@@ -212,15 +228,14 @@
                 </div>
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>ЦЕНА:</span> <b>${fMoney(o.price)}</b></div>
+                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editField(${o.id}, 'price', 'Общая цена:', true)">${fMoney(o.price)} ✏️</b></div>
                     <div class="info-grid">
-                        <div><span style="font-size:10px;">АВАНС:</span><br><b style="color:var(--green);">${fMoney(o.prepay)}</b></div>
-                        <div style="text-align:right;"><span style="font-size:10px;">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
+                        <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);" onclick="editField(${o.id}, 'prepay', 'Аванс:', true)">${fMoney(o.prepay)} ✏️</b></div>
+                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
-                        <span>ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
+                        <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
                     </div>
-                    <button class="btn btn-wa" onclick="notifyWA(${o.id})">📲 Уведомить клиента</button>
                 </div>` : ''}
                 <div style="margin-top:15px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
                     📦 РАСХОДЫ/ЗП (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
@@ -244,6 +259,7 @@
                             <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2;" placeholder="Цена">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:40px;">+</button>
                         </div>
+                        <button class="btn btn-shopping" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп этого заказа</button>
                     </div>` : ''}
                 </div>
             `;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V10</title>
+    <title>FORMA CRM PRO V11</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -36,17 +36,16 @@
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
 
         .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-shopping { background: var(--orange); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         
-        /* Таблица расходов */
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
-        .exp-table-row.bought { color: var(--green); }
+        .exp-table-row.bought { color: var(--green); opacity: 0.7; }
 
         .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
-        .edit-icon:hover { opacity: 1; }
-
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
     </style>
@@ -81,9 +80,9 @@
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие (напр. Кухня)">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <input type="text" id="in-phone" class="custom-input" placeholder="Номер телефона (+998...)">
-        <input type="text" id="in-loc" class="custom-input" placeholder="Локация / Адрес">
-        <input type="text" id="in-link" class="custom-input" placeholder="Ссылка на проект (дизайн)">
+        <input type="text" id="in-phone" class="custom-input" placeholder="Телефон">
+        <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
+        <input type="text" id="in-link" class="custom-input" placeholder="Ссылка на проект">
         <div style="display:flex; gap:10px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
             <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
@@ -146,6 +145,34 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
     }
 
+    // НОВАЯ ФУНКЦИЯ: Отправка закупа снабженцу
+    function sendShoppingList(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o.expenses || o.expenses.length === 0) {
+            tg.showAlert("Список расходов пуст!");
+            return;
+        }
+
+        // Фильтруем только не отмеченные (не купленные) товары
+        const toBuy = o.expenses.filter(e => !e.bought);
+
+        if (toBuy.length === 0) {
+            tg.showAlert("Все товары уже куплены!");
+            return;
+        }
+
+        let text = `📦 СПИСОК ЗАКУПА\n🛠 Проект: ${o.title}\n📍 Адрес: ${o.loc || '---'}\n-------------------------\n`;
+        toBuy.forEach((e, i) => {
+            text += `${i + 1}. ${e.name} — ${e.qty} шт.\n`;
+        });
+        text += `-------------------------\n📌 Проверьте наличие на складе!`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            tg.showAlert("Список для снабженца скопирован! Вставьте его в чат.");
+            tg.HapticFeedback.notificationOccurred('success');
+        });
+    }
+
     function createOrder() {
         const title = document.getElementById('in-title').value;
         const client = document.getElementById('in-client').value;
@@ -161,7 +188,6 @@
             prepay: extract(document.getElementById('in-prepay').value),
             expenses: []
         }).then(() => {
-            ['in-title', 'in-client', 'in-phone', 'in-loc', 'in-link', 'in-price', 'in-prepay'].forEach(i => document.getElementById(i).value = '');
             nav('page-list', document.querySelector('.tab-item'));
         });
     }
@@ -188,60 +214,49 @@
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="display:flex; justify-content:space-between;">
                     <div>
                         <div style="font-weight:800; font-size:17px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📱 ${o.phone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
-                        ${o.link ? `<div style="font-size:11px; margin-top:3px;"><a href="${o.link}" target="_blank">🔗 Ссылка на проект</a> <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка:', false)">✏️</span></div>` : `<div onclick="editField(${o.id}, 'link', 'Добавить ссылку:', false)" style="font-size:10px; color:var(--primary); cursor:pointer;">+ Добавить ссылку</div>`}
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📍 ${o.loc || '---'}</div>
                     </div>
                 </div>
 
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editField(${o.id}, 'price', 'Общая цена:', true)">${fMoney(o.price)} ✏️</b></div>
-                    
+                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b>${fMoney(o.price)}</b></div>
                     <div class="info-grid">
-                        <div><span style="font-size:10px; color:var(--hint);">АВАНС (Инфо):</span><br><b style="color:var(--green); font-size:13px;" onclick="editField(${o.id}, 'prepay', 'Аванс:', true)">${fMoney(o.prepay)} ✏️</b></div>
-                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ КЛИЕНТА:</span><br><b style="color:var(--red); font-size:13px;">${fMoney(o.price - o.prepay)}</b></div>
+                        <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);">${fMoney(o.prepay)}</b></div>
+                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
-
-                    <div class="fin-row" style="color:var(--primary); font-weight:700;"><span>ВСЕ РАСХОДЫ:</span> <b>- ${fMoney(totalExp)}</b></div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
                         <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
                     </div>
                 </div>` : ''}
 
                 <div onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()" style="margin-top:15px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;">
-                    📦 СПИСОК РАСХОДОВ (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
+                    📦 РАСХОДЫ (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
                 </div>
 
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
                     <div class="exp-table-row header">
-                        <div>Наименование</div>
-                        <div>Кол</div>
-                        <div>Цена ед.</div>
-                        <div>Итого</div>
-                        <div></div>
+                        <div>Наименование</div><div>Кол</div><div>Цена</div><div>Итого</div><div></div>
                     </div>
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="exp-table-row ${e.bought?'bought':''}">
-                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${e.name}</div>
-                            <div>${e.qty}</div>
-                            <div>${Math.round(e.price).toLocaleString()}</div>
-                            <div style="font-weight:700;">${Math.round(e.cost).toLocaleString()}</div>
+                            <div>${e.name}</div><div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div><div style="font-weight:700;">${Math.round(e.cost).toLocaleString()}</div>
                             <div onclick="db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})" style="cursor:pointer; text-align:right;">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}
                     
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
-                        <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Наименование">
+                        <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Что купить?">
                         <div style="display:flex; gap:5px;">
                             <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:0.6;" placeholder="Кол" oninput="formatNumberInput(this)">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:2;" placeholder="Цена за ед." oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:2;" placeholder="Цена ед." oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:0 15px;">+</button>
                         </div>
+                        <button class="btn btn-shopping" onclick="sendShoppingList(${o.id})">🛒 Отправить закуп снабженцу</button>
                     </div>` : ''}
                 </div>
             `;

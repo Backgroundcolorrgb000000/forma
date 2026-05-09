@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO CLOUD</title>
+    <title>FORMA CRM PRO V6</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -16,11 +16,10 @@
         body.dark-mode { 
             --bg: #121212; --card: #1e1e1e; --text: #f1f1f1; --hint: #aaa; --border: rgba(255,255,255,0.1);
         }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 90px; transition: 0.3s; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 90px; transition: 0.3s; overflow-x: hidden; }
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 20px; color: var(--primary); }
-        
         .search-container { background: rgba(0,0,0,0.05); border-radius: 12px; display: flex; align-items: center; padding: 8px 12px; }
         .search-input { background: none; border: none; color: var(--text); width: 100%; outline: none; font-size: 14px; }
         
@@ -28,16 +27,14 @@
         .page.active { display: block; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
-        
+        .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid transparent; position: relative; }
         .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
-        body.dark-mode .finances { background: rgba(255,255,255,0.03); }
         .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
 
-        .expense-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 8px 6px; font-size: 12px; border-radius: 8px; margin-bottom: 2px; }
-        .expense-item.bought { background-color: rgba(25, 135, 84, 0.15); color: var(--green) !important; }
+        .expense-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 10px 6px; font-size: 12px; transition: 0.3s; }
+        .expense-item.bought { background-color: rgba(25, 135, 84, 0.12); border-radius: 8px; color: var(--green) !important; }
         
-        .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; margin-right: 5px; font-weight: 900; }
+        .cat-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-right: 8px; font-weight: 900; }
         .tag-mat { background: #e3f2fd; color: #0d47a1; }
         .tag-work { background: #f3e5f5; color: #4a148c; }
 
@@ -46,33 +43,33 @@
         .tab-item.active { color: var(--primary); }
         .tab-label { font-size: 10px; font-weight: 600; margin-top: 4px; }
 
-        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; }
-        .btn-primary { background: var(--primary); color: white; margin-top: 10px; }
-        .btn-outline { background: none; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px;}
+        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; font-weight: 500; }
+        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: none; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; }
         
         .template-box { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
-        .template-item { background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+        .template-item { background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 
-        /* СКРЫТИЕ ДЛЯ МАСТЕРОВ */
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
         body.is-admin .tab-admin { display: flex; }
         .tab-admin { display: none; }
     </style>
 </head>
-<body class="">
+<body>
 
 <header>
     <div class="logo-area">
         <div class="logo-text">FORMA <span id="role-badge" style="opacity: 0.5; font-size: 10px; border: 1px solid; padding: 2px 6px; border-radius: 4px;">LOAD...</span></div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <div id="cloud-status" style="font-size:10px; color:var(--red); font-weight:700;">● ОЖИДАНИЕ...</div>
+            <div id="cloud-status" style="font-size:10px; color:var(--red); font-weight:700;">● OFFLINE</div>
             <div onclick="toggleTheme()" style="cursor:pointer; font-size:18px;">🌓</div>
         </div>
     </div>
     <div class="search-container">
-        <input type="text" id="main-search" class="search-input" placeholder="Поиск по заказам..." oninput="renderOrders()">
+        <input type="text" id="main-search" class="search-input" placeholder="Поиск заказа или клиента..." oninput="renderOrders()">
     </div>
 </header>
 
@@ -82,13 +79,13 @@
     </section>
 
     <section id="page-stats" class="page admin-only">
-        <h2 style="font-weight: 800;">Аналитика</h2>
+        <h2 style="font-weight: 800;">Финансы</h2>
         <div class="finances" style="font-size:16px;">
             <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
-            <div class="fin-row"><span>Материалы:</span> <b id="stat-mat" style="color:var(--orange)">0</b></div>
+            <div class="fin-row"><span>Закуп материалов:</span> <b id="stat-mat" style="color:var(--orange)">0</b></div>
             <div class="fin-row"><span>Зарплаты:</span> <b id="stat-work" style="color:var(--orange)">0</b></div>
-            <div class="fin-row" style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px; color:var(--green); font-size:20px;">
-                <span>ЧИСТАЯ ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
+            <div class="fin-row" style="margin-top:15px; border-top:1px solid var(--border); padding-top:15px; color:var(--green); font-size:22px;">
+                <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
         </div>
     </section>
@@ -114,15 +111,15 @@
 
 <nav class="tab-bar">
     <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><span class="tab-label">Заказы</span></div>
-    <div class="tab-item tab-admin" onclick="nav('page-stats', this)"><span>📊</span><span class="tab-label">Финансы</span></div>
+    <div class="tab-item tab-admin" onclick="nav('page-stats', this)"><span>📊</span><span class="tab-label">Аналитика</span></div>
     <div class="tab-item tab-admin" onclick="nav('page-add', this)"><span>➕</span><span class="tab-label">Создать</span></div>
 </nav>
 
 <script>
-   // 🔒 ОБНОВЛЕННЫЙ ЗАШИФРОВАННЫЙ БЛОК (ID:)
+    // 🔒 ШИФРОВАННЫЕ ДАННЫЕ (ID: 1296940843)
     const _0xData = [
         "MTI5Njk0MDg0Mw==", 
-        "ODAwMzU5NTAzODQ0", 
+        "ODAwMzU5NTAzODQ0",     
         "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", 
         "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t", 
         "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", 
@@ -132,10 +129,7 @@
         "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE="
     ];
 
-    // Программа сама расшифровывает ID админов
     const ADMIN_IDS = [parseInt(atob(_0xData[0])), parseInt(atob(_0xData[1]))];
-
-    // Программа сама собирает ключи для базы
     const firebaseConfig = {
         apiKey: atob(_0xData[2]),
         authDomain: atob(_0xData[3]),
@@ -151,18 +145,14 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // 🛡 ПРОВЕРКА ПРАВ ДОСТУПА
     const userId = tg.initDataUnsafe?.user?.id;
     const isAdmin = ADMIN_IDS.includes(userId);
     
     if(isAdmin) {
         document.body.classList.add('is-admin');
         document.getElementById('role-badge').innerText = 'ADMIN';
-        document.getElementById('role-badge').style.color = 'var(--primary)';
-        document.getElementById('role-badge').style.borderColor = 'var(--primary)';
     } else {
         document.getElementById('role-badge').innerText = 'MASTER';
-        document.getElementById('role-badge').style.color = 'var(--orange)';
         document.getElementById('role-badge').style.borderColor = 'var(--orange)';
     }
 
@@ -171,13 +161,10 @@
     let currentExpCategory = 'mat';
     const stages = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Сдан"];
 
-    db.ref('.info/connected').on('value', function(snap) {
+    db.ref('.info/connected').on('value', (s) => {
         const el = document.getElementById('cloud-status');
-        if (snap.val() === true) {
-            el.innerText = '● CLOUD SYNCED'; el.style.color = 'var(--green)';
-        } else {
-            el.innerText = '● OFFLINE'; el.style.color = 'var(--red)';
-        }
+        el.innerText = s.val() ? '● CLOUD SYNCED' : '● OFFLINE';
+        el.style.color = s.val() ? 'var(--green)' : 'var(--red)';
     });
 
     db.ref('orders').on('value', (snapshot) => {
@@ -187,10 +174,9 @@
         if(isAdmin) renderStats();
     });
 
-    function formatSpaces(n) { return Math.round(n || 0).toLocaleString('ru-RU'); }
-    function fMoney(n) { return formatSpaces(n) + " сум"; }
+    function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
     function extract(s) { return parseFloat(String(s).replace(/[\s\u00A0]/g, '')) || 0; }
-
+    
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
         if (val !== '') el.value = parseInt(val, 10).toLocaleString('ru-RU');
@@ -202,7 +188,6 @@
     }
 
     function applyTemplate(type) {
-        if(!isAdmin) return;
         const t = { kitchen: "Кухня МДФ", wardrobe: "Шкаф-купе", office: "Офисный стол" };
         document.getElementById('in-title').value = t[type];
         tg.HapticFeedback.impactOccurred('light');
@@ -215,81 +200,47 @@
         const price = extract(document.getElementById('in-price').value);
         const btn = document.getElementById('save-btn');
 
-        if(!title || !client || price <= 0) { tg.showAlert("Заполните название, имя и цену!"); return; }
+        if(!title || !client || price <= 0) return tg.showAlert("Заполните название и цену!");
 
-        btn.disabled = true; btn.innerText = "⏳ СОХРАНЕНИЕ...";
+        btn.disabled = true; btn.innerText = "⏳...";
         const id = Date.now();
-        
         const newOrder = {
-            id, title, client,
+            id, title, client, price,
             phone: document.getElementById('in-phone').value,
-            price,
             prepay: extract(document.getElementById('in-prepay').value),
             deadline: document.getElementById('in-deadline').value,
             status: 0,
             expenses: []
         };
-
         db.ref('orders/' + id).set(newOrder).then(() => {
             tg.HapticFeedback.notificationOccurred('success');
             document.getElementById('in-title').value = '';
             document.getElementById('in-client').value = '';
             document.getElementById('in-price').value = '';
-            document.getElementById('in-prepay').value = '';
             btn.disabled = false; btn.innerText = "🚀 СОХРАНИТЬ В ОБЛАКО";
             nav('page-list', document.querySelector('.tab-item'));
         });
     }
 
-    // 🧾 ФУНКЦИЯ КОПИРОВАНИЯ ЧЕКА (Только для Админа)
     function copyReceipt(oid) {
         const o = orders.find(x => x.id === oid);
-        const text = `📄 СМЕТА ЗАКАЗА:\n🛠 Проект: ${o.title}\n👤 Клиент: ${o.client}\n-------------------------\n💰 Сумма: ${fMoney(o.price)}\n✅ Аванс: ${fMoney(o.prepay)}\n📉 Остаток: ${fMoney(o.price - o.prepay)}\n-------------------------\n📅 Срок: ${o.deadline || 'Уточняется'}`;
-        
-        // В Telegram WebApp лучше использовать специальный метод, если clipboard недоступен
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(() => {
-                tg.showAlert("Смета скопирована! Вставьте её в чат клиенту.");
-                tg.HapticFeedback.notificationOccurred('success');
-            }).catch(err => {
-                fallbackCopyTextToClipboard(text);
-            });
-        } else {
-            fallbackCopyTextToClipboard(text);
-        }
-    }
-
-    function fallbackCopyTextToClipboard(text) {
-        var textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.position = "fixed";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            tg.showAlert("Смета скопирована! Вставьте её в чат клиенту.");
+        const text = `📄 СМЕТА:\n🛠 ${o.title}\n👤 Клиент: ${o.client}\n-------------------------\n💰 Сумма: ${fMoney(o.price)}\n✅ Аванс: ${fMoney(o.prepay)}\n📉 Остаток: ${fMoney(o.price - o.prepay)}\n-------------------------\n📅 Срок: ${o.deadline || 'Уточняется'}`;
+        navigator.clipboard.writeText(text).then(() => {
+            tg.showAlert("Смета скопирована!");
             tg.HapticFeedback.notificationOccurred('success');
-        } catch (err) {
-            tg.showAlert("Ошибка копирования");
-        }
-        document.body.removeChild(textArea);
+        });
     }
 
     function toggleList(id) { expandedOrders.has(id) ? expandedOrders.delete(id) : expandedOrders.add(id); renderOrders(); }
 
     function toggleBought(oid, eidx) {
         const o = orders.find(x => x.id === oid);
-        if(!o.expenses) return;
         o.expenses[eidx].bought = !o.expenses[eidx].bought;
         db.ref('orders/' + oid).set(o);
         tg.HapticFeedback.selectionChanged();
     }
 
     function addExp(id) {
-        if(!isAdmin) return; // Мастера не могут добавлять расходы, только отмечать галочки
         const name = document.getElementById(`ex-n-${id}`).value;
         const qty = extract(document.getElementById(`ex-q-${id}`).value) || 1;
         const pr = extract(document.getElementById(`ex-p-${id}`).value) || 0;
@@ -298,8 +249,6 @@
         const o = orders.find(x => x.id === id);
         if(!o.expenses) o.expenses = [];
         o.expenses.push({ name, qty, price: pr, cost: qty * pr, bought: false, cat: currentExpCategory });
-        
-        expandedOrders.add(id);
         db.ref('orders/' + id).set(o);
     }
 
@@ -308,24 +257,17 @@
         const search = document.getElementById('main-search').value.toLowerCase();
         container.innerHTML = '';
 
-        if(orders.length === 0) {
-            container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:40px;">Заказов пока нет</div>'; return;
-        }
-
         orders.filter(o => o.title.toLowerCase().includes(search) || o.client.toLowerCase().includes(search)).forEach(o => {
             const isExpanded = expandedOrders.has(o.id);
-            const totalExp = o.expenses ? o.expenses.reduce((s, e) => s + e.cost, 0) : 0;
-            const debt = o.price - o.prepay;
-
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-size:11px; color:var(--hint); font-weight:700;">${o.client} ${o.phone !== '+998 ' && o.phone ? `(${o.phone})` : ''}</div>
+                        <div style="font-size:10px; color:var(--hint); font-weight:700;">${o.client} ${o.phone !== '+998 ' ? o.phone : ''}</div>
                         <div style="font-weight:800; font-size:16px;">${o.title}</div>
                     </div>
-                    <div style="font-size:9px; font-weight:800; background:rgba(0,0,0,0.05); padding:5px 10px; border-radius:20px;">${stages[o.status] || 'В работе'}</div>
+                    <div style="font-size:9px; font-weight:800; background:rgba(0,0,0,0.05); padding:5px 10px; border-radius:20px;">${stages[o.status]}</div>
                 </div>
                 
                 ${isAdmin ? `
@@ -333,41 +275,40 @@
                     <div class="fin-row"><span>СУММА:</span> <b>${fMoney(o.price)}</b></div>
                     <div class="fin-row" style="color:var(--green)"><span>АВАНС:</span> <b>${fMoney(o.prepay)}</b></div>
                     <div class="fin-row" style="color:var(--red); font-weight:700; border-top:1px solid var(--border); padding-top:5px; margin-top:5px;">
-                        <span>ДОЛГ:</span> <b>${fMoney(debt)}</b>
+                        <span>ОСТАТОК:</span> <b>${fMoney(o.price - o.prepay)}</b>
                     </div>
                 </div>
-                <button class="btn btn-outline" onclick="copyReceipt(${o.id})">🧾 Сформировать смету для клиента</button>
-                ` : `<div style="margin-top:10px; font-size:11px; color:var(--orange)">📅 Срок сдачи: <b>${o.deadline || 'Не указан'}</b></div>`}
+                <button class="btn btn-outline" onclick="copyReceipt(${o.id})">🧾 Смета для клиента</button>
+                ` : `<div style="margin-top:10px; font-size:12px;">📅 Срок: <b>${o.deadline || '---'}</b></div>`}
 
                 <div onclick="toggleList(${o.id})" style="font-size:11px; font-weight:700; color:var(--primary); margin-top:15px; cursor:pointer;">
-                    СПИСОК ЗАДАЧ (${o.expenses ? o.expenses.length : 0}) ${isExpanded ? '▲' : '▼'}
+                    СПИСОК РАСХОДОВ (${o.expenses ? o.expenses.length : 0}) ${isExpanded ? '▲' : '▼'}
                 </div>
 
                 <div id="exp-list-${o.id}" style="display:${isExpanded ? 'block' : 'none'}; margin-top:10px;">
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="expense-item ${e.bought ? 'bought' : ''}">
                             <span><span class="cat-tag ${e.cat==='work'?'tag-work':'tag-mat'}">${e.cat==='work'?'РАБ':'МАТ'}</span>${e.name}</span>
-                            <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
                                 ${isAdmin ? `<b>${fMoney(e.cost)}</b>` : ''}
-                                <span onclick="toggleBought(${o.id}, ${i})" style="cursor:pointer; font-size:16px;">${e.bought ? '✅' : '⬜️'}</span>
+                                <span onclick="toggleBought(${o.id}, ${i})" style="cursor:pointer; font-size:18px;">${e.bought ? '✅' : '⬜️'}</span>
                             </div>
                         </div>
-                    `).join('') : '<div style="font-size:11px; opacity:0.5; margin-top:5px;">Задач пока нет</div>'}
+                    `).join('') : '<div style="font-size:11px; opacity:0.5;">Список пуст</div>'}
                     
                     ${isAdmin ? `
-                    <div style="background:rgba(0,0,0,0.02); padding:10px; border-radius:12px; margin-top:10px;">
+                    <div style="background:rgba(0,0,0,0.03); padding:10px; border-radius:12px; margin-top:10px;">
                         <div style="display:flex; gap:10px; margin-bottom:8px;">
-                            <div style="font-size:10px; font-weight:700; color:var(--primary); cursor:pointer;" onclick="currentExpCategory='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5">МАТЕРИАЛ</div>
-                            <div style="font-size:10px; font-weight:700; color:var(--orange); opacity:0.5; cursor:pointer;" onclick="currentExpCategory='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5">ЗАРПЛАТА</div>
+                            <div style="font-size:10px; font-weight:800; color:var(--primary); cursor:pointer;" onclick="currentExpCategory='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.4">МАТЕРИАЛЫ</div>
+                            <div style="font-size:10px; font-weight:800; color:var(--orange); opacity:0.4; cursor:pointer;" onclick="currentExpCategory='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.4">ЗАРПЛАТА</div>
                         </div>
-                        <input type="text" id="ex-n-${o.id}" class="custom-input" placeholder="Что покупаем/платим..." style="padding:10px; font-size:12px;">
+                        <input type="text" id="ex-n-${o.id}" class="custom-input" placeholder="Название..." style="padding:10px; font-size:12px;">
                         <div style="display:flex; gap:5px;">
-                            <input type="text" id="ex-q-${o.id}" class="custom-input" placeholder="Кол-во" style="padding:10px; font-size:12px; flex:1" oninput="formatNumberInput(this)">
-                            <input type="text" id="ex-p-${o.id}" class="custom-input" placeholder="Цена" style="padding:10px; font-size:12px; flex:2" oninput="formatNumberInput(this)">
-                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:0 15px; font-size:16px; font-weight:bold;">+</button>
+                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" placeholder="Кол-во" style="padding:10px; font-size:12px; flex:1" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" placeholder="Цена" style="padding:10px; font-size:12px; flex:2" oninput="formatNumberInput(this)">
+                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:10px; padding:0 15px; font-weight:800;">+</button>
                         </div>
-                    </div>
-                    ` : ''}
+                    </div>` : ''}
                 </div>
             `;
             container.appendChild(card);
@@ -375,7 +316,6 @@
     }
 
     function renderStats() {
-        if(!isAdmin) return;
         let rev = 0, mat = 0, work = 0;
         orders.forEach(o => {
             rev += o.price;
@@ -394,11 +334,7 @@
         if(id === 'page-stats') renderStats();
     }
 
-    function toggleTheme() { 
-        document.body.classList.toggle('dark-mode'); 
-        localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
-    }
-    if(localStorage.getItem('dark-mode') === 'true') document.body.classList.add('dark-mode');
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
 </script>
 </body>
 </html>

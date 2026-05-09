@@ -43,7 +43,7 @@
 
 <header>
     <div class="logo-area">
-        <div class="logo-text">FORMA <span style="opacity: 0.5;">ULTRA5</span></div>
+        <div class="logo-text">FORMA <span style="opacity: 0.5;">ULTRA</span></div>
         <div style="display:flex; gap:15px; align-items:center;">
             <div id="cloud-status" style="font-size:10px; color:var(--red); font-weight:700;">● OFFLINE</div>
             <div onclick="toggleTheme()" style="cursor:pointer; font-size:18px;">🌓</div>
@@ -88,15 +88,16 @@
 </nav>
 
 <script>
-    const firebaseConfig = {
+   const firebaseConfig = {
         apiKey: "AIzaSyBMb2Cf30QffPe3Eo8jJQkRlriMlz7yeHw",
         authDomain: "formacrm-a5ff8.firebaseapp.com",
-        databaseURL: "https://formacrm-a5ff8-default-rtdb.europe-west1.firebasedatabase.app", // <-- ЕВРОПЕЙСКИЙ СЕРВЕР
+        databaseURL: "https://formacrm-a5ff8-default-rtdb.asia-southeast1.firebasedatabase.app", // <-- Вот она, правильная ссылка!
         projectId: "formacrm-a5ff8",
         storageBucket: "formacrm-a5ff8.firebasestorage.app",
         messagingSenderId: "800359503844",
         appId: "1:800359503844:web:3b1fd1bbebb895004bd9f1"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const tg = window.Telegram.WebApp;

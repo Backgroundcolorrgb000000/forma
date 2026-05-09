@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V23</title>
+    <title>FORMA CRM ULTRA V24</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -18,29 +18,40 @@
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
-        .page { display: none !important; padding: 15px; min-height: 85vh; }
+        
+        .page { display: none; padding: 15px; min-height: 85vh; }
         .page.active { display: block !important; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; }
         .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
         .fin-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        
         .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
-        .tab-item.active { color: var(--primary); }
+        .tab-item { flex: 1; display: none; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
+        .tab-item.active { color: var(--primary) !important; }
+        .tab-item.visible { display: flex; }
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
+
         .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 11px; }
+        
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
         .exp-table-row.bought { color: var(--green); opacity: 0.7; }
-        .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
+        
+        .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; display: none; }
+        body.is-admin .edit-icon { display: inline-block; }
+        
         .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
         .deadline-box { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 8px; display: inline-block; margin-top: 5px; }
-        .admin-only { display: none !important; }
-        body.is-admin .admin-only-block { display: inline-block !important; }
+        
+        .admin-only-ui { display: none; }
+        body.is-admin .admin-only-ui { display: block !important; }
+
         .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; }
         .tag-work { background: #f3e5f5; color: #4a148c; }
     </style>
@@ -61,17 +72,17 @@
     </section>
 
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800;">Финансы и Снабжение</h2>
-        <div id="stats-admin-block" class="finances admin-only" style="font-size:16px;">
+        <h2 style="font-weight: 800;">Аналитика и Снабжение</h2>
+        <div class="finances" style="font-size:16px; margin-bottom: 20px;">
             <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
             <div class="fin-row" style="color:#4a148c"><span>Зарплаты:</span> <b id="stat-work">0</b></div>
             <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
-                <span>ЧИСТАЯ ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
+                <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
             <button class="btn btn-shopping" style="margin-top:20px;" onclick="copyGlobalShoppingList()">📦 Копировать ВЕСЬ закуп (все заказы)</button>
         </div>
-        <h3 style="margin-top: 20px;">✅ Готовые заказы (Архив):</h3>
+        <h3>✅ Готовые заказы (Архив):</h3>
         <div id="archive-container"></div>
     </section>
 
@@ -91,9 +102,9 @@
 </main>
 
 <nav class="tab-bar">
-    <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
-    <div id="tab-fin" class="tab-item admin-only" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
-    <div id="tab-add" class="tab-item admin-only" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
+    <div class="tab-item visible active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
+    <div id="tab-fin" class="tab-item" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
+    <div id="tab-add" class="tab-item" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
 </nav>
 
 <script>
@@ -106,12 +117,15 @@
     const tg = window.Telegram.WebApp; tg.expand();
 
     const isAdmin = ADMIN_IDS.includes(tg.initDataUnsafe?.user?.id);
+    
     if(isAdmin) {
         document.body.classList.add('is-admin');
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
-        document.getElementById('stats-admin-block').style.display = 'block';
+        document.getElementById('tab-fin').classList.add('visible');
+        document.getElementById('tab-add').classList.add('visible');
+        document.getElementById('role-badge').innerText = 'ADMIN';
+    } else {
+        document.getElementById('role-badge').innerText = 'MASTER';
     }
-    document.getElementById('role-badge').innerText = isAdmin ? 'ADMIN' : 'MASTER';
 
     let orders = [];
     let expanded = new Set();
@@ -154,7 +168,7 @@
         el.classList.add('active');
     }
 
-    function editField(id, field, title, isPhone) {
+    function editField(id, field, title) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id === id);
         const val = prompt(title, o[field] || '');
@@ -177,6 +191,15 @@
             o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
             db.ref(`orders/${oid}/expenses`).set(o.expenses);
         }
+    }
+
+    function getDeadlineStyle(dateStr) {
+        if(!dateStr) return { label: 'Нет даты', color: '#ccc' };
+        const d = new Date(dateStr);
+        const diff = (d - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24);
+        if(diff < 0) return { label: 'ПРОСРОЧЕНО!', color: 'var(--red)' };
+        if(diff <= 3) return { label: 'СРОЧНО!', color: 'var(--orange)' };
+        return { label: d.toLocaleDateString(), color: 'var(--hint)' };
     }
 
     function sendIndividualShoppingList(id) {
@@ -205,6 +228,7 @@
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
         if(!title || price <= 0) return tg.showAlert("Заполните название и цену!");
+        
         const id = Date.now();
         db.ref('orders/' + id).set({
             id, title, price,
@@ -213,9 +237,7 @@
             loc: document.getElementById('in-loc').value,
             deadline: document.getElementById('in-deadline').value,
             prepay: extract(document.getElementById('in-prepay').value),
-            status: 0, 
-            mName: '', mPhone: '',
-            expenses: []
+            status: 0, mName: '', mPhone: '', expenses: []
         }).then(() => {
             ['in-title', 'in-client', 'in-phone', 'in-loc', 'in-deadline', 'in-price', 'in-prepay'].forEach(k => document.getElementById(k).value = '');
             nav('page-list', document.querySelectorAll('.tab-item')[0]);
@@ -248,18 +270,21 @@
         orders.filter(o => (o.title + (o.client||'') + (o.loc || '')).toLowerCase().includes(query)).forEach(o => {
             const isExp = expanded.has(o.id);
             const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
+            const ds = getDeadlineStyle(o.deadline);
+            
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)" style="display:none">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)" style="display:none">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)" style="display:none">✏️</span></div>
+                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Название:')">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:')">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
                         <div style="font-size:11px; margin-top:5px; padding:4px 8px; background:rgba(0,0,0,0.03); border-radius:8px;">
-                            🛠 <b>Мастер:</b> ${o.mName || 'не назначен'} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:', false)" style="display:none">✏️</span><br>
-                            📞 <b>Тел. мастера:</b> ${o.mPhone || '---'} <span class="admin-only-block edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:', false)" style="display:none">✏️</span>
+                            🛠 <b>Мастер:</b> ${o.mName || 'не назначен'} <span class="edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:')">✏️</span><br>
+                            📞 <b>Тел. мастера:</b> ${o.mPhone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:')">✏️</span>
                         </div>
+                        <div class="deadline-box" style="background:${ds.color}15; color:${ds.color}">📅 ${ds.label}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
                         ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
@@ -270,7 +295,7 @@
                     <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editFinance(${o.id}, 'price', 'Общая цена:')">${fMoney(o.price)} ✏️</b></div>
                     <div class="info-grid">
                         <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);" onclick="editFinance(${o.id}, 'prepay', 'Аванс:')">${fMoney(o.prepay)} ✏️</b></div>
-                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
+                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ КЛИЕНТА:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
                         <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>

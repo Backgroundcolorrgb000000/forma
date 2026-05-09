@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V13</title>
+    <title>FORMA CRM PRO V14</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -148,9 +148,24 @@
 
     function editField(id, field, title, isNum) {
         if(!isAdmin) return;
-        const current = orders.find(o => o.id === id)[field];
-        const val = prompt(title, current);
-        if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
+        setTimeout(() => {
+            const current = orders.find(o => o.id === id)[field];
+            const val = prompt(title, current);
+            if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
+        }, 100);
+    }
+
+    function editExpense(oid, eidx, field, title, isNum) {
+        if(!isAdmin) return;
+        setTimeout(() => {
+            const o = orders.find(x => x.id === oid);
+            const val = prompt(title, o.expenses[eidx][field]);
+            if(val !== null) {
+                o.expenses[eidx][field] = isNum ? extract(val) : val;
+                o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+                db.ref(`orders/${oid}/expenses`).set(o.expenses);
+            }
+        }, 100);
     }
 
     function changeStatus(id) {
@@ -172,10 +187,8 @@
         if (!o.expenses) return tg.showAlert("Список пуст");
         const toBuy = o.expenses.filter(e => !e.bought);
         if (toBuy.length === 0) return tg.showAlert("Все куплено");
-        
         let text = `📦 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
         toBuy.forEach((e, i) => text += `${i+1}. ${e.name} (${e.qty} шт)\n`);
-        
         navigator.clipboard.writeText(text).then(() => {
             tg.showAlert("Список скопирован");
             tg.HapticFeedback.notificationOccurred('success');
@@ -199,14 +212,19 @@
     }
 
     function addExp(id) {
-        const n = document.getElementById(`ex-n-${id}`).value;
-        const q = extract(document.getElementById(`ex-q-${id}`).value) || 1;
-        const p = extract(document.getElementById(`ex-p-${id}`).value);
+        const nInput = document.getElementById(`ex-n-${id}`);
+        const qInput = document.getElementById(`ex-q-${id}`);
+        const pInput = document.getElementById(`ex-p-${id}`);
+        const n = nInput.value;
+        const q = extract(qInput.value) || 1;
+        const p = extract(pInput.value);
         if(!n || p <= 0) return;
         const o = orders.find(x => x.id === id);
         if(!o.expenses) o.expenses = [];
         o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false });
-        db.ref(`orders/${id}/expenses`).set(o.expenses);
+        db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
+            nInput.value = ''; qInput.value = ''; pInput.value = '';
+        });
     }
 
     function renderOrders() {
@@ -223,7 +241,9 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
                         <div style="font-weight:800; font-size:17px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
+                        ${o.link ? `<div style="font-size:11px; margin-top:3px;"><a href="${o.link}" target="_blank">🔗 Дизайн/Проект</a> <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка:', false)">✏️</span></div>` : `<div onclick="editField(${o.id}, 'link', 'Добавить ссылку:', false)" style="font-size:10px; color:var(--primary); cursor:pointer; margin-top:3px;">+ Дизайн/Проект</div>`}
                     </div>
                     <div class="status-badge" onclick="changeStatus(${o.id})">${STAGES[o.status || 0]}</div>
                 </div>
@@ -253,7 +273,10 @@
                     </div>
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="exp-table-row ${e.bought?'bought':''}">
-                            <div>${e.name}</div><div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div><div style="font-weight:700;">${Math.round(e.cost).toLocaleString()}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'name', 'Название:', false)">${e.name}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'qty', 'Кол-во:', true)">${e.qty}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'price', 'Цена:', true)">${Math.round(e.price).toLocaleString()}</div>
+                            <div style="font-weight:700;">${Math.round(e.cost).toLocaleString()}</div>
                             <div onclick="db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})" style="cursor:pointer; text-align:right;">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}

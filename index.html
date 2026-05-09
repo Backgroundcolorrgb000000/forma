@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V24</title>
+    <title>FORMA CRM ULTRA V25</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -12,6 +12,7 @@
         :root { 
             --bg: #f4f6f8; --card: #ffffff; --primary: #007bff; --text: #333; --hint: #888; 
             --green: #198754; --soft-green: #2ecc71; --red: #dc3545; --orange: #fd7e14; --border: rgba(0,0,0,0.1);
+            --purple: #6f42c1;
         }
         body.dark-mode { --bg: #121212; --card: #1e1e1e; --text: #f1f1f1; --hint: #aaa; --border: rgba(255,255,255,0.1); }
         body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 100px; transition: 0.3s; }
@@ -38,6 +39,7 @@
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 11px; }
+        .btn-quick { background: var(--purple); color: white; margin-top: 10px; font-size: 10px; padding: 8px; width: 100%; }
         
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
@@ -202,6 +204,45 @@
         return { label: d.toLocaleDateString(), color: 'var(--hint)' };
     }
 
+    // НОВАЯ ФУНКЦИЯ УМНОГО ИМПОРТА
+    function quickImport(oid) {
+        if(!isAdmin) return;
+        const text = prompt("Вставьте текст (Напр: Петли 30 шт, Скотч 5, Клей 3шт):");
+        if (!text) return;
+        
+        const lines = text.split(/[\n,;]/);
+        const o = orders.find(x => x.id === oid);
+        if(!o.expenses) o.expenses = [];
+        
+        let count = 0;
+        lines.forEach(line => {
+            const raw = line.trim();
+            if (raw.length < 2) return;
+            
+            // Ищем название и число
+            const match = raw.match(/(.*?)\s*(\d+)\s*(?:шт|ед|гр|комп|пач)?/i);
+            if (match) {
+                o.expenses.push({ 
+                    name: match[1].trim() || "Без названия", 
+                    qty: parseInt(match[2]), 
+                    price: 0, cost: 0, bought: false, cat: 'mat' 
+                });
+                count++;
+            } else {
+                // Если число не найдено, берем просто как название с кол-вом 1
+                o.expenses.push({ 
+                    name: raw, qty: 1, 
+                    price: 0, cost: 0, bought: false, cat: 'mat' 
+                });
+                count++;
+            }
+        });
+        
+        db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
+            tg.showAlert(`Добавлено позиций: ${count}. Проставьте цены вручную.`);
+        });
+    }
+
     function sendIndividualShoppingList(id) {
         const o = orders.find(x => x.id === id);
         const toBuy = o.expenses ? o.expenses.filter(e => !e.bought && e.cat !== 'work') : [];
@@ -327,6 +368,7 @@
                             <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2; font-size:12px;" placeholder="Цена" oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:40px;">+</button>
                         </div>
+                        <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод из текста</button>
                         <button class="btn btn-shopping" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп заказа</button>
                     </div>` : ''}
                 </div>

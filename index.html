@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA CLOUD</title>
+    <title>FORMA CRM PRO CLOUD</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -20,32 +20,47 @@
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 20px; color: var(--primary); }
+        
         .search-container { background: rgba(0,0,0,0.05); border-radius: 12px; display: flex; align-items: center; padding: 8px 12px; }
         .search-input { background: none; border: none; color: var(--text); width: 100%; outline: none; font-size: 14px; }
+        
         .page { display: none; padding: 15px; animation: slideUp 0.3s; }
         .page.active { display: block; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
+        
         .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
+        body.dark-mode .finances { background: rgba(255,255,255,0.03); }
         .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
-        .expense-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 8px 6px; font-size: 12px; border-radius: 8px; }
-        .expense-item.bought { background-color: #e8f5e9; color: var(--green) !important; }
+
+        .expense-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 8px 6px; font-size: 12px; border-radius: 8px; margin-bottom: 2px; }
+        .expense-item.bought { background-color: rgba(25, 135, 84, 0.15); color: var(--green) !important; }
+        
+        .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; margin-right: 5px; font-weight: 900; }
+        .tag-mat { background: #e3f2fd; color: #0d47a1; }
+        .tag-work { background: #f3e5f5; color: #4a148c; }
+
         .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; padding: 10px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
         .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; }
         .tab-item.active { color: var(--primary); }
         .tab-label { font-size: 10px; font-weight: 600; margin-top: 4px; }
+
         .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; }
+        .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; }
         .btn-primary { background: var(--primary); color: white; }
+        
+        .template-box { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
+        .template-item { background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo-area">
-        <div class="logo-text">FORMA <span style="opacity: 0.5;">ULTRA</span></div>
+        <div class="logo-text">FORMA <span style="opacity: 0.5;">PRO CLOUD</span></div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <div id="cloud-status" style="font-size:10px; color:var(--red); font-weight:700;">● OFFLINE</div>
+            <div id="cloud-status" style="font-size:10px; color:var(--red); font-weight:700;">● ОЖИДАНИЕ...</div>
             <div onclick="toggleTheme()" style="cursor:pointer; font-size:18px;">🌓</div>
         </div>
     </div>
@@ -62,21 +77,30 @@
     <section id="page-stats" class="page">
         <h2 style="font-weight: 800;">Аналитика</h2>
         <div class="finances" style="font-size:16px;">
-            <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
+            <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
+            <div class="fin-row"><span>Материалы:</span> <b id="stat-mat" style="color:var(--orange)">0</b></div>
+            <div class="fin-row"><span>Зарплаты:</span> <b id="stat-work" style="color:var(--orange)">0</b></div>
             <div class="fin-row" style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px; color:var(--green); font-size:20px;">
-                <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
+                <span>ЧИСТАЯ ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
         </div>
     </section>
 
     <section id="page-add" class="page">
         <h2 style="font-weight: 800;">Новый проект</h2>
-        <input type="text" id="in-title" class="custom-input" placeholder="Изделие (Кухня, Шкаф...)">
-        <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <div style="display:flex; gap:10px;">
-            <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Сумма" style="flex:1" oninput="formatInput(this)">
-            <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" style="flex:1" oninput="formatInput(this)">
+        <div class="template-box">
+            <div class="template-item" onclick="applyTemplate('kitchen')">🍳 Кухня</div>
+            <div class="template-item" onclick="applyTemplate('wardrobe')">👗 Шкаф</div>
+            <div class="template-item" onclick="applyTemplate('office')">💻 Стол</div>
         </div>
+        <input type="text" id="in-title" class="custom-input" placeholder="Название изделия">
+        <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
+        <input type="tel" id="in-phone" class="custom-input" value="+998 " oninput="applyPhoneMask(event)">
+        <div style="display:flex; gap:10px;">
+            <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Сумма" style="flex:1" oninput="formatNumberInput(this)">
+            <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" style="flex:1" oninput="formatNumberInput(this)">
+        </div>
+        <input type="date" id="in-deadline" class="custom-input">
         <button class="btn btn-primary" id="save-btn" onclick="createOrder()">🚀 СОХРАНИТЬ В ОБЛАКО</button>
     </section>
 </main>
@@ -88,10 +112,11 @@
 </nav>
 
 <script>
-   const firebaseConfig = {
+    // 🟢 Идеальный конфиг (с азиатским сервером)
+    const firebaseConfig = {
         apiKey: "AIzaSyBMb2Cf30QffPe3Eo8jJQkRlriMlz7yeHw",
         authDomain: "formacrm-a5ff8.firebaseapp.com",
-        databaseURL: "https://formacrm-a5ff8-default-rtdb.asia-southeast1.firebasedatabase.app", // <-- Вот она, правильная ссылка!
+        databaseURL: "https://formacrm-a5ff8-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "formacrm-a5ff8",
         storageBucket: "formacrm-a5ff8.firebasestorage.app",
         messagingSenderId: "800359503844",
@@ -104,33 +129,47 @@
     tg.expand();
 
     let orders = [];
+    let expandedOrders = new Set();
+    let currentExpCategory = 'mat';
+    const stages = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Сдан"];
 
-    // Разделение разрядов при вводе
-    function formatInput(el) {
+    // Индикатор подключения
+    db.ref('.info/connected').on('value', function(snap) {
+        const el = document.getElementById('cloud-status');
+        if (snap.val() === true) {
+            el.innerText = '● CLOUD SYNCED'; el.style.color = 'var(--green)';
+        } else {
+            el.innerText = '● OFFLINE'; el.style.color = 'var(--red)';
+        }
+    });
+
+    // Синхронизация данных
+    db.ref('orders').on('value', (snapshot) => {
+        const data = snapshot.val();
+        orders = data ? Object.values(data).reverse() : [];
+        renderOrders();
+        renderStats();
+    });
+
+    function formatSpaces(n) { return Math.round(n || 0).toLocaleString('ru-RU'); }
+    function fMoney(n) { return formatSpaces(n) + " сум"; }
+    function extract(s) { return parseFloat(String(s).replace(/[\s\u00A0]/g, '')) || 0; }
+
+    function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
         if (val !== '') el.value = parseInt(val, 10).toLocaleString('ru-RU');
     }
 
-    function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
-    function extract(s) { return parseFloat(String(s).replace(/[\s\u00A0]/g, '')) || 0; }
+    function applyPhoneMask(e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
+        e.target.value = !x[1] ? '+998 ' : !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
+    }
 
-    // Загрузка данных
-    db.ref('orders').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            // Превращаем объект в массив и сортируем: новые сверху
-            orders = Object.keys(data).map(key => data[key]).reverse();
-        } else {
-            orders = [];
-        }
-        document.getElementById('cloud-status').innerText = '● CLOUD SYNCED';
-        document.getElementById('cloud-status').style.color = 'var(--green)';
-        renderOrders();
-        updateStats();
-    }, (error) => {
-        console.error(error);
-        tg.showAlert("Ошибка базы: " + error.message);
-    });
+    function applyTemplate(type) {
+        const t = { kitchen: "Кухня МДФ", wardrobe: "Шкаф-купе", office: "Офисный стол" };
+        document.getElementById('in-title').value = t[type];
+        tg.HapticFeedback.impactOccurred('light');
+    }
 
     function createOrder() {
         const title = document.getElementById('in-title').value;
@@ -138,39 +177,54 @@
         const price = extract(document.getElementById('in-price').value);
         const btn = document.getElementById('save-btn');
 
-        if(!title || !client || price <= 0) {
-            tg.showAlert("Заполните название, имя и цену!");
-            return;
-        }
+        if(!title || !client || price <= 0) { tg.showAlert("Заполните название, имя и цену!"); return; }
 
-        btn.disabled = true;
-        btn.innerText = "⏳ СОХРАНЕНИЕ...";
-
+        btn.disabled = true; btn.innerText = "⏳ СОХРАНЕНИЕ...";
         const id = Date.now();
+        
         const newOrder = {
             id, title, client,
+            phone: document.getElementById('in-phone').value,
             price,
             prepay: extract(document.getElementById('in-prepay').value),
+            deadline: document.getElementById('in-deadline').value,
             status: 0,
-            date: new Date().toLocaleDateString('ru-RU')
+            expenses: []
         };
 
         db.ref('orders/' + id).set(newOrder).then(() => {
             tg.HapticFeedback.notificationOccurred('success');
-            // Очистка полей
             document.getElementById('in-title').value = '';
             document.getElementById('in-client').value = '';
             document.getElementById('in-price').value = '';
             document.getElementById('in-prepay').value = '';
-            btn.disabled = false;
-            btn.innerText = "🚀 СОХРАНИТЬ В ОБЛАКО";
-            // Переход на список
+            btn.disabled = false; btn.innerText = "🚀 СОХРАНИТЬ В ОБЛАКО";
             nav('page-list', document.querySelector('.tab-item'));
-        }).catch((e) => {
-            tg.showAlert("Ошибка сохранения: " + e.message);
-            btn.disabled = false;
-            btn.innerText = "🚀 СОХРАНИТЬ В ОБЛАКО";
         });
+    }
+
+    function toggleList(id) { expandedOrders.has(id) ? expandedOrders.delete(id) : expandedOrders.add(id); renderOrders(); }
+
+    function toggleBought(oid, eidx) {
+        const o = orders.find(x => x.id === oid);
+        if(!o.expenses) return;
+        o.expenses[eidx].bought = !o.expenses[eidx].bought;
+        db.ref('orders/' + oid).set(o);
+        tg.HapticFeedback.selectionChanged();
+    }
+
+    function addExp(id) {
+        const name = document.getElementById(`ex-n-${id}`).value;
+        const qty = extract(document.getElementById(`ex-q-${id}`).value) || 1;
+        const pr = extract(document.getElementById(`ex-p-${id}`).value) || 0;
+        if(!name) return;
+
+        const o = orders.find(x => x.id === id);
+        if(!o.expenses) o.expenses = [];
+        o.expenses.push({ name, qty, price: pr, cost: qty * pr, bought: false, cat: currentExpCategory });
+        
+        expandedOrders.add(id);
+        db.ref('orders/' + id).set(o);
     }
 
     function renderOrders() {
@@ -178,46 +232,91 @@
         const search = document.getElementById('main-search').value.toLowerCase();
         container.innerHTML = '';
 
-        if (orders.length === 0) {
-            container.innerHTML = '<div style="text-align:center; margin-top:50px; opacity:0.5;">Список пуст</div>';
-            return;
+        if(orders.length === 0) {
+            container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:40px;">Заказов пока нет</div>'; return;
         }
 
         orders.filter(o => o.title.toLowerCase().includes(search) || o.client.toLowerCase().includes(search)).forEach(o => {
+            const isExpanded = expandedOrders.has(o.id);
+            const totalExp = o.expenses ? o.expenses.reduce((s, e) => s + e.cost, 0) : 0;
+            const debt = o.price - o.prepay;
+
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-size:10px; color:var(--hint); font-weight:700;">${o.client}</div>
+                        <div style="font-size:11px; color:var(--hint); font-weight:700;">${o.client} ${o.phone !== '+998 ' ? `(${o.phone})` : ''}</div>
                         <div style="font-weight:800; font-size:16px;">${o.title}</div>
                     </div>
-                    <div style="font-size:10px; color:var(--hint)">${o.date || ''}</div>
+                    <div style="font-size:9px; font-weight:800; background:rgba(0,0,0,0.05); padding:5px 10px; border-radius:20px;">${stages[o.status]}</div>
                 </div>
+                
                 <div class="finances">
                     <div class="fin-row"><span>СУММА:</span> <b>${fMoney(o.price)}</b></div>
                     <div class="fin-row" style="color:var(--green)"><span>АВАНС:</span> <b>${fMoney(o.prepay)}</b></div>
+                    <div class="fin-row" style="color:var(--red); font-weight:700; border-top:1px solid var(--border); padding-top:5px; margin-top:5px;">
+                        <span>ДОЛГ:</span> <b>${fMoney(debt)}</b>
+                    </div>
+                </div>
+
+                <div onclick="toggleList(${o.id})" style="font-size:11px; font-weight:700; color:var(--primary); margin-top:15px; cursor:pointer;">
+                    РАСХОДЫ (${o.expenses ? o.expenses.length : 0}) ${isExpanded ? '▲' : '▼'}
+                </div>
+
+                <div id="exp-list-${o.id}" style="display:${isExpanded ? 'block' : 'none'}; margin-top:10px;">
+                    ${o.expenses ? o.expenses.map((e, i) => `
+                        <div class="expense-item ${e.bought ? 'bought' : ''}">
+                            <span><span class="cat-tag ${e.cat==='work'?'tag-work':'tag-mat'}">${e.cat==='work'?'РАБ':'МАТ'}</span>${e.name}</span>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <b>${fMoney(e.cost)}</b>
+                                <span onclick="toggleBought(${o.id}, ${i})" style="cursor:pointer; font-size:16px;">${e.bought ? '✅' : '⬜️'}</span>
+                            </div>
+                        </div>
+                    `).join('') : ''}
+                    
+                    <div style="background:rgba(0,0,0,0.02); padding:10px; border-radius:12px; margin-top:10px;">
+                        <div style="display:flex; gap:10px; margin-bottom:8px;">
+                            <div style="font-size:10px; font-weight:700; color:var(--primary); cursor:pointer;" onclick="currentExpCategory='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5">МАТЕРИАЛ</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--orange); opacity:0.5; cursor:pointer;" onclick="currentExpCategory='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5">ЗАРПЛАТА</div>
+                        </div>
+                        <input type="text" id="ex-n-${o.id}" class="custom-input" placeholder="Что покупаем/платим..." style="padding:10px; font-size:12px;">
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="ex-q-${o.id}" class="custom-input" placeholder="Кол-во" style="padding:10px; font-size:12px; flex:1" oninput="formatNumberInput(this)">
+                            <input type="text" id="ex-p-${o.id}" class="custom-input" placeholder="Цена" style="padding:10px; font-size:12px; flex:2" oninput="formatNumberInput(this)">
+                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:0 15px; font-size:16px; font-weight:bold;">+</button>
+                        </div>
+                    </div>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    function updateStats() {
-        let rev = 0;
-        orders.forEach(o => rev += o.price);
+    function renderStats() {
+        let rev = 0, mat = 0, work = 0;
+        orders.forEach(o => {
+            rev += o.price;
+            if(o.expenses) o.expenses.forEach(e => { if(e.cat === 'work') work += e.cost; else mat += e.cost; });
+        });
         document.getElementById('stat-rev').innerText = fMoney(rev);
-        document.getElementById('stat-profit').innerText = fMoney(rev); // В этой версии прибыль = выручка
+        document.getElementById('stat-mat').innerText = fMoney(mat);
+        document.getElementById('stat-work').innerText = fMoney(work);
+        document.getElementById('stat-profit').innerText = fMoney(rev - mat - work);
     }
 
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
+        document.getElementById(id).classList.add('active'); el.classList.add('active');
+        if(id === 'page-stats') renderStats();
     }
 
-    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+    function toggleTheme() { 
+        document.body.classList.toggle('dark-mode'); 
+        localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+    }
+    if(localStorage.getItem('dark-mode') === 'true') document.body.classList.add('dark-mode');
 </script>
 </body>
 </html>

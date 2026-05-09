@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V16</title>
+    <title>FORMA CRM PRO V17</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -38,6 +38,7 @@
         .exp-table-row.bought { color: var(--green); opacity: 0.7; }
         .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
         .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
+        .status-select:disabled { cursor: default; opacity: 0.8; border-style: dashed; }
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
     </style>
@@ -59,7 +60,7 @@
 
     <section id="page-stats" class="page">
         <h2 style="font-weight: 800;">Финансы и Архив</h2>
-        <div class="finances" style="font-size:16px;">
+        <div class="finances admin-only" style="font-size:16px;">
             <div class="fin-row"><span>Общая касса:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Все расходы:</span> <b id="stat-expenses">0</b></div>
             <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
@@ -143,10 +144,12 @@
     }
 
     function changeStatus(id, newStatus) {
+        if(!isAdmin) return;
         db.ref(`orders/${id}/status`).set(parseInt(newStatus));
     }
 
     function sendShoppingList(id) {
+        if(!isAdmin) return;
         const o = orders.find(x => x.id === id);
         if (!o.expenses) return tg.showAlert("Список пуст");
         const toBuy = o.expenses.filter(e => !e.bought);
@@ -159,7 +162,13 @@
         });
     }
 
+    function toggleBought(oid, eidx, currentStatus) {
+        if(!isAdmin) return;
+        db.ref(`orders/${oid}/expenses/${eidx}/bought`).set(!currentStatus);
+    }
+
     function createOrder() {
+        if(!isAdmin) return;
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
         if(!title || price <= 0) return;
@@ -180,6 +189,7 @@
     }
 
     function addExp(id) {
+        if(!isAdmin) return;
         const nInput = document.getElementById(`ex-n-${id}`);
         const qInput = document.getElementById(`ex-q-${id}`);
         const pInput = document.getElementById(`ex-p-${id}`);
@@ -215,7 +225,7 @@
                         <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
                         <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} ${o.locLink ? `<a href="${o.locLink}" target="_blank">📍</a>` : ''} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span> <span class="admin-only edit-icon" onclick="editField(${o.id}, 'locLink', 'Гео:', false)">🔗</span></div>
                     </div>
-                    <select class="status-select" onchange="changeStatus(${o.id}, this.value)">
+                    <select class="status-select" onchange="changeStatus(${o.id}, this.value)" ${!isAdmin ? 'disabled' : ''}>
                         ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
                 </div>
@@ -238,7 +248,7 @@
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="exp-table-row ${e.bought?'bought':''}">
                             <div>${e.name}</div><div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div><div>${Math.round(e.cost).toLocaleString()}</div>
-                            <div onclick="db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})" style="cursor:pointer; text-align:right;">${e.bought?'✅':'⬜'}</div>
+                            <div onclick="toggleBought(${o.id}, ${i}, ${e.bought})" style="${isAdmin ? 'cursor:pointer' : ''}; text-align:right;">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}
                     ${isAdmin ? `

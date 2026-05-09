@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V25</title>
+    <title>FORMA CRM ULTRA V26</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -20,7 +20,7 @@
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
         
-        .page { display: none; padding: 15px; min-height: 85vh; }
+        .page { display: none !important; padding: 15px; min-height: 85vh; }
         .page.active { display: block !important; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -92,7 +92,7 @@
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <input type="tel" id="in-phone" class="custom-input" placeholder="Телефон клиента (998...)" maxlength="16" oninput="formatPhone(this)">
+        <input type="tel" id="in-phone" class="custom-input" placeholder="998 99 000 00 00" maxlength="16" oninput="applyPhoneMask(this)">
         <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
         <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дедлайн (дата сдачи)">
         <div style="display:flex; gap:10px;">
@@ -147,12 +147,13 @@
 
     function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
     function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; }
+    
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
         el.value = val ? parseInt(val).toLocaleString('ru-RU') : '';
     }
 
-    function formatPhone(el) {
+    function applyPhoneMask(el) {
         let val = el.value.replace(/\D/g, '');
         let masked = '';
         if (val.length > 0) masked += val.substring(0, 3);
@@ -204,43 +205,37 @@
         return { label: d.toLocaleDateString(), color: 'var(--hint)' };
     }
 
-    // НОВАЯ ФУНКЦИЯ УМНОГО ИМПОРТА
     function quickImport(oid) {
         if(!isAdmin) return;
-        const text = prompt("Вставьте текст (Напр: Петли 30 шт, Скотч 5, Клей 3шт):");
+        const text = prompt("Вставьте текст (Напр: Петли 30 шт Скотч 5 Клей 3):");
         if (!text) return;
         
-        const lines = text.split(/[\n,;]/);
+        // Регулярное выражение ищет Пары: Текст + Число
+        const regex = /([a-zа-яё\s-]+?)\s*[:\s-]*\s*(\d+)\s*(?:шт|ед|гр|комп|пач)?/gi;
         const o = orders.find(x => x.id === oid);
         if(!o.expenses) o.expenses = [];
         
+        let match;
         let count = 0;
-        lines.forEach(line => {
-            const raw = line.trim();
-            if (raw.length < 2) return;
-            
-            // Ищем название и число
-            const match = raw.match(/(.*?)\s*(\d+)\s*(?:шт|ед|гр|комп|пач)?/i);
-            if (match) {
+        while ((match = regex.exec(text)) !== null) {
+            let name = match[1].trim().replace(/^[\n\s,]+|[\n\s,]+$/g, '');
+            let qty = parseInt(match[2]);
+            if (name.length > 1) {
                 o.expenses.push({ 
-                    name: match[1].trim() || "Без названия", 
-                    qty: parseInt(match[2]), 
-                    price: 0, cost: 0, bought: false, cat: 'mat' 
-                });
-                count++;
-            } else {
-                // Если число не найдено, берем просто как название с кол-вом 1
-                o.expenses.push({ 
-                    name: raw, qty: 1, 
+                    name: name, qty: qty, 
                     price: 0, cost: 0, bought: false, cat: 'mat' 
                 });
                 count++;
             }
-        });
+        }
         
-        db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
-            tg.showAlert(`Добавлено позиций: ${count}. Проставьте цены вручную.`);
-        });
+        if (count > 0) {
+            db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
+                tg.showAlert(`Добавлено поз: ${count}. Проставьте цены!`);
+            });
+        } else {
+            tg.showAlert("Данные не распознаны. Используйте формат: Название Число");
+        }
     }
 
     function sendIndividualShoppingList(id) {

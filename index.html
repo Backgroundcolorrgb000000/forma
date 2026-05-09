@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V19</title>
+    <title>FORMA CRM ULTRA V20</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -31,6 +31,7 @@
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
         .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 11px; }
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -139,6 +140,18 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
     }
 
+    // НОВАЯ ФУНКЦИЯ ПРАВКИ РАСХОДА
+    function editExpense(oid, eidx, field, title, isNum) {
+        if(!isAdmin) return;
+        const o = orders.find(x => x.id === oid);
+        const val = prompt(title, o.expenses[eidx][field]);
+        if(val !== null) {
+            o.expenses[eidx][field] = isNum ? extract(val) : val;
+            o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+            db.ref(`orders/${oid}/expenses`).set(o.expenses);
+        }
+    }
+
     function getDeadlineStyle(dateStr) {
         if(!dateStr) return { label: 'Нет даты', color: '#ccc' };
         const d = new Date(dateStr);
@@ -219,7 +232,8 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
                         <div style="font-weight:800; font-size:17px;">${o.title} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📍 ${o.loc || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="admin-only edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
                         <div class="deadline-box" style="background:${ds.color}15; color:${ds.color}">📅 ${ds.label}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
@@ -241,9 +255,13 @@
                     📦 РАСХОДЫ/ЗП (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
                 </div>
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
+                    <div class="exp-table-row header"><div>Наименование</div><div>Кол</div><div>Цена</div><div>Итого</div><div></div></div>
                     ${o.expenses ? o.expenses.map((e, i) => `
                         <div class="exp-table-row ${e.bought?'bought':''}">
-                            <div>${e.cat==='work'?'<span class="cat-tag tag-work">ЗП</span>':''}${e.name}</div><div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div><div>${Math.round(e.cost).toLocaleString()}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'name', 'Наименование:', false)">${e.cat==='work'?'<span class="cat-tag tag-work">ЗП</span>':''}${e.name}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'qty', 'Количество:', true)">${e.qty}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'price', 'Цена:', true)">${Math.round(e.price).toLocaleString()}</div>
+                            <div>${Math.round(e.cost).toLocaleString()}</div>
                             <div onclick="${isAdmin ? `db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})` : ''}" style="text-align:right;">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}

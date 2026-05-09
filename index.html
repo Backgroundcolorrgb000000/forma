@@ -3,259 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA | Учет заказов</title>
+    <title>FORMA CRM ULTRA</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f4f6f8; --card: #ffffff; --primary: #007bff; --text: #333; --hint: #888; --green: #28a745; --red: #dc3545; }
-        body { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 80px; }
-        
-        header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .logo { font-weight: 700; font-size: 18px; color: var(--primary); }
-        
-        .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
+        :root {
+            --tg-bg: var(--tg-theme-bg-color, #f4f6f8);
+            --tg-card: var(--tg-theme-secondary-bg-color, #ffffff);
+            --tg-text: var(--tg-theme-text-color, #333333);
+            --tg-hint: var(--tg-theme-hint-color, #888888);
+            --tg-link: var(--tg-theme-link-color, #007bff);
+            --accent: #007bff;
+            --green: #198754;
+            --red: #dc3545;
+            --orange: #fd7e14;
+        }
+
+        body {
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+        }
+
+        /* Красивый Blur-эффект для шапки */
+        header {
+            background: rgba(var(--tg-card), 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: var(--accent); }
+
+        /* Поиск в стиле iOS */
+        .search-container {
+            background: rgba(0,0,0,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+        }
+        .search-input {
+            background: none;
+            border: none;
+            color: var(--tg-text);
+            width: 100%;
+            margin-left: 8px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .page { display: none; padding: 15px; animation: slideUp 0.3s ease-out; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: var(--hint); }
-        .custom-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; font-size: 14px; box-sizing: border-box; background: var(--card); }
-        
-        .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; font-family: inherit; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:active { background: #0056b3; }
-        .btn-success { background: var(--green); color: white; margin-top: 10px; }
+        /* Карточка заказа PREMIUM */
+        .order-card {
+            background: var(--tg-card);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .order-card:active { transform: scale(0.98); }
 
-        /* Карточки заказов */
-        .order-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .order-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        .order-title { font-weight: 700; font-size: 16px; }
-        .order-date { font-size: 11px; color: var(--hint); }
-        
-        .order-info { font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
-        .order-info span { font-weight: 600; }
-        
-        .finances { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
-        .fin-total { font-weight: 700; color: var(--primary); }
-        .fin-expense { color: var(--red); }
-        .fin-profit { font-weight: 700; color: var(--green); border-top: 1px solid #ddd; padding-top: 5px; margin-top: 5px; }
+        /* Полоса прогресса оплаты */
+        .payment-progress {
+            height: 4px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 2px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        .progress-bar { height: 100%; background: var(--green); transition: width 0.5s; }
 
-        .expense-list { margin-top: 10px; font-size: 12px; }
-        .expense-item { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 4px 0; }
+        .status-pill {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-        .expense-form { display: flex; gap: 10px; margin-top: 10px; }
-        .expense-form input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; }
-        .expense-form button { background: var(--primary); color: white; border: none; border-radius: 6px; padding: 0 15px; font-weight: bold; cursor: pointer; }
+        /* Сетка для цифр */
+        .grid-fin {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .fin-item {
+            background: rgba(0,0,0,0.02);
+            padding: 10px;
+            border-radius: 12px;
+        }
+        .fin-label { font-size: 9px; color: var(--tg-hint); font-weight: 600; margin-bottom: 4px; }
+        .fin-value { font-size: 13px; font-weight: 700; }
 
-        /* Навигация */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .nav-item { flex: 1; text-align: center; padding: 15px 0; color: var(--hint); font-size: 12px; font-weight: 600; cursor: pointer; }
-        .nav-item.active { color: var(--primary); border-top: 2px solid var(--primary); }
+        /* Навигация как в нативных приложениях */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--tg-card);
+            display: flex;
+            padding: 10px 0 25px 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            z-index: 2000;
+        }
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--tg-hint);
+            transition: 0.2s;
+        }
+        .tab-item.active { color: var(--accent); }
+        .tab-icon { font-size: 20px; margin-bottom: 4px; }
+        .tab-label { font-size: 10px; font-weight: 600; }
+
+        /* Модальные окна */
+        .drawer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 3000;
+            display: none;
+            align-items: flex-end;
+        }
+        .drawer {
+            background: var(--tg-card);
+            width: 100%;
+            border-radius: 25px 25px 0 0;
+            padding: 25px 20px;
+            box-sizing: border-box;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.32, 1, 0.23, 1);
+        }
+        .drawer.open { transform: translateY(0); }
+
+        /* Категории трат */
+        .cat-chip {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 800;
+            margin-right: 5px;
+        }
+        .chip-mat { background: #e3f2fd; color: #0d47a1; }
+        .chip-work { background: #f3e5f5; color: #4a148c; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">🛠 FORMA | Производство</div>
-    </header>
+<header>
+    <div class="logo-area">
+        <div class="logo-text">FORMA CRM <span style="font-size: 10px; vertical-align: middle; opacity: 0.5;">ULTRA</span></div>
+        <div id="status-online" style="width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 10px var(--green);"></div>
+    </div>
+    <div class="search-container">
+        <span style="font-size: 14px;">🔍</span>
+        <input type="text" id="main-search" class="search-input" placeholder="Поиск по клиенту или изделию..." oninput="renderOrders()">
+    </div>
+</header>
 
-    <main>
-        <section id="orders-page" class="page active">
-            <div id="orders-container">
-                </div>
-            <div id="empty-state" style="text-align: center; color: var(--hint); margin-top: 50px; display: none;">
-                <div style="font-size: 40px; margin-bottom: 10px;">📋</div>
-                У вас пока нет активных заказов.
+<main>
+    <section id="page-list" class="page active">
+        <div id="orders-container"></div>
+    </section>
+
+    <section id="page-stats" class="page">
+        <h2 style="font-weight: 800; letter-spacing: -1px;">Твои показатели</h2>
+        <div class="fin-item" style="padding: 20px; margin-bottom: 15px; background: var(--accent); color: white;">
+            <div class="fin-label" style="color: rgba(255,255,255,0.7)">Всего в обороте</div>
+            <div class="fin-value" id="stat-rev" style="font-size: 24px;">0 сум</div>
+        </div>
+        <div class="grid-fin">
+            <div class="fin-item">
+                <div class="fin-label">Материалы</div>
+                <div class="fin-value" id="stat-mat" style="color: var(--orange)">0</div>
             </div>
-        </section>
+            <div class="fin-item">
+                <div class="fin-label">Зарплаты</div>
+                <div class="fin-value" id="stat-work" style="color: var(--tg-link)">0</div>
+            </div>
+        </div>
+        <div class="fin-item" style="margin-top: 10px; border: 2px solid var(--green);">
+            <div class="fin-label">Чистая прибыль (EBITDA)</div>
+            <div class="fin-value" id="stat-profit" style="color: var(--green); font-size: 20px;">0</div>
+        </div>
+    </section>
 
-        <section id="new-order-page" class="page">
-            <h2 style="margin-top: 0;">Создать заказ</h2>
-            
+    <section id="page-add" class="page">
+        <h2 style="font-weight: 800;">Новый проект</h2>
+        <div class="form-group">
+            <label>Основная информация</label>
+            <input type="text" id="in-title" class="custom-input" placeholder="Что делаем? (Напр. Кухня)">
+            <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
+            <input type="tel" id="in-phone" class="custom-input" value="+998 " oninput="applyPhoneMask(event)">
+        </div>
+        <div class="grid-fin">
             <div class="form-group">
-                <label>Название изделия (например: Кухня МДФ)</label>
-                <input type="text" id="o-title" class="custom-input" placeholder="Введите название">
+                <label>Общая цена</label>
+                <input type="text" id="in-price" class="custom-input" placeholder="0" oninput="formatNumberInput(this)">
             </div>
-            
             <div class="form-group">
-                <label>Имя клиента</label>
-                <input type="text" id="o-client" class="custom-input" placeholder="Имя клиента">
+                <label>Аванс</label>
+                <input type="text" id="in-prepay" class="custom-input" placeholder="0" oninput="formatNumberInput(this)">
             </div>
+        </div>
+        <div class="form-group">
+            <label>Срок сдачи</label>
+            <input type="date" id="in-deadline" class="custom-input">
+        </div>
+        <button class="btn btn-primary" onclick="createOrder()" style="width: 100%; padding: 18px; border-radius: 15px; font-size: 16px; margin-top: 10px;">🚀 Запустить в работу</button>
+    </section>
+</main>
 
-            <div class="form-group">
-                <label>Телефон</label>
-                <input type="tel" id="o-phone" class="custom-input" value="+998 " maxlength="19">
-            </div>
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()">
+    <div class="drawer" id="drawer" onclick="event.stopPropagation()">
+        <div style="width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px auto;"></div>
+        <div id="drawer-content"></div>
+    </div>
+</div>
 
-            <div class="form-group">
-                <label>Адрес установки</label>
-                <input type="text" id="o-address" class="custom-input" placeholder="Район, улица, дом">
-            </div>
-
-            <div class="form-group">
-                <label>Стоимость заказа (для клиента), $</label>
-                <input type="number" id="o-price" class="custom-input" placeholder="Например: 1500">
-            </div>
-
-            <div class="form-group">
-                <label>Ссылка на дизайн / чертеж (необязательно)</label>
-                <input type="url" id="o-image" class="custom-input" placeholder="https://...">
-            </div>
-
-            <button class="btn btn-primary" onclick="createOrder()">💾 Сохранить заказ</button>
-        </section>
-    </main>
-
-    <nav class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('orders-page', this)">🗂 Мои заказы</div>
-        <div class="nav-item" onclick="switchTab('new-order-page', this)">➕ Новый заказ</div>
-    </nav>
+<nav class="tab-bar">
+    <div class="tab-item active" onclick="nav('page-list', this)">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">Заказы</span>
+    </div>
+    <div class="tab-item" onclick="nav('page-stats', this)">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">Финансы</span>
+    </div>
+    <div class="tab-item" onclick="nav('page-add', this)">
+        <div style="background: var(--accent); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; margin-top: -25px; box-shadow: 0 5px 15px rgba(0,123,255,0.4);">
+            <span style="font-size: 24px;">+</span>
+        </div>
+        <span class="tab-label" style="margin-top: 5px;">Создать</span>
+    </div>
+</nav>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
+    tg.enableClosingConfirmation();
 
-    // Маска для телефона
-    document.getElementById('o-phone').addEventListener('input', function (e) {
-        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
-        if (!x[1]) { e.target.value = '+998 '; return; }
-        if (!e.target.value.startsWith('+998')) { e.target.value = '+998 ' + e.target.value.replace('+998', ''); }
-        e.target.value = !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
-    });
+    let orders = JSON.parse(localStorage.getItem('forma_ultra_v1')) || [];
+    
+    // Справочник статусов
+    const stages = [
+        { name: "Замер", color: "#6c757d", bg: "#f8f9fa" },
+        { name: "Распил", color: "#856404", bg: "#fff3cd" },
+        { name: "Сборка", color: "#084298", bg: "#cfe2ff" },
+        { name: "Монтаж", color: "#944a1e", bg: "#ffe5d0" },
+        { name: "Сдан", color: "#0f5132", bg: "#d1e7dd" }
+    ];
 
-    // Хранилище заказов (в памяти браузера для прототипа)
-    let orders = JSON.parse(localStorage.getItem('forma_crm_orders')) || [];
+    // Форматирование
+    function fNum(n) { return Math.round(n || 0).toLocaleString('ru-RU'); }
+    function fMoney(n) { return fNum(n) + " сум"; }
+    function extract(s) { return parseFloat(String(s).replace(/\s/g, '')) || 0; }
 
-    // Переключение вкладок
-    function switchTab(pageId, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        el.classList.add('active');
-        if (pageId === 'orders-page') renderOrders();
+    function formatNumberInput(el) {
+        let val = el.value.replace(/[^\d]/g, '');
+        if (val !== '') el.value = parseInt(val, 10).toLocaleString('ru-RU');
     }
 
-    // Создание нового заказа
-    function createOrder() {
-        const title = document.getElementById('o-title').value.trim();
-        const client = document.getElementById('o-client').value.trim();
-        const phone = document.getElementById('o-phone').value.trim();
-        const address = document.getElementById('o-address').value.trim();
-        const price = parseFloat(document.getElementById('o-price').value) || 0;
-        const image = document.getElementById('o-image').value.trim();
+    function applyPhoneMask(e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
+        e.target.value = !x[1] ? '+998 ' : !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
+    }
 
-        if (!title || !client || price <= 0) {
-            tg.showAlert("Заполните название, имя клиента и стоимость!");
-            return;
-        }
+    // Навигация
+    function nav(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+        if(id === 'page-stats') renderStats();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    // Создание заказа
+    function createOrder() {
+        const title = document.getElementById('in-title').value;
+        const client = document.getElementById('in-client').value;
+        const price = extract(document.getElementById('in-price').value);
+
+        if(!title || !client || price <= 0) return tg.showAlert("Заполните название, имя и цену!");
 
         const newOrder = {
             id: Date.now(),
-            date: new Date().toLocaleDateString('ru-RU'),
-            title, client, phone, address, price, image,
-            expenses: [] // Массив для учета фурнитуры и материалов
+            title, client,
+            phone: document.getElementById('in-phone').value,
+            price,
+            prepay: extract(document.getElementById('in-prepay').value),
+            deadline: document.getElementById('in-deadline').value,
+            status: 0,
+            expenses: []
         };
 
         orders.unshift(newOrder);
-        saveData();
-        
-        // Очистка формы
-        document.getElementById('o-title').value = '';
-        document.getElementById('o-client').value = '';
-        document.getElementById('o-address').value = '';
-        document.getElementById('o-price').value = '';
-        document.getElementById('o-image').value = '';
-        
+        save();
         tg.HapticFeedback.notificationOccurred('success');
-        switchTab('orders-page', document.querySelectorAll('.nav-item')[0]);
+        location.reload();
     }
 
-    // Добавление расхода к конкретному заказу
-    function addExpense(orderId) {
-        const nameInput = document.getElementById(`exp-name-${orderId}`);
-        const costInput = document.getElementById(`exp-cost-${orderId}`);
-        
-        const name = nameInput.value.trim();
-        const cost = parseFloat(costInput.value);
+    function save() { localStorage.setItem('forma_ultra_v1', JSON.stringify(orders)); }
 
-        if (!name || isNaN(cost) || cost <= 0) {
-            tg.HapticFeedback.notificationOccurred('error');
-            return;
-        }
-
-        const orderIndex = orders.findIndex(o => o.id === orderId);
-        if (orderIndex > -1) {
-            orders[orderIndex].expenses.push({ name, cost });
-            saveData();
-            renderOrders();
-            tg.HapticFeedback.impactOccurred('light');
-        }
+    function setStatus(oid, sidx) {
+        const i = orders.findIndex(o => o.id === oid);
+        orders[i].status = sidx;
+        save(); renderOrders();
+        closeDrawer();
+        tg.HapticFeedback.notificationOccurred('success');
     }
 
-    function saveData() {
-        localStorage.setItem('forma_crm_orders', JSON.stringify(orders));
-    }
-
-    // Отрисовка списка заказов
     function renderOrders() {
         const container = document.getElementById('orders-container');
-        const emptyState = document.getElementById('empty-state');
+        const search = document.getElementById('main-search').value.toLowerCase();
         container.innerHTML = '';
 
-        if (orders.length === 0) {
-            emptyState.style.display = 'block';
-            return;
-        }
-        emptyState.style.display = 'none';
+        const filtered = orders.filter(o => 
+            o.title.toLowerCase().includes(search) || 
+            o.client.toLowerCase().includes(search)
+        );
 
-        orders.forEach(order => {
-            // Считаем общую сумму расходов
-            const totalExpenses = order.expenses.reduce((sum, exp) => sum + exp.cost, 0);
-            const profit = order.price - totalExpenses;
-
-            let expensesHTML = order.expenses.map(exp => `
-                <div class="expense-item">
-                    <span>${exp.name}</span>
-                    <span>- $${exp.cost}</span>
-                </div>
-            `).join('');
+        filtered.forEach(o => {
+            const payPercent = Math.min((o.prepay / o.price) * 100, 100);
+            const totalExp = o.expenses.reduce((s, e) => sum + e.cost, 0);
+            const stage = stages[o.status];
 
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
-                <div class="order-header">
-                    <div class="order-title">${order.title}</div>
-                    <div class="order-date">${order.date}</div>
-                </div>
-                
-                <div class="order-info">
-                    <div><span>👤 Клиент:</span> ${order.client}</div>
-                    <div><span>📞 Телефон:</span> ${order.phone}</div>
-                    <div><span>📍 Адрес:</span> ${order.address || 'Не указан'}</div>
-                    ${order.image ? `<div><span>🖼 Дизайн:</span> <a href="${order.image}" target="_blank" style="color:var(--primary)">Смотреть</a></div>` : ''}
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <div style="font-size: 11px; color: var(--tg-hint); font-weight: 600; margin-bottom: 2px;">${o.client}</div>
+                        <div style="font-weight: 800; font-size: 16px;">${o.title}</div>
+                    </div>
+                    <div class="status-pill" style="background:${stage.bg}; color:${stage.color}" onclick="openStatusMenu(${o.id})">
+                        ${stage.name}
+                    </div>
                 </div>
 
-                <div class="finances">
-                    <div class="fin-row fin-total"><span>Стоимость заказа:</span> <span>$${order.price}</span></div>
-                    <div class="fin-row fin-expense"><span>Расходы (материалы):</span> <span>-$${totalExpenses}</span></div>
-                    <div class="fin-row fin-profit"><span>ЧИСТАЯ ПРИБЫЛЬ:</span> <span>$${profit}</span></div>
+                <div class="payment-progress">
+                    <div class="progress-bar" style="width: ${payPercent}%"></div>
                 </div>
 
-                ${expensesHTML ? `<div class="expense-list"><strong>Список расходов:</strong>${expensesHTML}</div>` : ''}
+                <div class="grid-fin">
+                    <div class="fin-item">
+                        <div class="fin-label">ОПЛАЧЕНО</div>
+                        <div class="fin-value" style="color: var(--green)">${fMoney(o.prepay)}</div>
+                    </div>
+                    <div class="fin-item">
+                        <div class="fin-label">ОСТАТОК</div>
+                        <div class="fin-value" style="color: var(--red)">${fMoney(o.price - o.prepay)}</div>
+                    </div>
+                </div>
 
-                <div class="expense-form">
-                    <input type="text" id="exp-name-${order.id}" placeholder="Напр: Петли Blum">
-                    <input type="number" id="exp-cost-${order.id}" placeholder="Цена, $" style="width: 70px; flex: none;">
-                    <button onclick="addExpense(${order.id})">+</button>
+                <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size: 10px; color: var(--tg-hint);">📅 Сдача: <b>${o.deadline || 'Не указана'}</b></div>
+                    <div style="color: var(--accent); font-size: 12px; font-weight: 700;" onclick="viewDetails(${o.id})">ДЕТАЛИ →</div>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    // Инициализация при запуске
+    function openStatusMenu(oid) {
+        const content = document.getElementById('drawer-content');
+        content.innerHTML = `<h3 style="margin-bottom:15px;">Сменить этап работы</h3>`;
+        stages.forEach((s, idx) => {
+            content.innerHTML += `
+                <div onclick="setStatus(${oid}, ${idx})" style="display:flex; align-items:center; padding:15px; border-radius:12px; margin-bottom:8px; background:${s.bg}; color:${s.color}; font-weight:700; font-size:14px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:${s.color}; margin-right:15px;"></div>
+                    ${s.name.toUpperCase()}
+                </div>
+            `;
+        });
+        openDrawer();
+    }
+
+    function openDrawer() {
+        document.getElementById('drawer-overlay').style.display = 'flex';
+        setTimeout(() => document.getElementById('drawer').classList.add('open'), 10);
+    }
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        setTimeout(() => document.getElementById('drawer-overlay').style.display = 'none', 300);
+    }
+
+    function renderStats() {
+        let rev = 0, mat = 0, work = 0;
+        orders.forEach(o => {
+            rev += o.price;
+            o.expenses.forEach(e => { if(e.cat === 'work') work += e.cost; else mat += e.cost; });
+        });
+        document.getElementById('stat-rev').innerText = fMoney(rev);
+        document.getElementById('stat-mat').innerText = fMoney(mat);
+        document.getElementById('stat-work').innerText = fMoney(work);
+        document.getElementById('stat-profit').innerText = fMoney(rev - mat - work);
+    }
+
     renderOrders();
 </script>
+
 </body>
 </html>

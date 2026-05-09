@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA</title>
+    <title>FORMA CRM ULTRA CLOUD</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -12,172 +14,48 @@
             --tg-card: var(--tg-theme-secondary-bg-color, #ffffff);
             --tg-text: var(--tg-theme-text-color, #333333);
             --tg-hint: var(--tg-theme-hint-color, #888888);
-            --tg-link: var(--tg-theme-link-color, #007bff);
             --accent: #007bff;
             --green: #198754;
             --red: #dc3545;
-            --orange: #fd7e14;
+            --border: rgba(0,0,0,0.1);
         }
-
-        body {
-            background-color: var(--tg-bg);
-            color: var(--tg-text);
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            -webkit-user-select: none;
-        }
-
-        /* Красивый Blur-эффект для шапки */
-        header {
-            background: rgba(var(--tg-card), 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
+        body.dark-mode { --border: rgba(255,255,255,0.1); }
+        body { background-color: var(--tg-bg); color: var(--tg-text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 90px; transition: 0.3s; }
+        header { background: var(--tg-card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: var(--accent); }
-
-        /* Поиск в стиле iOS */
-        .search-container {
-            background: rgba(0,0,0,0.05);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-        }
-        .search-input {
-            background: none;
-            border: none;
-            color: var(--tg-text);
-            width: 100%;
-            margin-left: 8px;
-            outline: none;
-            font-size: 14px;
-        }
-
-        .page { display: none; padding: 15px; animation: slideUp 0.3s ease-out; }
+        .logo-text { font-weight: 800; font-size: 20px; color: var(--accent); }
+        .search-container { background: rgba(0,0,0,0.05); border-radius: 12px; display: flex; align-items: center; padding: 8px 12px; }
+        .search-input { background: none; border: none; color: var(--tg-text); width: 100%; outline: none; font-size: 14px; }
+        .page { display: none; padding: 15px; animation: fadeIn 0.2s; }
         .page.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Карточка заказа PREMIUM */
-        .order-card {
-            background: var(--tg-card);
-            border-radius: 20px;
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
-        .order-card:active { transform: scale(0.98); }
-
-        /* Полоса прогресса оплаты */
-        .payment-progress {
-            height: 4px;
-            background: rgba(0,0,0,0.05);
-            border-radius: 2px;
-            margin: 12px 0;
-            overflow: hidden;
-        }
-        .progress-bar { height: 100%; background: var(--green); transition: width 0.5s; }
-
-        .status-pill {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 50px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Сетка для цифр */
-        .grid-fin {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .fin-item {
-            background: rgba(0,0,0,0.02);
-            padding: 10px;
-            border-radius: 12px;
-        }
-        .fin-label { font-size: 9px; color: var(--tg-hint); font-weight: 600; margin-bottom: 4px; }
-        .fin-value { font-size: 13px; font-weight: 700; }
-
-        /* Навигация как в нативных приложениях */
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: var(--tg-card);
-            display: flex;
-            padding: 10px 0 25px 0;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            z-index: 2000;
-        }
-        .tab-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--tg-hint);
-            transition: 0.2s;
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .order-card { background: var(--tg-card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
+        .deadline-warning { border-left-color: var(--red); }
+        .status-badge { font-size: 9px; font-weight: 800; padding: 6px 12px; border-radius: 50px; text-transform: uppercase; cursor: pointer; }
+        .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
+        .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--tg-card); display: flex; padding: 10px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--tg-hint); cursor: pointer; }
         .tab-item.active { color: var(--accent); }
-        .tab-icon { font-size: 20px; margin-bottom: 4px; }
-        .tab-label { font-size: 10px; font-weight: 600; }
-
-        /* Модальные окна */
-        .drawer-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4);
-            z-index: 3000;
-            display: none;
-            align-items: flex-end;
-        }
-        .drawer {
-            background: var(--tg-card);
-            width: 100%;
-            border-radius: 25px 25px 0 0;
-            padding: 25px 20px;
-            box-sizing: border-box;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.32, 1, 0.23, 1);
-        }
-        .drawer.open { transform: translateY(0); }
-
-        /* Категории трат */
-        .cat-chip {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 9px;
-            font-weight: 800;
-            margin-right: 5px;
-        }
-        .chip-mat { background: #e3f2fd; color: #0d47a1; }
-        .chip-work { background: #f3e5f5; color: #4a148c; }
+        .tab-label { font-size: 10px; font-weight: 600; margin-top: 4px; }
+        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--tg-card); color: var(--tg-text); font-family: inherit; margin-bottom: 10px; }
+        .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; }
+        .btn-primary { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo-area">
-        <div class="logo-text">FORMA CRM <span style="font-size: 10px; vertical-align: middle; opacity: 0.5;">ULTRA</span></div>
-        <div id="status-online" style="width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 10px var(--green);"></div>
+        <div class="logo-text">FORMA <span style="opacity: 0.5;">CLOUD</span></div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <div id="cloud-status" style="font-size:10px; color:var(--green); font-weight:700;">● ONLINE</div>
+            <div onclick="toggleTheme()" style="cursor:pointer; font-size:18px;">🌓</div>
+        </div>
     </div>
     <div class="search-container">
-        <span style="font-size: 14px;">🔍</span>
-        <input type="text" id="main-search" class="search-input" placeholder="Поиск по клиенту или изделию..." oninput="renderOrders()">
+        <input type="text" id="main-search" class="search-input" placeholder="Поиск проекта или клиента..." oninput="renderOrders()">
+        <span>🔍</span>
     </div>
 </header>
 
@@ -187,242 +65,134 @@
     </section>
 
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800; letter-spacing: -1px;">Твои показатели</h2>
-        <div class="fin-item" style="padding: 20px; margin-bottom: 15px; background: var(--accent); color: white;">
-            <div class="fin-label" style="color: rgba(255,255,255,0.7)">Всего в обороте</div>
-            <div class="fin-value" id="stat-rev" style="font-size: 24px;">0 сум</div>
-        </div>
-        <div class="grid-fin">
-            <div class="fin-item">
-                <div class="fin-label">Материалы</div>
-                <div class="fin-value" id="stat-mat" style="color: var(--orange)">0</div>
+        <h2 style="font-weight: 800;">Аналитика</h2>
+        <div class="finances" style="font-size:16px;">
+            <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
+            <div class="fin-row" style="color:var(--red)"><span>Расходы:</span> <b id="stat-exp">0</b></div>
+            <div class="fin-row" style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px; color:var(--green); font-size:20px;">
+                <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
-            <div class="fin-item">
-                <div class="fin-label">Зарплаты</div>
-                <div class="fin-value" id="stat-work" style="color: var(--tg-link)">0</div>
-            </div>
-        </div>
-        <div class="fin-item" style="margin-top: 10px; border: 2px solid var(--green);">
-            <div class="fin-label">Чистая прибыль (EBITDA)</div>
-            <div class="fin-value" id="stat-profit" style="color: var(--green); font-size: 20px;">0</div>
         </div>
     </section>
 
     <section id="page-add" class="page">
         <h2 style="font-weight: 800;">Новый проект</h2>
-        <div class="form-group">
-            <label>Основная информация</label>
-            <input type="text" id="in-title" class="custom-input" placeholder="Что делаем? (Напр. Кухня)">
-            <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-            <input type="tel" id="in-phone" class="custom-input" value="+998 " oninput="applyPhoneMask(event)">
+        <input type="text" id="in-title" class="custom-input" placeholder="Изделие (Кухня, Шкаф...)">
+        <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
+        <input type="tel" id="in-phone" class="custom-input" value="+998 " oninput="applyPhoneMask(event)">
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="in-price" class="custom-input" placeholder="Сумма" style="flex:1" oninput="formatNumberInput(this)">
+            <input type="text" id="in-prepay" class="custom-input" placeholder="Аванс" style="flex:1" oninput="formatNumberInput(this)">
         </div>
-        <div class="grid-fin">
-            <div class="form-group">
-                <label>Общая цена</label>
-                <input type="text" id="in-price" class="custom-input" placeholder="0" oninput="formatNumberInput(this)">
-            </div>
-            <div class="form-group">
-                <label>Аванс</label>
-                <input type="text" id="in-prepay" class="custom-input" placeholder="0" oninput="formatNumberInput(this)">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Срок сдачи</label>
-            <input type="date" id="in-deadline" class="custom-input">
-        </div>
-        <button class="btn btn-primary" onclick="createOrder()" style="width: 100%; padding: 18px; border-radius: 15px; font-size: 16px; margin-top: 10px;">🚀 Запустить в работу</button>
+        <button class="btn btn-primary" onclick="createOrder()">🚀 СОХРАНИТЬ В ОБЛАКО</button>
     </section>
 </main>
 
-<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()">
-    <div class="drawer" id="drawer" onclick="event.stopPropagation()">
-        <div style="width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px auto;"></div>
-        <div id="drawer-content"></div>
-    </div>
-</div>
-
 <nav class="tab-bar">
-    <div class="tab-item active" onclick="nav('page-list', this)">
-        <span class="tab-icon">📋</span>
-        <span class="tab-label">Заказы</span>
-    </div>
-    <div class="tab-item" onclick="nav('page-stats', this)">
-        <span class="tab-icon">📊</span>
-        <span class="tab-label">Финансы</span>
-    </div>
-    <div class="tab-item" onclick="nav('page-add', this)">
-        <div style="background: var(--accent); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; margin-top: -25px; box-shadow: 0 5px 15px rgba(0,123,255,0.4);">
-            <span style="font-size: 24px;">+</span>
-        </div>
-        <span class="tab-label" style="margin-top: 5px;">Создать</span>
-    </div>
+    <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><span class="tab-label">Заказы</span></div>
+    <div class="tab-item" onclick="nav('page-stats', this)"><span>📊</span><span class="tab-label">Финансы</span></div>
+    <div class="tab-item" onclick="nav('page-add', this)"><span>➕</span><span class="tab-label">Создать</span></div>
 </nav>
 
 <script>
+    // 🟢 КОНФИГУРАЦИЯ FIREBASE (Вставь сюда свои данные из консоли Firebase)
+    const firebaseConfig = {
+        apiKey: "ТВОЙ_API_KEY",
+        authDomain: "ТВОЙ_PROJECT.firebaseapp.com",
+        databaseURL: "https://ТВОЙ_PROJECT.firebaseio.com",
+        projectId: "ТВОЙ_PROJECT_ID",
+        storageBucket: "ТВОЙ_PROJECT.appspot.com",
+        messagingSenderId: "ID_ОТПРАВИТЕЛЯ",
+        appId: "ID_ПРИЛОЖЕНИЯ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.enableClosingConfirmation();
 
-    let orders = JSON.parse(localStorage.getItem('forma_ultra_v1')) || [];
-    
-    // Справочник статусов
-    const stages = [
-        { name: "Замер", color: "#6c757d", bg: "#f8f9fa" },
-        { name: "Распил", color: "#856404", bg: "#fff3cd" },
-        { name: "Сборка", color: "#084298", bg: "#cfe2ff" },
-        { name: "Монтаж", color: "#944a1e", bg: "#ffe5d0" },
-        { name: "Сдан", color: "#0f5132", bg: "#d1e7dd" }
-    ];
+    let orders = [];
 
-    // Форматирование
-    function fNum(n) { return Math.round(n || 0).toLocaleString('ru-RU'); }
-    function fMoney(n) { return fNum(n) + " сум"; }
-    function extract(s) { return parseFloat(String(s).replace(/\s/g, '')) || 0; }
+    // Слушаем изменения в базе в реальном времени
+    db.ref('orders').on('value', (snapshot) => {
+        const data = snapshot.val();
+        orders = data ? Object.values(data).reverse() : [];
+        renderOrders();
+        updateStats();
+        document.getElementById('cloud-status').innerText = '● CLOUD SYNCED';
+    });
 
-    function formatNumberInput(el) {
-        let val = el.value.replace(/[^\d]/g, '');
-        if (val !== '') el.value = parseInt(val, 10).toLocaleString('ru-RU');
-    }
-
-    function applyPhoneMask(e) {
-        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
-        e.target.value = !x[1] ? '+998 ' : !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
-    }
-
-    // Навигация
-    function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-        if(id === 'page-stats') renderStats();
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    // Создание заказа
     function createOrder() {
         const title = document.getElementById('in-title').value;
         const client = document.getElementById('in-client').value;
-        const price = extract(document.getElementById('in-price').value);
+        const price = extractNumber(document.getElementById('in-price').value);
 
-        if(!title || !client || price <= 0) return tg.showAlert("Заполните название, имя и цену!");
+        if(!title || !client || price <= 0) return tg.showAlert("Заполните поля!");
 
         const newOrder = {
             id: Date.now(),
             title, client,
             phone: document.getElementById('in-phone').value,
             price,
-            prepay: extract(document.getElementById('in-prepay').value),
-            deadline: document.getElementById('in-deadline').value,
+            prepay: extractNumber(document.getElementById('in-prepay').value),
             status: 0,
             expenses: []
         };
 
-        orders.unshift(newOrder);
-        save();
+        db.ref('orders/' + newOrder.id).set(newOrder);
         tg.HapticFeedback.notificationOccurred('success');
-        location.reload();
+        nav('page-list', document.querySelector('.tab-item'));
     }
 
-    function save() { localStorage.setItem('forma_ultra_v1', JSON.stringify(orders)); }
+    // Вспомогательные функции
+    function formatMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
+    function extractNumber(s) { return parseFloat(String(s).replace(/[\s\u00A0]/g, '')) || 0; }
+    function formatNumberInput(el) {
+        let val = el.value.replace(/[^\d]/g, '');
+        if (val !== '') el.value = parseInt(val, 10).toLocaleString('ru-RU');
+    }
+    function applyPhoneMask(e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
+        e.target.value = !x[1] ? '+998 ' : !x[3] ? `+${x[1]} ${x[2]}` : `+${x[1]} (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
+    }
 
-    function setStatus(oid, sidx) {
-        const i = orders.findIndex(o => o.id === oid);
-        orders[i].status = sidx;
-        save(); renderOrders();
-        closeDrawer();
-        tg.HapticFeedback.notificationOccurred('success');
+    function nav(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
     }
 
     function renderOrders() {
         const container = document.getElementById('orders-container');
-        const search = document.getElementById('main-search').value.toLowerCase();
         container.innerHTML = '';
-
-        const filtered = orders.filter(o => 
-            o.title.toLowerCase().includes(search) || 
-            o.client.toLowerCase().includes(search)
-        );
-
-        filtered.forEach(o => {
-            const payPercent = Math.min((o.prepay / o.price) * 100, 100);
-            const totalExp = o.expenses.reduce((s, e) => sum + e.cost, 0);
-            const stage = stages[o.status];
-
+        orders.forEach(o => {
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="display:flex; justify-content:space-between;">
                     <div>
-                        <div style="font-size: 11px; color: var(--tg-hint); font-weight: 600; margin-bottom: 2px;">${o.client}</div>
-                        <div style="font-weight: 800; font-size: 16px;">${o.title}</div>
+                        <div style="font-size:10px; color:var(--tg-hint); font-weight:700;">${o.client}</div>
+                        <div style="font-weight:800; font-size:16px;">${o.title}</div>
                     </div>
-                    <div class="status-pill" style="background:${stage.bg}; color:${stage.color}" onclick="openStatusMenu(${o.id})">
-                        ${stage.name}
-                    </div>
+                    <div class="status-badge" style="background:rgba(0,0,0,0.05)">В РАБОТЕ</div>
                 </div>
-
-                <div class="payment-progress">
-                    <div class="progress-bar" style="width: ${payPercent}%"></div>
-                </div>
-
-                <div class="grid-fin">
-                    <div class="fin-item">
-                        <div class="fin-label">ОПЛАЧЕНО</div>
-                        <div class="fin-value" style="color: var(--green)">${fMoney(o.prepay)}</div>
-                    </div>
-                    <div class="fin-item">
-                        <div class="fin-label">ОСТАТОК</div>
-                        <div class="fin-value" style="color: var(--red)">${fMoney(o.price - o.prepay)}</div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size: 10px; color: var(--tg-hint);">📅 Сдача: <b>${o.deadline || 'Не указана'}</b></div>
-                    <div style="color: var(--accent); font-size: 12px; font-weight: 700;" onclick="viewDetails(${o.id})">ДЕТАЛИ →</div>
+                <div class="finances">
+                    <div class="fin-row"><span>СУММА:</span> <b>${formatMoney(o.price)}</b></div>
+                    <div class="fin-row" style="color:var(--green)"><span>АВАНС:</span> <b>${formatMoney(o.prepay)}</b></div>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    function openStatusMenu(oid) {
-        const content = document.getElementById('drawer-content');
-        content.innerHTML = `<h3 style="margin-bottom:15px;">Сменить этап работы</h3>`;
-        stages.forEach((s, idx) => {
-            content.innerHTML += `
-                <div onclick="setStatus(${oid}, ${idx})" style="display:flex; align-items:center; padding:15px; border-radius:12px; margin-bottom:8px; background:${s.bg}; color:${s.color}; font-weight:700; font-size:14px;">
-                    <div style="width:12px; height:12px; border-radius:50%; background:${s.color}; margin-right:15px;"></div>
-                    ${s.name.toUpperCase()}
-                </div>
-            `;
-        });
-        openDrawer();
+    function updateStats() {
+        let rev = 0;
+        orders.forEach(o => rev += o.price);
+        document.getElementById('stat-rev').innerText = formatMoney(rev);
     }
 
-    function openDrawer() {
-        document.getElementById('drawer-overlay').style.display = 'flex';
-        setTimeout(() => document.getElementById('drawer').classList.add('open'), 10);
-    }
-    function closeDrawer() {
-        document.getElementById('drawer').classList.remove('open');
-        setTimeout(() => document.getElementById('drawer-overlay').style.display = 'none', 300);
-    }
-
-    function renderStats() {
-        let rev = 0, mat = 0, work = 0;
-        orders.forEach(o => {
-            rev += o.price;
-            o.expenses.forEach(e => { if(e.cat === 'work') work += e.cost; else mat += e.cost; });
-        });
-        document.getElementById('stat-rev').innerText = fMoney(rev);
-        document.getElementById('stat-mat').innerText = fMoney(mat);
-        document.getElementById('stat-work').innerText = fMoney(work);
-        document.getElementById('stat-profit').innerText = fMoney(rev - mat - work);
-    }
-
-    renderOrders();
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
 </script>
-
 </body>
 </html>

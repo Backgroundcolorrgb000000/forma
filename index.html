@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V11</title>
+    <title>FORMA CRM PRO V12</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -11,7 +11,7 @@
     <style>
         :root { 
             --bg: #f4f6f8; --card: #ffffff; --primary: #007bff; --text: #333; --hint: #888; 
-            --green: #198754; --red: #dc3545; --orange: #fd7e14; --border: rgba(0,0,0,0.1);
+            --green: #198754; --soft-green: #2ecc71; --red: #dc3545; --orange: #fd7e14; --border: rgba(0,0,0,0.1);
         }
         body.dark-mode { 
             --bg: #121212; --card: #1e1e1e; --text: #f1f1f1; --hint: #aaa; --border: rgba(255,255,255,0.1);
@@ -31,7 +31,7 @@
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 
         .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; text-decoration: none; }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
         .tab-item.active { color: var(--primary); }
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
 
@@ -39,7 +39,7 @@
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-shopping { background: var(--orange); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
@@ -92,9 +92,15 @@
 </main>
 
 <nav class="tab-bar">
-    <div class="tab-item active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
-    <div class="tab-item admin-only" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
-    <div class="tab-item admin-only" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
+    <div class="tab-item active" onclick="nav('page-list', this)">
+        <span>📋</span><div class="tab-label">Заказы</div>
+    </div>
+    <div class="tab-item admin-only" onclick="nav('page-stats', this)">
+        <span>📊</span><div class="tab-label">Финансы</div>
+    </div>
+    <div class="tab-item admin-only" onclick="nav('page-add', this)">
+        <span>➕</span><div class="tab-label">Создать</div>
+    </div>
 </nav>
 
 <script>
@@ -145,28 +151,22 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
     }
 
-    // НОВАЯ ФУНКЦИЯ: Отправка закупа снабженцу
     function sendShoppingList(id) {
         const o = orders.find(x => x.id === id);
         if (!o.expenses || o.expenses.length === 0) {
             tg.showAlert("Список расходов пуст!");
             return;
         }
-
-        // Фильтруем только не отмеченные (не купленные) товары
         const toBuy = o.expenses.filter(e => !e.bought);
-
         if (toBuy.length === 0) {
             tg.showAlert("Все товары уже куплены!");
             return;
         }
-
         let text = `📦 СПИСОК ЗАКУПА\n🛠 Проект: ${o.title}\n📍 Адрес: ${o.loc || '---'}\n-------------------------\n`;
         toBuy.forEach((e, i) => {
             text += `${i + 1}. ${e.name} — ${e.qty} шт.\n`;
         });
         text += `-------------------------\n📌 Проверьте наличие на складе!`;
-
         navigator.clipboard.writeText(text).then(() => {
             tg.showAlert("Список для снабженца скопирован! Вставьте его в чат.");
             tg.HapticFeedback.notificationOccurred('success');
@@ -178,7 +178,6 @@
         const client = document.getElementById('in-client').value;
         const price = extract(document.getElementById('in-price').value);
         if(!title || price <= 0) return;
-
         const id = Date.now();
         db.ref('orders/' + id).set({
             id, title, client, price,
@@ -188,6 +187,9 @@
             prepay: extract(document.getElementById('in-prepay').value),
             expenses: []
         }).then(() => {
+            document.getElementById('in-title').value = '';
+            document.getElementById('in-client').value = '';
+            document.getElementById('in-price').value = '';
             nav('page-list', document.querySelector('.tab-item'));
         });
     }
@@ -217,15 +219,17 @@
                 <div style="display:flex; justify-content:space-between;">
                     <div>
                         <div style="font-weight:800; font-size:17px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📍 ${o.loc || '---'}</div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📱 ${o.phone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
+                        ${o.link ? `<div style="font-size:11px; margin-top:3px;"><a href="${o.link}" target="_blank">🔗 Дизайн/Проект</a> <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка:', false)">✏️</span></div>` : `<div onclick="editField(${o.id}, 'link', 'Добавить ссылку:', false)" style="font-size:10px; color:var(--primary); cursor:pointer; margin-top:3px;">+ Добавить ссылку</div>`}
                     </div>
                 </div>
 
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b>${fMoney(o.price)}</b></div>
+                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editField(${o.id}, 'price', 'Общая цена:', true)">${fMoney(o.price)} ✏️</b></div>
                     <div class="info-grid">
-                        <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);">${fMoney(o.prepay)}</b></div>
+                        <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);" onclick="editField(${o.id}, 'prepay', 'Аванс:', true)">${fMoney(o.prepay)} ✏️</b></div>
                         <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">

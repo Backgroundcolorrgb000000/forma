@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM PRO V12</title>
+    <title>FORMA CRM PRO V13</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -46,6 +46,7 @@
         .exp-table-row.bought { color: var(--green); opacity: 0.7; }
 
         .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; }
+        .status-badge { font-size: 9px; padding: 3px 8px; border-radius: 20px; background: rgba(0,0,0,0.05); cursor: pointer; font-weight: 700; }
         .admin-only { display: none; }
         body.is-admin .admin-only { display: block; }
     </style>
@@ -117,6 +118,7 @@
 
     let orders = [];
     let expanded = new Set();
+    const STAGES = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Готово"];
 
     db.ref('.info/connected').on('value', s => {
         const el = document.getElementById('cloud-status');
@@ -151,47 +153,49 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(isNum ? extract(val) : val);
     }
 
+    function changeStatus(id) {
+        const o = orders.find(x => x.id === id);
+        let next = (o.status || 0) + 1;
+        if(next >= STAGES.length) next = 0;
+        db.ref(`orders/${id}/status`).set(next);
+    }
+
+    function deleteOrder(id) {
+        if(!isAdmin) return;
+        if(confirm("Удалить этот заказ навсегда?")) {
+            db.ref(`orders/${id}`).remove();
+        }
+    }
+
     function sendShoppingList(id) {
         const o = orders.find(x => x.id === id);
-        if (!o.expenses || o.expenses.length === 0) {
-            tg.showAlert("Список расходов пуст!");
-            return;
-        }
+        if (!o.expenses) return tg.showAlert("Список пуст");
         const toBuy = o.expenses.filter(e => !e.bought);
-        if (toBuy.length === 0) {
-            tg.showAlert("Все товары уже куплены!");
-            return;
-        }
-        let text = `📦 СПИСОК ЗАКУПА\n🛠 Проект: ${o.title}\n📍 Адрес: ${o.loc || '---'}\n-------------------------\n`;
-        toBuy.forEach((e, i) => {
-            text += `${i + 1}. ${e.name} — ${e.qty} шт.\n`;
-        });
-        text += `-------------------------\n📌 Проверьте наличие на складе!`;
+        if (toBuy.length === 0) return tg.showAlert("Все куплено");
+        
+        let text = `📦 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
+        toBuy.forEach((e, i) => text += `${i+1}. ${e.name} (${e.qty} шт)\n`);
+        
         navigator.clipboard.writeText(text).then(() => {
-            tg.showAlert("Список для снабженца скопирован! Вставьте его в чат.");
+            tg.showAlert("Список скопирован");
             tg.HapticFeedback.notificationOccurred('success');
         });
     }
 
     function createOrder() {
         const title = document.getElementById('in-title').value;
-        const client = document.getElementById('in-client').value;
         const price = extract(document.getElementById('in-price').value);
         if(!title || price <= 0) return;
         const id = Date.now();
         db.ref('orders/' + id).set({
-            id, title, client, price,
+            id, title, price,
+            client: document.getElementById('in-client').value,
             phone: document.getElementById('in-phone').value,
             loc: document.getElementById('in-loc').value,
             link: document.getElementById('in-link').value,
             prepay: extract(document.getElementById('in-prepay').value),
-            expenses: []
-        }).then(() => {
-            document.getElementById('in-title').value = '';
-            document.getElementById('in-client').value = '';
-            document.getElementById('in-price').value = '';
-            nav('page-list', document.querySelector('.tab-item'));
-        });
+            status: 0, expenses: []
+        }).then(() => nav('page-list', document.querySelector('.tab-item')));
     }
 
     function addExp(id) {
@@ -210,19 +214,18 @@
         const query = document.getElementById('main-search').value.toLowerCase();
         container.innerHTML = '';
 
-        orders.filter(o => (o.title + o.client + (o.loc || '')).toLowerCase().includes(query)).forEach(o => {
+        orders.filter(o => (o.title + (o.client||'') + (o.loc || '')).toLowerCase().includes(query)).forEach(o => {
             const isExp = expanded.has(o.id);
             const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
                         <div style="font-weight:800; font-size:17px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Название:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client} • 📱 ${o.phone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:', false)">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
-                        ${o.link ? `<div style="font-size:11px; margin-top:3px;"><a href="${o.link}" target="_blank">🔗 Дизайн/Проект</a> <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка:', false)">✏️</span></div>` : `<div onclick="editField(${o.id}, 'link', 'Добавить ссылку:', false)" style="font-size:10px; color:var(--primary); cursor:pointer; margin-top:3px;">+ Добавить ссылку</div>`}
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:', false)">✏️</span></div>
                     </div>
+                    <div class="status-badge" onclick="changeStatus(${o.id})">${STAGES[o.status || 0]}</div>
                 </div>
 
                 ${isAdmin ? `
@@ -233,12 +236,15 @@
                         <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
                     </div>
                     <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
-                        <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
+                        <span>ЧИСТЫЙ ОСТАТОК (Цена - Расход):</span> <b>${fMoney(o.price - totalExp)}</b>
                     </div>
                 </div>` : ''}
 
-                <div onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()" style="margin-top:15px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;">
-                    📦 РАСХОДЫ (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+                    <div onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()" style="font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;">
+                        📦 РАСХОДЫ (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
+                    </div>
+                    ${isAdmin ? `<div onclick="deleteOrder(${o.id})" style="font-size:14px; opacity:0.3;">🗑</div>` : ''}
                 </div>
 
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
@@ -260,7 +266,7 @@
                             <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="font-size:12px; padding:8px; flex:2;" placeholder="Цена ед." oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:0 15px;">+</button>
                         </div>
-                        <button class="btn btn-shopping" onclick="sendShoppingList(${o.id})">🛒 Отправить закуп снабженцу</button>
+                        <button class="btn btn-shopping" onclick="sendShoppingList(${o.id})">🛒 Отправить закуп</button>
                     </div>` : ''}
                 </div>
             `;

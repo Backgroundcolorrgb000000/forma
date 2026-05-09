@@ -95,15 +95,39 @@
 </nav>
 
 <script>
+    //// Import the functions you need from the SDKs you need
+//import { initializeApp } from "firebase/app";
+//import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+//const firebaseConfig = {
+  //apiKey: "AIzaSyBMb2Cf30QffPe3Eo8jJQkRlriMlz7yeHw",
+  //authDomain: "formacrm-a5ff8.firebaseapp.com",
+  //projectId: "formacrm-a5ff8",
+  //storageBucket: "formacrm-a5ff8.firebasestorage.app",
+  //messagingSenderId: "800359503844",
+  //appId: "1:800359503844:web:3b1fd1bbebb895004bd9f1",
+ // measurementId: "G-B29ZG70M0J"
+//};
+
+// Initialize Firebase
+//const app = initializeApp(firebaseConfig);
+//const analytics = getAnalytics(app);
+
+
+
     // 🟢 КОНФИГУРАЦИЯ FIREBASE (Вставь сюда свои данные из консоли Firebase)
     const firebaseConfig = {
-        apiKey: "ТВОЙ_API_KEY",
-        authDomain: "ТВОЙ_PROJECT.firebaseapp.com",
-        databaseURL: "https://ТВОЙ_PROJECT.firebaseio.com",
-        projectId: "ТВОЙ_PROJECT_ID",
-        storageBucket: "ТВОЙ_PROJECT.appspot.com",
-        messagingSenderId: "ID_ОТПРАВИТЕЛЯ",
-        appId: "ID_ПРИЛОЖЕНИЯ"
+        apiKey: "AIzaSyBMb2Cf30QffPe3Eo8jJQkRlriMlz7yeHw",
+        authDomain: "formacrm-a5ff8.firebaseapp.com",
+        databaseURL: "https://console.firebase.google.com/project/formacrm-a5ff8/database/formacrm-a5ff8-default-rtdb/data/~2F",
+        projectId: "formacrm-a5ff8",
+        storageBucket: "formacrm-a5ff8.firebasestorage.app",
+        messagingSenderId: "800359503844",
+        appId: "1:800359503844:web:3b1fd1bbebb895004bd9f1"
     };
 
     firebase.initializeApp(firebaseConfig);

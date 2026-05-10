@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V32</title>
+    <title>FORMA CRM ULTRA V33</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -14,7 +14,7 @@
             --green: #198754; --soft-green: #2ecc71; --red: #dc3545; --orange: #fd7e14; --border: rgba(0,0,0,0.1);
             --purple: #6f42c1;
         }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 100px; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 40vh; }
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
@@ -131,10 +131,19 @@
     const db = firebase.database();
     const tg = window.Telegram.WebApp; tg.expand();
 
+    // ФИКС ДЛЯ КЛАВИАТУРЫ: плавная прокрутка к активному инпуту
+    window.addEventListener('focusin', (e) => {
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            setTimeout(() => {
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+    });
+
     const currentUserId = tg.initDataUnsafe?.user?.id;
     const isAdmin = ADMIN_IDS.includes(currentUserId);
     const isSupplier = SUPPLIER_IDS.includes(currentUserId);
-    const canCheckExp = isAdmin || isSupplier; // Кто может ставить галочки "Куплено"
+    const canCheckExp = isAdmin || isSupplier;
 
     if(isAdmin) {
         document.body.classList.add('is-admin');
@@ -339,6 +348,28 @@
         }
     }
 
+    function sendIndividualShoppingList(id) {
+        const o = orders.find(x => x.id === id);
+        const toBuy = o.expenses ? o.expenses.filter(e => !e.bought && e.cat !== 'work') : [];
+        if(toBuy.length === 0) return tg.showAlert("Нет позиций для закупа");
+        let text = `🛒 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
+        toBuy.forEach((e, i) => text += `${i+1}. ${e.name} — ${e.qty} шт.\n`);
+        navigator.clipboard.writeText(text).then(() => tg.showAlert("Список заказа скопирован!"));
+    }
+
+    function copyGlobalShoppingList() {
+        let list = "🛒 ОБЩИЙ ЗАКУП (ВСЕ ЗАКАЗЫ):\n\n";
+        orders.filter(o => o.status < 4 && o.expenses).forEach(o => {
+            const toBuy = o.expenses.filter(e => !e.bought && e.cat !== 'work');
+            if(toBuy.length > 0) {
+                list += `🛠 ${o.title}:\n`;
+                toBuy.forEach(e => list += `- ${e.name} (${e.qty} шт)\n`);
+                list += `\n`;
+            }
+        });
+        navigator.clipboard.writeText(list).then(() => tg.showAlert("Общий список скопирован!"));
+    }
+
     function renderOrders() {
         const listContainer = document.getElementById('orders-container');
         const archiveContainer = document.getElementById('archive-container');
@@ -356,7 +387,6 @@
             const isExp = expanded.has(o.id);
             const totalExp = o.expenses ? o.expenses.reduce((s, e) => s + e.cost, 0) : 0;
             
-            // Снабженец не видит зарплаты
             const displayExpenses = o.expenses ? (isSupplier ? o.expenses.filter(e => e.cat !== 'work') : o.expenses) : [];
 
             const card = document.createElement('div');

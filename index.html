@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V28</title>
+    <title>FORMA CRM ULTRA V29</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -97,6 +97,8 @@
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
         <input type="tel" id="in-phone" class="custom-input" placeholder="998 XX XXX XX XX" maxlength="16" oninput="formatPhone(this)">
         <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
+        <input type="text" id="in-loc-link" class="custom-input" placeholder="Геолокация (ссылка на карту)">
+        <input type="text" id="in-link" class="custom-input" placeholder="Ссылка на дизайн-проект">
         <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дата сдачи">
         <div style="display:flex; gap:10px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
@@ -190,7 +192,6 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(extract(val));
     }
 
-    // Восстановленная функция редактирования расхода
     function editExpense(oid, eidx, field, title, isNum) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id === oid);
@@ -208,6 +209,29 @@
         navigator.clipboard.writeText(text).then(() => tg.showAlert("Текст чека скопирован!"));
     }
 
+    // НОВАЯ ФУНКЦИЯ: ОТЧЕТ ДЛЯ БОССА
+    function sendBossReport(id) {
+        const o = orders.find(x => x.id === id);
+        const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
+        const mat = o.expenses ? o.expenses.filter(e => e.cat !== 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
+        const work = o.expenses ? o.expenses.filter(e => e.cat === 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
+        const profit = o.price - totalExp;
+        
+        let text = `📊 ОТЧЕТ РУКОВОДИТЕЛЮ\n`;
+        text += `🛠 Заказ: ${o.title}\n`;
+        text += `👤 Клиент: ${o.client || '---'}\n`;
+        text += `👷 Мастер: ${o.mName || '---'}\n`;
+        text += `----------------------\n`;
+        text += `💰 Цена: ${fMoney(o.price)}\n`;
+        text += `📉 Расходы: ${fMoney(totalExp)}\n`;
+        text += `   ├ Материалы: ${fMoney(mat)}\n`;
+        text += `   └ Зарплата: ${fMoney(work)}\n`;
+        text += `----------------------\n`;
+        text += `✅ ЧИСТАЯ ПРИБЫЛЬ: ${fMoney(profit)}`;
+        
+        navigator.clipboard.writeText(text).then(() => tg.showAlert("Отчет скопирован! Можно отправлять боссу."));
+    }
+
     function createOrder() {
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
@@ -218,11 +242,13 @@
             client: document.getElementById('in-client').value,
             phone: document.getElementById('in-phone').value,
             loc: document.getElementById('in-loc').value,
+            locLink: document.getElementById('in-loc-link').value,
+            link: document.getElementById('in-link').value,
             deadline: document.getElementById('in-deadline').value,
             prepay: extract(document.getElementById('in-prepay').value),
             status: 0, mName: '', mPhone: '', expenses: []
         }).then(() => {
-            ['in-title','in-client','in-phone','in-loc','in-deadline','in-price','in-prepay'].forEach(k => document.getElementById(k).value = '');
+            ['in-title','in-client','in-phone','in-loc','in-loc-link','in-link','in-deadline','in-price','in-prepay'].forEach(k => document.getElementById(k).value = '');
             nav('page-list', document.querySelectorAll('.tab-item')[0]);
         });
     }
@@ -296,6 +322,13 @@
                     <div>
                         <div style="font-weight:800; font-size:16px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
                         <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
+                        
+                        <div style="font-size:11px; margin-top:6px; padding:6px 8px; background:rgba(0,0,0,0.03); border-radius:8px; line-height: 1.6;">
+                            🛠 <b>Мастер:</b> ${o.mName || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:')">✏️</span> | 📞 ${o.mPhone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:')">✏️</span><br>
+                            🗺 <b>Гео:</b> ${o.locLink ? `<a href="${o.locLink}" target="_blank">Открыть карту</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'locLink', 'Ссылка на гео:')">🔗</span><br>
+                            🎨 <b>Дизайн:</b> ${o.link ? `<a href="${o.link}" target="_blank">Смотреть проект</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка на дизайн:')">🔗</span>
+                        </div>
+
                         <div style="font-size:10px; margin-top:5px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
@@ -342,6 +375,10 @@
                         <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
                     </div>` : ''}
                 </div>
+                
+                ${o.status === 4 && isAdmin ? `
+                <button class="btn btn-outline" style="font-size:10px; padding:8px; margin-top:15px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
+                ` : ''}
             `;
             if(o.status === 4) archiveContainer.appendChild(card);
             else listContainer.appendChild(card);

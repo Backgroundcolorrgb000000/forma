@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V27</title>
+    <title>FORMA CRM ULTRA V28</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -39,17 +39,19 @@
         .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; }
         .btn-quick { background: var(--purple); color: white; margin-top: 10px; }
         
-        .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .exp-table-row { display: grid; grid-template-columns: 2fr 0.5fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
+        .exp-table-row.bought { color: var(--green); opacity: 0.5; background: rgba(46, 204, 113, 0.05); }
+        
         .edit-icon { cursor: pointer; opacity: 0.4; font-size: 12px; margin-left: 5px; display: none; }
         body.is-admin .edit-icon { display: inline-block; }
         
         .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip { padding: 6px 12px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 10px; font-weight: 700; white-space: nowrap; }
+        .filter-chip { padding: 6px 12px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 10px; font-weight: 700; white-space: nowrap; cursor: pointer; }
         .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .admin-only-ui { display: none; }
-        body.is-admin .admin-only-ui { display: block !important; }
         .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
+        .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
     </style>
 </head>
 <body>
@@ -181,6 +183,25 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(val);
     }
 
+    function editFinance(id, field, title) {
+        if(!isAdmin) return;
+        const o = orders.find(x => x.id === id);
+        const val = prompt(title, o[field] || 0);
+        if(val !== null) db.ref(`orders/${id}/${field}`).set(extract(val));
+    }
+
+    // Восстановленная функция редактирования расхода
+    function editExpense(oid, eidx, field, title, isNum) {
+        if(!isAdmin) return;
+        const o = orders.find(x => x.id === oid);
+        const val = prompt(title, o.expenses[eidx][field]);
+        if(val !== null) {
+            o.expenses[eidx][field] = isNum ? extract(val) : val;
+            o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+            db.ref(`orders/${oid}/expenses`).set(o.expenses);
+        }
+    }
+
     function generateReceipt(id) {
         const o = orders.find(x => x.id === id);
         const text = `📄 ЧЕК ЗАКАЗА\nИзделие: ${o.title}\nКлиент: ${o.client}\n---\nСумма: ${fMoney(o.price)}\nАванс: ${fMoney(o.prepay)}\nК оплате: ${fMoney(o.price - o.prepay)}\n---\nСтатус: ${STAGES[o.status]}`;
@@ -206,17 +227,50 @@
         });
     }
 
+    function addExp(id) {
+        if(!isAdmin) return;
+        const nInput = document.getElementById(`ex-n-${id}`);
+        const qInput = document.getElementById(`ex-q-${id}`);
+        const pInput = document.getElementById(`ex-p-${id}`);
+        const n = nInput.value;
+        const q = extract(qInput.value) || 1;
+        const p = extract(pInput.value);
+        if(!n) return;
+        const o = orders.find(x => x.id === id);
+        if(!o.expenses) o.expenses = [];
+        o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false, cat: currentExpCat });
+        db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
+            nInput.value=''; qInput.value=''; pInput.value='';
+        });
+    }
+
     function quickImport(oid) {
-        const text = prompt("Вставьте список (Название Число):");
+        if(!isAdmin) return;
+        const text = prompt("Вставьте текст (можно без запятых, например: Петли 30 шт Скотч 5 Клей 3):");
         if (!text) return;
-        const regex = /([a-zа-яё\s-]+?)\s*[:\s-]*\s*(\d+)/gi;
+        
+        const regex = /([a-zа-яё\s-]+?)\s*[:\s-]*\s*(\d+)\s*(?:шт|ед|гр|комп|пач)?/gi;
         const o = orders.find(x => x.id === oid);
         if(!o.expenses) o.expenses = [];
-        let m;
-        while ((m = regex.exec(text)) !== null) {
-            o.expenses.push({ name: m[1].trim(), qty: parseInt(m[2]), price: 0, cost: 0, bought: false, cat: currentExpCat });
+        
+        let match;
+        let count = 0;
+        while ((match = regex.exec(text)) !== null) {
+            let name = match[1].trim().replace(/^[\n\s,]+|[\n\s,]+$/g, '');
+            let qty = parseInt(match[2]);
+            if (name.length > 1) {
+                o.expenses.push({ name: name, qty: qty, price: 0, cost: 0, bought: false, cat: 'mat' });
+                count++;
+            }
         }
-        db.ref(`orders/${oid}/expenses`).set(o.expenses);
+        
+        if (count > 0) {
+            db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
+                tg.showAlert(`Добавлено поз: ${count}. Проставьте цены!`);
+            });
+        } else {
+            tg.showAlert("Данные не распознаны. Используйте формат: Название Число");
+        }
     }
 
     function renderOrders() {
@@ -226,7 +280,7 @@
         listContainer.innerHTML = ''; archiveContainer.innerHTML = '';
 
         orders.forEach(o => {
-            const isMatch = (o.title + o.client).toLowerCase().includes(query);
+            const isMatch = (o.title + (o.client||'') + (o.loc||'')).toLowerCase().includes(query);
             if(!isMatch) return;
 
             const isLate = o.deadline && new Date(o.deadline) < new Date().setHours(0,0,0,0) && o.status < 4;
@@ -241,7 +295,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
                         <div style="font-weight:800; font-size:16px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} | 📍 ${o.loc || '---'}</div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
                         <div style="font-size:10px; margin-top:5px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
@@ -250,21 +304,29 @@
                 </div>
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>Цена:</span> <b>${fMoney(o.price)}</b></div>
+                    <div class="fin-row"><span>Цена:</span> <b onclick="editFinance(${o.id}, 'price', 'Цена:')" style="cursor:pointer;">${fMoney(o.price)} ✏️</b></div>
                     <div class="fin-row" style="color:var(--red)"><span>Остаток:</span> <b>${fMoney(o.price - totalExp)}</b></div>
                     <button class="btn btn-outline" style="font-size:9px; padding:5px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
                 </div>` : ''}
+                
                 <div style="margin-top:10px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
                     📦 Расходы (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
                 </div>
+                
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
+                    <div class="exp-table-row header">
+                        <div>Наименование</div><div>Кол</div><div>Цена</div><div>Итого</div><div></div>
+                    </div>
                     ${o.expenses ? o.expenses.map((e, i) => `
-                        <div class="exp-table-row">
-                            <div style="font-size:10px;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
-                            <div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div>
-                            <div onclick="${isAdmin ? `db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})` : ''}">${e.bought?'✅':'⬜'}</div>
+                        <div class="exp-table-row ${e.bought ? 'bought' : ''}">
+                            <div onclick="editExpense(${o.id}, ${i}, 'name', 'Наименование:', false)" style="font-size:10px; cursor:pointer;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'qty', 'Количество:', true)" style="cursor:pointer;">${e.qty}</div>
+                            <div onclick="editExpense(${o.id}, ${i}, 'price', 'Цена ед.:', true)" style="cursor:pointer;">${Math.round(e.price).toLocaleString()}</div>
+                            <div style="font-weight:600;">${Math.round(e.cost).toLocaleString()}</div>
+                            <div onclick="${isAdmin ? `db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})` : ''}" style="text-align:right; cursor:pointer;">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}
+                    
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
                         <div style="display:flex; gap:10px; font-size:9px; margin-bottom:5px;">
@@ -273,8 +335,9 @@
                         </div>
                         <div style="display:flex; gap:5px;">
                             <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:11px;" placeholder="Что?">
-                            <input type="text" id="ex-p-${o.id}" class="custom-input" style="flex:1; font-size:11px;" placeholder="Цена">
-                            <button onclick="addExpSimple(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:35px;">+</button>
+                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:11px;" placeholder="Кол" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:11px;" placeholder="Цена" oninput="formatNumberInput(this)">
+                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:35px; border:none; font-weight:bold;">+</button>
                         </div>
                         <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
                     </div>` : ''}
@@ -283,16 +346,6 @@
             if(o.status === 4) archiveContainer.appendChild(card);
             else listContainer.appendChild(card);
         });
-    }
-
-    function addExpSimple(id) {
-        const n = document.getElementById(`ex-n-${id}`).value;
-        const p = extract(document.getElementById(`ex-p-${id}`).value);
-        if(!n || p <= 0) return;
-        const o = orders.find(x => x.id === id);
-        if(!o.expenses) o.expenses = [];
-        o.expenses.push({ name: n, qty: 1, price: p, cost: p, bought: false, cat: currentExpCat });
-        db.ref(`orders/${id}/expenses`).set(o.expenses);
     }
 
     function renderStats() {

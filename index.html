@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V33</title>
+    <title>FORMA CRM ULTRA V34</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -449,6 +449,7 @@
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:35px; border:none; font-weight:bold;">+</button>
                         </div>
                         <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
+                        <button class="btn btn-shopping" style="margin-top:10px;" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп заказа</button>
                     </div>` : ''}
                 </div>
                 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V26</title>
+    <title>FORMA CRM ULTRA V27</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -14,20 +14,17 @@
             --green: #198754; --soft-green: #2ecc71; --red: #dc3545; --orange: #fd7e14; --border: rgba(0,0,0,0.1);
             --purple: #6f42c1;
         }
-        body.dark-mode { --bg: #121212; --card: #1e1e1e; --text: #f1f1f1; --hint: #aaa; --border: rgba(255,255,255,0.1); }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 100px; transition: 0.3s; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 100px; }
         header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
         
         .page { display: none !important; padding: 15px; min-height: 85vh; }
-        .page.active { display: block !important; animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page.active { display: block !important; }
 
         .order-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; }
         .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 15px; margin-top: 10px; }
         .fin-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         
         .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
         .tab-item { flex: 1; display: none; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
@@ -36,26 +33,23 @@
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
 
         .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 11px; }
-        .btn-quick { background: var(--purple); color: white; margin-top: 10px; font-size: 10px; padding: 8px; width: 100%; }
+        .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); margin-top: 5px; }
+        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; }
+        .btn-quick { background: var(--purple); color: white; margin-top: 10px; }
         
         .exp-table-row { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr 30px; gap: 5px; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-        .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); }
-        .exp-table-row.bought { color: var(--green); opacity: 0.7; }
-        
-        .edit-icon { cursor: pointer; opacity: 0.5; font-size: 12px; margin-left: 5px; display: none; }
+        .edit-icon { cursor: pointer; opacity: 0.4; font-size: 12px; margin-left: 5px; display: none; }
         body.is-admin .edit-icon { display: inline-block; }
         
-        .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
-        .deadline-box { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 8px; display: inline-block; margin-top: 5px; }
-        
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-chip { padding: 6px 12px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 10px; font-weight: 700; white-space: nowrap; }
+        .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
         .admin-only-ui { display: none; }
         body.is-admin .admin-only-ui { display: block !important; }
-
-        .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; }
-        .tag-work { background: #f3e5f5; color: #4a148c; }
+        .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
     </style>
 </head>
 <body>
@@ -63,28 +57,35 @@
 <header>
     <div class="logo-area">
         <div class="logo-text">FORMA <span id="role-badge" style="font-size:10px; border:1px solid; padding:2px 5px; border-radius:4px;">...</span></div>
-        <div id="cloud-status" style="font-size:9px; font-weight:700; color:var(--red);">● OFFLINE</div>
+        <div id="cloud-status" style="font-size:9px; font-weight:700;">● ПОДКЛЮЧЕНИЕ...</div>
     </div>
-    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск (изделие, клиент, адрес)..." oninput="renderOrders()">
+    <input type="text" id="main-search" class="custom-input" style="margin-bottom:0; padding:10px;" placeholder="Поиск (изделие, клиент)..." oninput="renderOrders()">
 </header>
 
 <main>
     <section id="page-list" class="page active">
+        <div class="filter-bar">
+            <div class="filter-chip active" onclick="setFilter('all', this)">Все</div>
+            <div class="filter-chip" onclick="setFilter('work', this)">В работе</div>
+            <div class="filter-chip" onclick="setFilter('late', this)">Просрочены</div>
+        </div>
         <div id="orders-container"></div>
     </section>
 
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800;">Аналитика и Снабжение</h2>
+        <h2 style="font-weight: 800;">Аналитика</h2>
         <div class="finances" style="font-size:16px; margin-bottom: 20px;">
-            <div class="fin-row"><span>Общая выручка:</span> <b id="stat-rev">0</b></div>
+            <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
-            <div class="fin-row" style="color:#4a148c"><span>Зарплаты:</span> <b id="stat-work">0</b></div>
+            <div class="fin-row" style="color:#4a148c"><span>ЗП (Все):</span> <b id="stat-work">0</b></div>
             <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
                 <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
-            <button class="btn btn-shopping" style="margin-top:20px;" onclick="copyGlobalShoppingList()">📦 Копировать ВЕСЬ закуп (все заказы)</button>
         </div>
-        <h3>✅ Готовые заказы (Архив):</h3>
+        <h3>👷 Зарплаты по мастерам:</h3>
+        <div id="master-salaries" class="finances" style="font-size:12px;"></div>
+        <button class="btn btn-shopping" style="margin-top:20px;" onclick="copyGlobalShoppingList()">📦 Копировать ОБЩИЙ закуп</button>
+        <h3 style="margin-top:20px;">✅ Архив (Готово):</h3>
         <div id="archive-container"></div>
     </section>
 
@@ -92,14 +93,14 @@
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <input type="tel" id="in-phone" class="custom-input" placeholder="998 99 000 00 00" maxlength="16" oninput="applyPhoneMask(this)">
+        <input type="tel" id="in-phone" class="custom-input" placeholder="998 XX XXX XX XX" maxlength="16" oninput="formatPhone(this)">
         <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
-        <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дедлайн (дата сдачи)">
+        <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дата сдачи">
         <div style="display:flex; gap:10px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
             <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
         </div>
-        <button class="btn btn-primary" onclick="createOrder()">🚀 СОХРАНИТЬ В ОБЛАКО</button>
+        <button class="btn btn-primary" onclick="createOrder()">🚀 СОЗДАТЬ ЗАКАЗ</button>
     </section>
 </main>
 
@@ -119,24 +120,22 @@
     const tg = window.Telegram.WebApp; tg.expand();
 
     const isAdmin = ADMIN_IDS.includes(tg.initDataUnsafe?.user?.id);
-    
     if(isAdmin) {
         document.body.classList.add('is-admin');
         document.getElementById('tab-fin').classList.add('visible');
         document.getElementById('tab-add').classList.add('visible');
         document.getElementById('role-badge').innerText = 'ADMIN';
-    } else {
-        document.getElementById('role-badge').innerText = 'MASTER';
-    }
+    } else { document.getElementById('role-badge').innerText = 'MASTER'; }
 
     let orders = [];
+    let currentFilter = 'all';
     let expanded = new Set();
     let currentExpCat = 'mat';
 
-    db.ref(".info/connected").on("value", (snap) => {
+    db.ref(".info/connected").on("value", (s) => {
         const el = document.getElementById('cloud-status');
-        el.innerText = snap.val() ? "● ONLINE" : "● OFFLINE";
-        el.style.color = snap.val() ? "var(--green)" : "var(--red)";
+        el.innerText = s.val() ? "● ONLINE" : "● OFFLINE";
+        el.style.color = s.val() ? "var(--green)" : "var(--red)";
     });
 
     db.ref('orders').on('value', snap => {
@@ -147,28 +146,32 @@
 
     function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
     function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; }
-    
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
         el.value = val ? parseInt(val).toLocaleString('ru-RU') : '';
     }
-
-    function applyPhoneMask(el) {
-        let val = el.value.replace(/\D/g, '');
-        let masked = '';
-        if (val.length > 0) masked += val.substring(0, 3);
-        if (val.length > 3) masked += ' ' + val.substring(3, 5);
-        if (val.length > 5) masked += ' ' + val.substring(5, 8);
-        if (val.length > 8) masked += ' ' + val.substring(8, 10);
-        if (val.length > 10) masked += ' ' + val.substring(10, 12);
-        el.value = masked;
+    function formatPhone(el) {
+        let v = el.value.replace(/\D/g, '');
+        let m = '';
+        if (v.length > 0) m += v.substring(0, 3);
+        if (v.length > 3) m += ' ' + v.substring(3, 5);
+        if (v.length > 5) m += ' ' + v.substring(5, 8);
+        if (v.length > 8) m += ' ' + v.substring(8, 10);
+        if (v.length > 10) m += ' ' + v.substring(10, 12);
+        el.value = m;
     }
 
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active'); 
+        document.getElementById(id).classList.add('active'); el.classList.add('active');
+    }
+
+    function setFilter(f, el) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
+        renderOrders();
     }
 
     function editField(id, field, title) {
@@ -178,93 +181,16 @@
         if(val !== null) db.ref(`orders/${id}/${field}`).set(val);
     }
 
-    function editFinance(id, field, title) {
-        if(!isAdmin) return;
+    function generateReceipt(id) {
         const o = orders.find(x => x.id === id);
-        const val = prompt(title, o[field] || 0);
-        if(val !== null) db.ref(`orders/${id}/${field}`).set(extract(val));
-    }
-
-    function editExpense(oid, eidx, field, title, isNum) {
-        if(!isAdmin) return;
-        const o = orders.find(x => x.id === oid);
-        const val = prompt(title, o.expenses[eidx][field]);
-        if(val !== null) {
-            o.expenses[eidx][field] = isNum ? extract(val) : val;
-            o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
-            db.ref(`orders/${oid}/expenses`).set(o.expenses);
-        }
-    }
-
-    function getDeadlineStyle(dateStr) {
-        if(!dateStr) return { label: 'Нет даты', color: '#ccc' };
-        const d = new Date(dateStr);
-        const diff = (d - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24);
-        if(diff < 0) return { label: 'ПРОСРОЧЕНО!', color: 'var(--red)' };
-        if(diff <= 3) return { label: 'СРОЧНО!', color: 'var(--orange)' };
-        return { label: d.toLocaleDateString(), color: 'var(--hint)' };
-    }
-
-    function quickImport(oid) {
-        if(!isAdmin) return;
-        const text = prompt("Вставьте текст (Напр: Петли 30 шт Скотч 5 Клей 3):");
-        if (!text) return;
-        
-        // Регулярное выражение ищет Пары: Текст + Число
-        const regex = /([a-zа-яё\s-]+?)\s*[:\s-]*\s*(\d+)\s*(?:шт|ед|гр|комп|пач)?/gi;
-        const o = orders.find(x => x.id === oid);
-        if(!o.expenses) o.expenses = [];
-        
-        let match;
-        let count = 0;
-        while ((match = regex.exec(text)) !== null) {
-            let name = match[1].trim().replace(/^[\n\s,]+|[\n\s,]+$/g, '');
-            let qty = parseInt(match[2]);
-            if (name.length > 1) {
-                o.expenses.push({ 
-                    name: name, qty: qty, 
-                    price: 0, cost: 0, bought: false, cat: 'mat' 
-                });
-                count++;
-            }
-        }
-        
-        if (count > 0) {
-            db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
-                tg.showAlert(`Добавлено поз: ${count}. Проставьте цены!`);
-            });
-        } else {
-            tg.showAlert("Данные не распознаны. Используйте формат: Название Число");
-        }
-    }
-
-    function sendIndividualShoppingList(id) {
-        const o = orders.find(x => x.id === id);
-        const toBuy = o.expenses ? o.expenses.filter(e => !e.bought && e.cat !== 'work') : [];
-        if(toBuy.length === 0) return tg.showAlert("Нет позиций для закупа");
-        let text = `🛒 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
-        toBuy.forEach((e, i) => text += `${i+1}. ${e.name} — ${e.qty} шт.\n`);
-        navigator.clipboard.writeText(text).then(() => tg.showAlert("Список заказа скопирован!"));
-    }
-
-    function copyGlobalShoppingList() {
-        let list = "🛒 ОБЩИЙ ЗАКУП (ВСЕ ЗАКАЗЫ):\n\n";
-        orders.filter(o => o.status < 4 && o.expenses).forEach(o => {
-            const toBuy = o.expenses.filter(e => !e.bought && e.cat !== 'work');
-            if(toBuy.length > 0) {
-                list += `🛠 ${o.title}:\n`;
-                toBuy.forEach(e => list += `- ${e.name} (${e.qty} шт)\n`);
-                list += `\n`;
-            }
-        });
-        navigator.clipboard.writeText(list).then(() => tg.showAlert("Общий список скопирован!"));
+        const text = `📄 ЧЕК ЗАКАЗА\nИзделие: ${o.title}\nКлиент: ${o.client}\n---\nСумма: ${fMoney(o.price)}\nАванс: ${fMoney(o.prepay)}\nК оплате: ${fMoney(o.price - o.prepay)}\n---\nСтатус: ${STAGES[o.status]}`;
+        navigator.clipboard.writeText(text).then(() => tg.showAlert("Текст чека скопирован!"));
     }
 
     function createOrder() {
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
-        if(!title || price <= 0) return tg.showAlert("Заполните название и цену!");
-        
+        if(!title || price <= 0) return tg.showAlert("Заполните данные!");
         const id = Date.now();
         db.ref('orders/' + id).set({
             id, title, price,
@@ -275,26 +201,22 @@
             prepay: extract(document.getElementById('in-prepay').value),
             status: 0, mName: '', mPhone: '', expenses: []
         }).then(() => {
-            ['in-title', 'in-client', 'in-phone', 'in-loc', 'in-deadline', 'in-price', 'in-prepay'].forEach(k => document.getElementById(k).value = '');
+            ['in-title','in-client','in-phone','in-loc','in-deadline','in-price','in-prepay'].forEach(k => document.getElementById(k).value = '');
             nav('page-list', document.querySelectorAll('.tab-item')[0]);
         });
     }
 
-    function addExp(id) {
-        if(!isAdmin) return;
-        const nInput = document.getElementById(`ex-n-${id}`);
-        const qInput = document.getElementById(`ex-q-${id}`);
-        const pInput = document.getElementById(`ex-p-${id}`);
-        const n = nInput.value;
-        const q = extract(qInput.value) || 1;
-        const p = extract(pInput.value);
-        if(!n || p <= 0) return;
-        const o = orders.find(x => x.id === id);
+    function quickImport(oid) {
+        const text = prompt("Вставьте список (Название Число):");
+        if (!text) return;
+        const regex = /([a-zа-яё\s-]+?)\s*[:\s-]*\s*(\d+)/gi;
+        const o = orders.find(x => x.id === oid);
         if(!o.expenses) o.expenses = [];
-        o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false, cat: currentExpCat });
-        db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
-            nInput.value=''; qInput.value=''; pInput.value='';
-        });
+        let m;
+        while ((m = regex.exec(text)) !== null) {
+            o.expenses.push({ name: m[1].trim(), qty: parseInt(m[2]), price: 0, cost: 0, bought: false, cat: currentExpCat });
+        }
+        db.ref(`orders/${oid}/expenses`).set(o.expenses);
     }
 
     function renderOrders() {
@@ -302,25 +224,25 @@
         const archiveContainer = document.getElementById('archive-container');
         const query = document.getElementById('main-search').value.toLowerCase();
         listContainer.innerHTML = ''; archiveContainer.innerHTML = '';
-        
-        orders.filter(o => (o.title + (o.client||'') + (o.loc || '')).toLowerCase().includes(query)).forEach(o => {
+
+        orders.forEach(o => {
+            const isMatch = (o.title + o.client).toLowerCase().includes(query);
+            if(!isMatch) return;
+
+            const isLate = o.deadline && new Date(o.deadline) < new Date().setHours(0,0,0,0) && o.status < 4;
+            if(currentFilter === 'work' && o.status === 4) return;
+            if(currentFilter === 'late' && !isLate) return;
+
             const isExp = expanded.has(o.id);
-            const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
-            const ds = getDeadlineStyle(o.deadline);
-            
+            const totalExp = o.expenses ? o.expenses.reduce((s, e) => s + e.cost, 0) : 0;
             const card = document.createElement('div');
             card.className = 'order-card';
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-weight:800; font-size:17px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Название:')">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} • 📱 ${o.phone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'phone', 'Телефон:')">✏️</span></div>
-                        <div style="font-size:11px; opacity:0.6;">📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
-                        <div style="font-size:11px; margin-top:5px; padding:4px 8px; background:rgba(0,0,0,0.03); border-radius:8px;">
-                            🛠 <b>Мастер:</b> ${o.mName || 'не назначен'} <span class="edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:')">✏️</span><br>
-                            📞 <b>Тел. мастера:</b> ${o.mPhone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:')">✏️</span>
-                        </div>
-                        <div class="deadline-box" style="background:${ds.color}15; color:${ds.color}">📅 ${ds.label}</div>
+                        <div style="font-weight:800; font-size:16px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
+                        <div style="font-size:11px; opacity:0.6;">👤 ${o.client || '---'} | 📍 ${o.loc || '---'}</div>
+                        <div style="font-size:10px; margin-top:5px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
                         ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
@@ -328,43 +250,33 @@
                 </div>
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>ЦЕНА ПРОЕКТА:</span> <b onclick="editFinance(${o.id}, 'price', 'Общая цена:')">${fMoney(o.price)} ✏️</b></div>
-                    <div class="info-grid">
-                        <div><span style="font-size:10px; color:var(--hint);">АВАНС:</span><br><b style="color:var(--green);" onclick="editFinance(${o.id}, 'prepay', 'Аванс:')">${fMoney(o.prepay)} ✏️</b></div>
-                        <div style="text-align:right;"><span style="font-size:10px; color:var(--hint);">ДОЛГ КЛИЕНТА:</span><br><b style="color:var(--red);">${fMoney(o.price - o.prepay)}</b></div>
-                    </div>
-                    <div class="fin-row" style="color:var(--red); font-weight:800; border-top:1px solid var(--border); margin-top:5px; padding-top:5px;">
-                        <span>ЧИСТЫЙ ОСТАТОК:</span> <b>${fMoney(o.price - totalExp)}</b>
-                    </div>
+                    <div class="fin-row"><span>Цена:</span> <b>${fMoney(o.price)}</b></div>
+                    <div class="fin-row" style="color:var(--red)"><span>Остаток:</span> <b>${fMoney(o.price - totalExp)}</b></div>
+                    <button class="btn btn-outline" style="font-size:9px; padding:5px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
                 </div>` : ''}
-                <div style="margin-top:15px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
-                    📦 РАСХОДЫ/ЗП (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
+                <div style="margin-top:10px; font-size:11px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
+                    📦 Расходы (${o.expenses?o.expenses.length:0}) ${isExp?'▲':'▼'}
                 </div>
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
-                    <div class="exp-table-row header"><div>Наименование</div><div>Кол</div><div>Цена</div><div>Итого</div><div></div></div>
                     ${o.expenses ? o.expenses.map((e, i) => `
-                        <div class="exp-table-row ${e.bought?'bought':''}">
-                            <div onclick="editExpense(${o.id}, ${i}, 'name', 'Наименование:', false)">${e.cat==='work'?'<span class="cat-tag tag-work">ЗП</span>':''}${e.name}</div>
-                            <div onclick="editExpense(${o.id}, ${i}, 'qty', 'Количество:', true)">${e.qty}</div>
-                            <div onclick="editExpense(${o.id}, ${i}, 'price', 'Цена:', true)">${Math.round(e.price).toLocaleString()}</div>
-                            <div>${Math.round(e.cost).toLocaleString()}</div>
-                            <div onclick="${isAdmin ? `db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})` : ''}" style="text-align:right;">${e.bought?'✅':'⬜'}</div>
+                        <div class="exp-table-row">
+                            <div style="font-size:10px;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
+                            <div>${e.qty}</div><div>${Math.round(e.price).toLocaleString()}</div>
+                            <div onclick="${isAdmin ? `db.ref('orders/${o.id}/expenses/${i}/bought').set(!${e.bought})` : ''}">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `).join('') : ''}
                     ${isAdmin ? `
                     <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
                         <div style="display:flex; gap:10px; font-size:9px; margin-bottom:5px;">
-                            <span onclick="currentExpCat='mat'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer">МАТЕРИАЛЫ</span>
-                            <span onclick="currentExpCat='work'; this.parentNode.querySelectorAll('span').forEach(s=>s.style.opacity=0.5); this.style.opacity=1;" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
+                            <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer">МАТЕРИАЛ</span>
+                            <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
                         </div>
-                        <input type="text" id="ex-n-${o.id}" class="custom-input" style="font-size:12px; padding:8px;" placeholder="Наименование">
                         <div style="display:flex; gap:5px;">
-                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:12px;" placeholder="Кол" oninput="formatNumberInput(this)">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:2; font-size:12px;" placeholder="Цена" oninput="formatNumberInput(this)">
-                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:40px;">+</button>
+                            <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:11px;" placeholder="Что?">
+                            <input type="text" id="ex-p-${o.id}" class="custom-input" style="flex:1; font-size:11px;" placeholder="Цена">
+                            <button onclick="addExpSimple(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:35px;">+</button>
                         </div>
-                        <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод из текста</button>
-                        <button class="btn btn-shopping" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп заказа</button>
+                        <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
                     </div>` : ''}
                 </div>
             `;
@@ -373,16 +285,36 @@
         });
     }
 
+    function addExpSimple(id) {
+        const n = document.getElementById(`ex-n-${id}`).value;
+        const p = extract(document.getElementById(`ex-p-${id}`).value);
+        if(!n || p <= 0) return;
+        const o = orders.find(x => x.id === id);
+        if(!o.expenses) o.expenses = [];
+        o.expenses.push({ name: n, qty: 1, price: p, cost: p, bought: false, cat: currentExpCat });
+        db.ref(`orders/${id}/expenses`).set(o.expenses);
+    }
+
     function renderStats() {
         let rev = 0, mat = 0, work = 0;
+        let masterMap = {};
         orders.forEach(o => {
             rev += o.price;
-            if(o.expenses) o.expenses.forEach(e => { if(e.cat === 'work') work += e.cost; else mat += e.cost; });
+            if(o.expenses) o.expenses.forEach(e => {
+                if(e.cat === 'work') {
+                    work += e.cost;
+                    masterMap[e.name] = (masterMap[e.name] || 0) + e.cost;
+                } else mat += e.cost;
+            });
         });
         document.getElementById('stat-rev').innerText = fMoney(rev);
         document.getElementById('stat-mat').innerText = fMoney(mat);
         document.getElementById('stat-work').innerText = fMoney(work);
         document.getElementById('stat-profit').innerText = fMoney(rev - mat - work);
+        
+        const mDiv = document.getElementById('master-salaries');
+        mDiv.innerHTML = Object.entries(masterMap).map(([name, sum]) => 
+            `<div class="fin-row"><span>${name}:</span> <b>${fMoney(sum)}</b></div>`).join('') || 'Нет выплат';
     }
 </script>
 </body>

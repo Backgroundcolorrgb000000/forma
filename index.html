@@ -119,10 +119,11 @@
 </nav>
 
 <script>
-    // Объединенные зашифрованные данные (Ваши актуальные ключи Firebase + 2 админа)
+    // Объединенные зашифрованные данные (Ваши актуальные ключи + 3 админа)
     const _0xData = [
-        "Njk2MjI0NTczOA==", // Админ 1 (Вы): 6922245738
+        "Njk2MjI0NTczOA==", // Админ 1: 6922245738
         "MTI5Njk0MDg0Mw==", // Админ 2: 1296940843
+        "NDIyODI5MzYx",     // Админ 3 (Новый): 422829361
         "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", // Firebase Key
         "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t",             // Auth Domain
         "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", // DB URL
@@ -132,25 +133,26 @@
         "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE=" // App ID
     ];
 
-    // СПИСКИ ДОСТУПА
+    // СПИСКИ ДОСТУПА (теперь проверяет троих)
     const ADMIN_IDS = [
         parseInt(atob(_0xData[0])), 
-        parseInt(atob(_0xData[1]))
+        parseInt(atob(_0xData[1])),
+        parseInt(atob(_0xData[2]))
     ];
     
-    const SUPPLIER_IDS = [111222333]; // ID снабженца
+    const SUPPLIER_IDS = [111222333]; // Впишите ID снабженца здесь, если нужно
 
     const STAGES = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Готово"];
     
-    // Инициализация Firebase
+    // Инициализация Firebase (индексы смещены на +1)
     firebase.initializeApp({ 
-        apiKey: atob(_0xData[2]), 
-        authDomain: atob(_0xData[3]), 
-        databaseURL: atob(_0xData[4]), 
-        projectId: atob(_0xData[5]), 
-        storageBucket: atob(_0xData[6]), 
-        messagingSenderId: atob(_0xData[7]), 
-        appId: atob(_0xData[8]) 
+        apiKey: atob(_0xData[3]), 
+        authDomain: atob(_0xData[4]), 
+        databaseURL: atob(_0xData[5]), 
+        projectId: atob(_0xData[6]), 
+        storageBucket: atob(_0xData[7]), 
+        messagingSenderId: atob(_0xData[8]), 
+        appId: atob(_0xData[9]) 
     });
     
     const db = firebase.database();

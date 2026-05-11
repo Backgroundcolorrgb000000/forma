@@ -119,25 +119,44 @@
 </nav>
 
 <script>
-    const _0xData = ["MTI5Njk0MDg0Mw==", "ODAwMzU5NTAzODQ0", "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t", "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", "Zm9ybWFjcm0tYTVmZjg=", "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==", "ODAwMzU5NTAzODQ0", "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE="];
-    
-    
-
-
-
-
-    
-    const _0xData = ["Njk2MjI0NTczOA==", "MTEyMjMzNDQ1"]; 
+    // Объединенный массив данных:
+    // Индексы 0 и 1 используются для ADMIN_IDS
+    // Индексы со 2 по 8 используются для инициализации Firebase
+    const _0xData = [
+        "Njk2MjI0NTczOA==", // Ваш новый ID (6922245738) в Base64
+        "MTI5Njk0MDg0Mw==", // Второй ID админа
+        "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", 
+        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t", 
+        "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", 
+        "Zm9ybWFjcm0tYTVmZjg=", 
+        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==", 
+        "ODAwMzU5NTAzODQ0", 
+        "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE="
+    ];
 
     // СПИСКИ ДОСТУПА
+    // Берем первые два значения из массива и расшифровываем их
     const ADMIN_IDS = [parseInt(atob(_0xData[0])), parseInt(atob(_0xData[1]))];
-    const SUPPLIER_IDS = [111222333]; // ВПИШИ СЮДА ID СНАБЖЕНЦА ВМЕСТО ЦИФР 111222333
-    
+    const SUPPLIER_IDS = [111222333]; // Впишите ID снабженца сюда
+
     const STAGES = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Готово"];
     
-    firebase.initializeApp({ apiKey: atob(_0xData[2]), authDomain: atob(_0xData[3]), databaseURL: atob(_0xData[4]), projectId: atob(_0xData[5]), storageBucket: atob(_0xData[6]), messagingSenderId: atob(_0xData[7]), appId: atob(_0xData[8]) });
+    // Инициализация Firebase (используем индексы с 2 по 8)
+    firebase.initializeApp({ 
+        apiKey: atob(_0xData[2]), 
+        authDomain: atob(_0xData[3]), 
+        databaseURL: atob(_0xData[4]), 
+        projectId: atob(_0xData[5]), 
+        storageBucket: atob(_0xData[6]), 
+        messagingSenderId: atob(_0xData[7]), 
+        appId: atob(_0xData[8]) 
+    });
+    
     const db = firebase.database();
-    const tg = window.Telegram.WebApp; tg.expand();
+    const tg = window.Telegram.WebApp; 
+    tg.expand();
+
+    // ... далее ваш основной код без изменений ...
 
     // ФИКС ДЛЯ КЛАВИАТУРЫ: плавная прокрутка к активному инпуту
     window.addEventListener('focusin', (e) => {

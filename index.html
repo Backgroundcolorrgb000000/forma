@@ -135,7 +135,8 @@
 
         <div class="filter-bar">
             <div class="filter-chip active" id="tab-wh-stock" onclick="switchWhTab('stock')">Остатки</div>
-            <div class="filter-chip" id="tab-wh-logs" onclick="switchWhTab('logs')">История движения</div>
+            <div class="filter-chip" id="tab-wh-logs" onclick="switchWhTab('logs')">История</div>
+            <div class="filter-chip" id="tab-wh-usage" onclick="switchWhTab('usage')">Расходы</div>
         </div>
         
         <div id="wh-view-stock">
@@ -149,6 +150,12 @@
         
         <div id="wh-view-logs" style="display:none; background:var(--card); border-radius:15px; padding:10px; border:1px solid var(--border);">
             <div id="wh-logs-container"></div>
+        </div>
+
+        <!-- ОТДЕЛЬНАЯ СТРАНИЧКА "РАСХОДЫ" ДЛЯ СКЛАДА -->
+        <div id="wh-view-usage" style="display:none;">
+            <div style="font-size:12px; font-weight:700; color:var(--hint); margin-bottom:10px;">Списания на заказы:</div>
+            <div id="wh-usage-container"></div>
         </div>
     </section>
 
@@ -254,9 +261,9 @@
             </div>
         </div>
 
-        <label style="font-size:10px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Опционально)</label>
+        <label style="font-size:10px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Если есть)</label>
         <div class="search-group">
-            <input type="text" id="wh-c-code" class="custom-input" style="margin-bottom:0;" placeholder="Код">
+            <input type="text" id="wh-c-code" class="custom-input" style="margin-bottom:0;" placeholder="Авто-генерация...">
             <button class="search-btn" onclick="startScan('wh-c-code')">📷</button>
         </div>
 
@@ -370,8 +377,19 @@
         el.style.color = s.val() ? "var(--green)" : "var(--red)";
     });
 
+    // БАГФИКС МАССИВОВ ФАЙРБЕЙС: Защита от повреждения структуры expenses
     db.ref('orders').on('value', snap => {
-        orders = snap.val() ? Object.values(snap.val()).reverse() : [];
+        const rawOrders = snap.val() ? Object.values(snap.val()) : [];
+        orders = rawOrders.map(o => {
+            if (o.expenses) {
+                if (!Array.isArray(o.expenses)) {
+                    o.expenses = Object.values(o.expenses).filter(x => x !== null);
+                }
+            } else {
+                o.expenses = [];
+            }
+            return o;
+        }).reverse();
         renderOrders();
         if(isAdmin) renderStats();
     });
@@ -383,16 +401,23 @@
             if(document.getElementById('modal-wh-picker').classList.contains('active')) renderWhPickerList();
             renderNewOrderAttachedItems(); // Обновляет черновик, если склад изменился
         });
-        db.ref('warehouse/logs').limitToLast(100).on('value', snap => {
+        db.ref('warehouse/logs').limitToLast(150).on('value', snap => {
             whLogs = snap.val() ? Object.values(snap.val()).reverse() : [];
             renderWhLogs();
+            renderWhUsage(); // Обновляем страничку с расходами
         });
     }
 
-    // УТИЛИТЫ И ФОРМАТИРОВАНИЕ
+    // УТИЛИТЫ И ФОРМАТИРОВАНИЕ (БЕЗОПАСНАЯ КОНВЕРТАЦИЯ)
     function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
-    function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; } 
-    function parseQty(s) { return parseFloat(String(s).replace(',', '.')) || 0; }     
+    function extract(s) { 
+        if(!s) return 0;
+        return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; 
+    } 
+    function parseQty(s) { 
+        if(!s) return 0;
+        return parseFloat(String(s).replace(',', '.')) || 0; 
+    }     
     
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
@@ -513,6 +538,7 @@
             const unit = document.getElementById(`ai-unit-${i}`).value.trim() || 'шт';
             
             if (name && qty > 0) {
+                // Используем нестрогое сравнение (toLowerCase)
                 const existing = whItems.find(x => x.name.toLowerCase() === name.toLowerCase());
                 if (existing) {
                     const newQty = existing.qty + qty;
@@ -520,7 +546,9 @@
                     addWhLog(`<b>${name}</b>: Приход (AI-Скан) +${qty} ${unit}. Остаток: ${newQty}`);
                 } else {
                     const id = Date.now() + i;
-                    db.ref(`warehouse/items/${id}`).set({ id, name, qty, unit, barcode: '' });
+                    // Автоматическая генерация штрихкода для ИИ-товаров
+                    const code = "WH-" + Math.floor(100000 + Math.random() * 900000);
+                    db.ref(`warehouse/items/${id}`).set({ id, name, qty, unit, barcode: code });
                     addWhLog(`Создана позиция (AI-Скан): ${name} (${qty} ${unit})`);
                 }
                 addedCount++;
@@ -530,7 +558,7 @@
         tg.showAlert(`✅ Успешно добавлено ${addedCount} позиций на склад!`);
     }
 
-    // --- МОДАЛЬНАЯ СИСТЕМА (ОБНОВЛЕННАЯ С МИКРОФОНОМ И ПУСТЫМ defaultVal=0) ---
+    // --- МОДАЛЬНАЯ СИСТЕМА (ОБНОВЛЕННАЯ: ПРАВИЛЬНЫЕ ПУСТЫЕ ЗНАЧЕНИЯ) ---
     let modalCallback = null;
     
     function uiPrompt(title, defaultVal, callback, mode = 'text') {
@@ -539,8 +567,10 @@
         const micBtn = document.getElementById('modal-mic-btn');
         
         input.style.display = 'block';
-        // Если значение 0 (например, не указана цена), поле ввода будет пустым для удобства!
-        input.value = (defaultVal !== 0) ? defaultVal : ''; 
+        
+        // БАГФИКС ЦЕН: Если передали 0, мы оставляем поле ПУСТЫМ, чтобы удобно было вводить новую цифру
+        input.value = (defaultVal && defaultVal !== '0' && defaultVal !== 0) ? defaultVal : ''; 
+        
         input.oninput = null;
         input.removeAttribute('inputmode');
         
@@ -574,7 +604,7 @@
         document.getElementById(modalId).classList.remove('active');
         if(modalId === 'modal-overlay') {
             document.getElementById('modal-input').value = '';
-            modalCallback = null;
+            modalCallback = null; // Сброс коллбека (отмена)
         }
     }
 
@@ -612,8 +642,11 @@
     function switchWhTab(tab) {
         document.getElementById('tab-wh-stock').classList.toggle('active', tab === 'stock');
         document.getElementById('tab-wh-logs').classList.toggle('active', tab === 'logs');
+        document.getElementById('tab-wh-usage').classList.toggle('active', tab === 'usage');
+
         document.getElementById('wh-view-stock').style.display = tab === 'stock' ? 'block' : 'none';
         document.getElementById('wh-view-logs').style.display = tab === 'logs' ? 'block' : 'none';
+        document.getElementById('wh-view-usage').style.display = tab === 'usage' ? 'block' : 'none';
     }
 
     function openWhCreateModal() {
@@ -628,9 +661,14 @@
         const name = document.getElementById('wh-c-name').value.trim();
         const unit = document.getElementById('wh-c-unit').value;
         const qty = parseQty(document.getElementById('wh-c-qty').value) || 0;
-        const code = document.getElementById('wh-c-code').value.trim();
+        let code = document.getElementById('wh-c-code').value.trim();
 
         if(!name) { tg.showAlert("Введите название товара!"); return; }
+
+        // АВТО-ГЕНЕРАЦИЯ ШТРИХКОДА
+        if(!code) {
+            code = "WH-" + Math.floor(100000 + Math.random() * 900000);
+        }
 
         const id = Date.now();
         db.ref(`warehouse/items/${id}`).set({ id, name, qty, unit, barcode: code });
@@ -641,7 +679,9 @@
     }
 
     function changeWhQty(id, type) {
-        const item = whItems.find(x => x.id === id);
+        const item = whItems.find(x => x.id == id);
+        if(!item) { tg.showAlert("Ошибка: товар не найден в базе!"); return; }
+
         const actionTitle = type === 'add' ? `🟢 ПРИХОД: ${item.name}` : `🔴 РАСХОД: ${item.name}`;
         uiPrompt(`${actionTitle}\nВведите количество (${item.unit}):`, "", (val) => {
             if(!val) return;
@@ -659,7 +699,8 @@
 
     function editWhName(id) {
         if(!isAdmin) return;
-        const item = whItems.find(x => x.id === id);
+        const item = whItems.find(x => x.id == id);
+        if(!item) return;
         uiPrompt("Изменить название:", item.name, (val) => {
             if(val) db.ref(`warehouse/items/${id}/name`).set(val);
         });
@@ -667,7 +708,8 @@
 
     function deleteWhItem(id) {
         if(!isAdmin) return;
-        const item = whItems.find(x => x.id === id);
+        const item = whItems.find(x => x.id == id);
+        if(!item) return;
         uiConfirm(`Точно удалить позицию "${item.name}" из базы склада?`, (res) => {
             if(res) {
                 db.ref(`warehouse/items/${id}`).remove();
@@ -720,6 +762,23 @@
         const c = document.getElementById('wh-logs-container');
         if(whLogs.length === 0) c.innerHTML = '<div style="font-size:11px; color:var(--hint); text-align:center;">Истории пока нет</div>';
         else c.innerHTML = whLogs.map(l => `<div style="font-size:11px; padding:10px 0; border-bottom:1px solid var(--border); line-height:1.4;">${l.text}</div>`).join('');
+    }
+
+    // Рендер страницы "Расходы" (Отдельная страничка для склада)
+    function renderWhUsage() {
+        const c = document.getElementById('wh-usage-container');
+        // Фильтруем историю, оставляя только те записи, где есть слова о расходе/возврате
+        const usageLogs = whLogs.filter(l => l.text.includes('Списано') || l.text.includes('Списание') || l.text.includes('Возврат') || l.text.includes('корректировка'));
+        
+        if(usageLogs.length === 0) {
+            c.innerHTML = '<div style="font-size:12px; color:var(--hint); text-align:center; margin-top:20px;">Расходов пока нет</div>';
+        } else {
+            c.innerHTML = usageLogs.map(l => `
+                <div style="font-size:12px; padding:12px; margin-bottom:8px; background:var(--card); border-radius:12px; border:1px solid var(--border); line-height:1.5; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                    ${l.text}
+                </div>
+            `).join('');
+        }
     }
 
 
@@ -813,7 +872,7 @@
         } else {
             // Мгновенное добавление в существующий заказ
             const orderId = pickerMode;
-            const order = orders.find(x => x.id === orderId);
+            const order = orders.find(x => x.id == orderId);
             if(!order) return;
             
             let addedCount = 0;
@@ -825,7 +884,7 @@
                     // Списание со склада
                     const newWhQty = item.qty - qty;
                     db.ref(`warehouse/items/${itemId}/qty`).set(newWhQty);
-                    addWhLog(`<b>${item.name}</b>: Массовое списание -${qty} ${item.unit} на заказ <b>"${order.title}"</b>. Остаток: ${newWhQty}`);
+                    addWhLog(`<b>${item.name}</b>: Списано -${qty} ${item.unit} на заказ <b>"${order.title}"</b>. Остаток: ${newWhQty}`);
                     
                     // Добавление в заказ (Цена по умолчанию 0)
                     order.expenses.push({ 
@@ -862,17 +921,33 @@
     }
 
 
-    // --- ЛОГИКА ЗАКАЗОВ ---
+    // --- ЛОГИКА ЗАКАЗОВ И СИНХРОНИЗАЦИИ СО СКЛАДОМ ---
     function deleteOrder(id) {
         if(!isAdmin) return;
-        uiConfirm("Внимание! Вы точно хотите безвозвратно удалить этот заказ?", (res) => {
-            if(res) db.ref(`orders/${id}`).remove();
+        uiConfirm("Внимание! Вы точно хотите удалить этот заказ? (Все списанные материалы автоматически вернутся на склад!)", (res) => {
+            if(res) {
+                const o = orders.find(x => x.id == id);
+                if (o && o.expenses) {
+                    // Автоматический возврат материалов на склад при удалении заказа
+                    o.expenses.forEach(e => {
+                        if (e.cat !== 'work') {
+                            const whItem = whItems.find(x => x.name.toLowerCase() === e.name.toLowerCase());
+                            if (whItem) {
+                                const newWhQty = whItem.qty + e.qty;
+                                db.ref(`warehouse/items/${whItem.id}/qty`).set(newWhQty);
+                                addWhLog(`<b>${whItem.name}</b>: Возврат +${e.qty} ${whItem.unit} (удален заказ <b>"${o.title}"</b>). Остаток: ${newWhQty}`);
+                            }
+                        }
+                    });
+                }
+                db.ref(`orders/${id}`).remove();
+            }
         });
     }
 
     function editField(id, field, title) {
         if(!isAdmin) return;
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => x.id == id);
         uiPrompt(title, o[field] || '', (val) => {
             if(val !== null && val !== undefined) db.ref(`orders/${id}/${field}`).set(val);
         }, 'text');
@@ -880,25 +955,58 @@
 
     function editFinance(id, field, title) {
         if(!isAdmin) return;
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => x.id == id);
         uiPrompt(title, o[field] || 0, (val) => {
-            if(val) db.ref(`orders/${id}/${field}`).set(extract(val));
+            if(val !== null) db.ref(`orders/${id}/${field}`).set(extract(val));
         }, 'money');
     }
 
+    // БАГФИКС: ИДЕАЛЬНОЕ РЕДАКТИРОВАНИЕ ЦЕН И КОЛИЧЕСТВ С ВОЗВРАТОМ НА СКЛАД
     function editExpense(oid, eidx, field, title, mode) {
         if(!isAdmin) return;
-        const o = orders.find(x => x.id === oid);
+        const o = orders.find(x => x.id == oid);
+        if (!o || !o.expenses || o.expenses[eidx] === undefined) return;
+        
         const currentVal = o.expenses[eidx][field];
         
         uiPrompt(title, currentVal, (val) => {
-            if(val === null || val === '') return;
+            if(val === null) return; // Нажали "Отмена"
             
-            if (mode === 'money') o.expenses[eidx][field] = extract(val);
-            else if (mode === 'qty') o.expenses[eidx][field] = parseQty(val);
-            else o.expenses[eidx][field] = val;
+            if (mode === 'money') {
+                o.expenses[eidx][field] = extract(val);
+            } else if (mode === 'qty') {
+                const newQty = parseQty(val);
+                const diff = o.expenses[eidx].qty - newQty; // вычисляем разницу
+                
+                // СИНХРОНИЗАЦИЯ: Если количество изменилось, возвращаем или до-списываем со склада
+                if (diff !== 0) {
+                    const itemName = o.expenses[eidx].name;
+                    const whItem = whItems.find(x => x.name.toLowerCase() === itemName.toLowerCase());
+                    if (whItem) {
+                        const newWhQty = whItem.qty + diff;
+                        db.ref(`warehouse/items/${whItem.id}/qty`).set(newWhQty);
+                        const actionWord = diff > 0 ? 'Возврат' : 'Доп. списание';
+                        const sign = diff > 0 ? '+' : '';
+                        addWhLog(`<b>${whItem.name}</b>: ${actionWord} ${sign}${diff} ${whItem.unit} (корректировка кол-ва в заказе <b>"${o.title}"</b>). Остаток: ${newWhQty}`);
+                    }
+                }
+                
+                // Если указали количество 0 - вообще удаляем эту строку из расходов
+                if (newQty <= 0) {
+                    o.expenses.splice(eidx, 1);
+                } else {
+                    o.expenses[eidx][field] = newQty;
+                }
+            } else {
+                if (val.trim() === '') return;
+                o.expenses[eidx][field] = val.trim();
+            }
             
-            o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+            // Пересчитываем итог (cost) только если строку не удалили
+            if (o.expenses[eidx] && mode !== 'text') {
+                o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+            }
+            
             db.ref(`orders/${oid}/expenses`).set(o.expenses);
         }, mode);
     }
@@ -959,7 +1067,7 @@
         const q = parseQty(qInput.value) || 1;
         const p = extract(pInput.value);
         if(!n) return;
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => x.id == id);
         if(!o.expenses) o.expenses = [];
         o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false, cat: currentExpCat });
         db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
@@ -972,7 +1080,7 @@
         uiPrompt("Вставьте текст (Например: кромка 100 мт клей 1.5 кг):", "", (text) => {
             if (!text) return;
             const regex = /(.*?)\s+[-=:]?\s*(\d+(?:[.,]\d+)?)\s*(шт|уг|мт|м|ед|гр|комп|пач|кг|л|лт)/gi;
-            const o = orders.find(x => x.id === oid);
+            const o = orders.find(x => x.id == oid);
             if(!o.expenses) o.expenses = [];
             
             let match;
@@ -1015,13 +1123,13 @@
 
     // --- ОТЧЕТЫ ---
     function generateReceipt(id) {
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => x.id == id);
         const text = `📄 ЧЕК ЗАКАЗА\nИзделие: ${o.title}\nКлиент: ${o.client}\n---\nСумма: ${fMoney(o.price)}\nАванс: ${fMoney(o.prepay)}\nК оплате: ${fMoney(o.price - o.prepay)}\n---\nСтатус: ${STAGES[o.status]}`;
         navigator.clipboard.writeText(text).then(() => tg.showAlert("Текст чека скопирован!"));
     }
 
     function sendBossReport(id) {
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => x.id == id);
         const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
         const mat = o.expenses ? o.expenses.filter(e => e.cat !== 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
         const work = o.expenses ? o.expenses.filter(e => e.cat === 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
@@ -1032,7 +1140,7 @@
     }
 
     function sendIndividualShoppingList(id) {
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => x.id == id);
         const toBuy = o.expenses ? o.expenses.filter(e => !e.bought && e.cat !== 'work') : [];
         if(toBuy.length === 0) return tg.showAlert("Нет позиций для закупа");
         let text = `🛒 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
@@ -1145,10 +1253,13 @@
                     </div>` : ''}
                 </div>
                 
+                ${o.status === 4 && isAdmin ? `
+                <button class="btn btn-outline" style="font-size:10px; padding:8px; margin-top:15px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
+                ` : ''}
+
                 ${isAdmin ? `
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    ${o.status === 4 ? `<button class="btn btn-outline" style="font-size:10px; padding:8px; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отчет</button>` : ''}
-                    <button class="btn btn-outline" style="font-size:10px; padding:8px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить</button>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn btn-outline" style="font-size:10px; padding:8px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить заказ</button>
                 </div>
                 ` : ''}
             `;

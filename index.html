@@ -32,7 +32,7 @@
         .tab-item.visible { display: flex; }
         .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
 
-        .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; }
+        .custom-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; font-size: 14px;}
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); margin-top: 5px; }
@@ -47,15 +47,34 @@
         body.is-admin .edit-icon { display: inline-block; }
         
         .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip { padding: 6px 12px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 10px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+        .filter-chip { padding: 6px 12px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 10px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
         .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
         .status-select { font-size: 9px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
         
-        /* Стили для роли Снабженца */
         body.is-supplier .supplier-hide { display: none !important; }
         body.is-supplier .exp-table-row { grid-template-columns: 3fr 1fr 40px; }
+
+        /* СКЛАД UI */
+        .wh-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); }
+        .wh-info { flex: 1; cursor: pointer; }
+        .wh-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+        .wh-qty { font-size: 11px; color: var(--hint); }
+        .wh-qty b { color: var(--primary); font-size: 14px; margin-right: 2px;}
+        .wh-actions { display: flex; gap: 6px; align-items: center; }
+        .wh-btn { border: none; background: rgba(0,0,0,0.05); width: 34px; height: 34px; border-radius: 10px; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s;}
+        .wh-btn:active { transform: scale(0.9); }
+        .wh-btn.plus { color: var(--green); background: rgba(46, 204, 113, 0.15); }
+        .wh-btn.minus { color: var(--red); background: rgba(220, 53, 69, 0.15); }
+
+        /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА */
+        .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
+        .modal-box { background: var(--card); border-radius: 20px; padding: 24px; width: 100%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease-out; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -69,6 +88,7 @@
 </header>
 
 <main>
+    <!-- ЗАКАЗЫ -->
     <section id="page-list" class="page active">
         <div class="filter-bar">
             <div class="filter-chip active" onclick="setFilter('all', this)">Все</div>
@@ -78,6 +98,29 @@
         <div id="orders-container"></div>
     </section>
 
+    <!-- СКЛАД -->
+    <section id="page-warehouse" class="page">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <h2 style="font-weight: 800; margin: 0;">Склад</h2>
+            <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 16px; font-size:11px;" onclick="createWhItem()">+ НОВЫЙ ТОВАР</button>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-chip active" id="tab-wh-stock" onclick="switchWhTab('stock')">Остатки</div>
+            <div class="filter-chip" id="tab-wh-logs" onclick="switchWhTab('logs')">История движения</div>
+        </div>
+        
+        <div id="wh-view-stock">
+            <input type="text" id="wh-search" class="custom-input" placeholder="Поиск по складу..." oninput="renderWarehouse()">
+            <div id="wh-container"></div>
+        </div>
+        
+        <div id="wh-view-logs" style="display:none; background:var(--card); border-radius:15px; padding:10px; border:1px solid var(--border);">
+            <div id="wh-logs-container"></div>
+        </div>
+    </section>
+
+    <!-- ФИНАНСЫ -->
     <section id="page-stats" class="page">
         <h2 style="font-weight: 800;">Аналитика</h2>
         <div class="finances" style="font-size:16px; margin-bottom: 20px;">
@@ -95,6 +138,7 @@
         <div id="archive-container"></div>
     </section>
 
+    <!-- ДОБАВЛЕНИЕ -->
     <section id="page-add" class="page">
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
@@ -114,59 +158,52 @@
 
 <nav class="tab-bar">
     <div class="tab-item visible active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
+    <div id="tab-warehouse" class="tab-item" onclick="nav('page-warehouse', this)"><span>📦</span><div class="tab-label">Склад</div></div>
     <div id="tab-fin" class="tab-item" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
     <div id="tab-add" class="tab-item" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
 </nav>
 
+<!-- КАСТОМНЫЕ ОКНА (MODALS) -->
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="modal-title" style="margin-top:0; margin-bottom: 15px; font-size:15px; line-height: 1.4;"></h3>
+        <input type="text" id="modal-input" class="custom-input" style="display:none; font-size:16px;">
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05)" onclick="closeModal()">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Объединенные зашифрованные данные
     const _0xData = [
-        "NjkyMjI0NTczOA==", // ИСПРАВЛЕНО! Админ 1: 6938
-        "MTI5Njk0MDg0Mw==", // Админ 2: 1243
-        "NDIyODI5MzYx",     // Админ 3: 4261
-        "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", // Firebase Key
-        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t",             // Auth Domain
-        "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", // DB URL
-        "Zm9ybWFjcm0tYTVmZjg=",                                 // Project ID
-        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==",     // Storage
-        "ODAwMzU5NTAzODQ0",                                     // Sender ID
-        "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE=" // App ID
+        "NjkyMjI0NTczOA==", "MTI5Njk0MDg0Mw==", "NDIyODI5MzYx", 
+        "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", 
+        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t",             
+        "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", 
+        "Zm9ybWFjcm0tYTVmZjg=",                                 
+        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==",     
+        "ODAwMzU5NTAzODQ0",                                     
+        "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE=" 
     ];
 
-    // СПИСКИ ДОСТУПА 
-    const ADMIN_IDS = [
-        parseInt(atob(_0xData[0])), 
-        parseInt(atob(_0xData[1])),
-        parseInt(atob(_0xData[2]))
-    ];
-    
-    const SUPPLIER_IDS = [111222333]; // ID снабженца
+    const ADMIN_IDS = [parseInt(atob(_0xData[0])), parseInt(atob(_0xData[1])), parseInt(atob(_0xData[2]))];
+    const SUPPLIER_IDS = [111222333]; 
 
     const STAGES = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Готово"];
     
-    // Инициализация Firebase
     firebase.initializeApp({ 
-        apiKey: atob(_0xData[3]), 
-        authDomain: atob(_0xData[4]), 
-        databaseURL: atob(_0xData[5]), 
-        projectId: atob(_0xData[6]), 
-        storageBucket: atob(_0xData[7]), 
-        messagingSenderId: atob(_0xData[8]), 
-        appId: atob(_0xData[9]) 
+        apiKey: atob(_0xData[3]), authDomain: atob(_0xData[4]), databaseURL: atob(_0xData[5]), 
+        projectId: atob(_0xData[6]), storageBucket: atob(_0xData[7]), messagingSenderId: atob(_0xData[8]), appId: atob(_0xData[9]) 
     });
     
     const db = firebase.database();
     const tg = window.Telegram.WebApp; 
     tg.expand();
 
-    // ... далее ваш основной код без изменений ...
-
-    // ФИКС ДЛЯ КЛАВИАТУРЫ: плавная прокрутка к активному инпуту
     window.addEventListener('focusin', (e) => {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-            setTimeout(() => {
-                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
+            setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
         }
     });
 
@@ -175,23 +212,28 @@
     const isSupplier = SUPPLIER_IDS.includes(currentUserId);
     const canCheckExp = isAdmin || isSupplier;
 
+    let roleName = 'МАСТЕР';
     if(isAdmin) {
         document.body.classList.add('is-admin');
         document.getElementById('tab-fin').classList.add('visible');
         document.getElementById('tab-add').classList.add('visible');
-        document.getElementById('role-badge').innerText = 'ADMIN';
+        document.getElementById('tab-warehouse').classList.add('visible');
+        roleName = 'ADMIN';
     } else if (isSupplier) {
         document.body.classList.add('is-supplier');
-        document.getElementById('role-badge').innerText = 'СНАБЖЕНЕЦ';
-    } else { 
-        document.getElementById('role-badge').innerText = 'МАСТЕР'; 
+        document.getElementById('tab-warehouse').classList.add('visible');
+        roleName = 'СНАБЖЕНЕЦ';
     }
+    document.getElementById('role-badge').innerText = roleName;
 
     let orders = [];
+    let whItems = [];
+    let whLogs = [];
     let currentFilter = 'all';
     let expanded = new Set();
     let currentExpCat = 'mat';
 
+    // Слушатели базы данных
     db.ref(".info/connected").on("value", (s) => {
         const el = document.getElementById('cloud-status');
         el.innerText = s.val() ? "● ONLINE" : "● OFFLINE";
@@ -204,8 +246,22 @@
         if(isAdmin) renderStats();
     });
 
+    if (isAdmin || isSupplier) {
+        db.ref('warehouse/items').on('value', snap => {
+            whItems = snap.val() ? Object.values(snap.val()) : [];
+            renderWarehouse();
+        });
+        db.ref('warehouse/logs').limitToLast(100).on('value', snap => {
+            whLogs = snap.val() ? Object.values(snap.val()).reverse() : [];
+            renderWhLogs();
+        });
+    }
+
+    // УТИЛИТЫ И ФОРМАТИРОВАНИЕ
     function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
-    function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; }
+    function extract(s) { return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; } // Для денег
+    function parseQty(s) { return parseFloat(String(s).replace(',', '.')) || 0; }     // Для количества (позволяет дроби)
+    
     function formatNumberInput(el) {
         let val = el.value.replace(/[^\d]/g, '');
         el.value = val ? parseInt(val).toLocaleString('ru-RU') : '';
@@ -221,6 +277,59 @@
         el.value = m;
     }
 
+    // МОДАЛЬНАЯ СИСТЕМА
+    let modalCallback = null;
+    
+    function uiPrompt(title, defaultVal, callback, mode = 'text') {
+        document.getElementById('modal-title').innerText = title;
+        const input = document.getElementById('modal-input');
+        input.style.display = 'block';
+        input.value = defaultVal;
+        input.oninput = null;
+        input.removeAttribute('inputmode');
+        
+        if (mode === 'money') {
+            input.setAttribute('inputmode', 'numeric');
+            input.oninput = () => formatNumberInput(input);
+        } else if (mode === 'qty') {
+            input.setAttribute('inputmode', 'decimal');
+        }
+
+        modalCallback = callback;
+        document.getElementById('modal-overlay').classList.add('active');
+        setTimeout(() => input.focus(), 100);
+    }
+
+    function uiConfirm(title, callback) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-input').style.display = 'none';
+        modalCallback = callback;
+        document.getElementById('modal-overlay').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('active');
+        document.getElementById('modal-input').value = '';
+        modalCallback = null;
+    }
+
+    function confirmModal() {
+        const input = document.getElementById('modal-input');
+        const cb = modalCallback;
+        closeModal();
+        if(cb) {
+            if(input.style.display === 'none') cb(true); // Для Confirm (возвращает true)
+            else cb(input.value); // Для Prompt (возвращает текст)
+        }
+    }
+
+    // Обработка Enter в модалке
+    document.getElementById('modal-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') confirmModal();
+    });
+
+
+    // НАВИГАЦИЯ
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
@@ -234,29 +343,138 @@
         renderOrders();
     }
 
+
+    // --- МОДУЛЬ СКЛАДА ---
+    function switchWhTab(tab) {
+        document.getElementById('tab-wh-stock').classList.toggle('active', tab === 'stock');
+        document.getElementById('tab-wh-logs').classList.toggle('active', tab === 'logs');
+        document.getElementById('wh-view-stock').style.display = tab === 'stock' ? 'block' : 'none';
+        document.getElementById('wh-view-logs').style.display = tab === 'logs' ? 'block' : 'none';
+    }
+
+    function createWhItem() {
+        if(!isAdmin) return;
+        uiPrompt("Название нового товара:", "", (name) => {
+            if(!name) return;
+            uiPrompt("Единица измерения (шт, м, кг, лист):", "шт", (unit) => {
+                if(!unit) return;
+                const id = Date.now();
+                db.ref(`warehouse/items/${id}`).set({ id, name, qty: 0, unit });
+                addWhLog(`Создана позиция: ${name}`);
+            }, 'text');
+        }, 'text');
+    }
+
+    function changeWhQty(id, type) {
+        const item = whItems.find(x => x.id === id);
+        const actionTitle = type === 'add' ? `🟢 ПРИХОД: ${item.name}` : `🔴 РАСХОД: ${item.name}`;
+        uiPrompt(`${actionTitle}\nВведите количество (${item.unit}):`, "", (val) => {
+            if(!val) return;
+            const num = parseQty(val);
+            if(num <= 0) return;
+            
+            const newQty = type === 'add' ? (item.qty + num) : (item.qty - num);
+            db.ref(`warehouse/items/${id}/qty`).set(newQty);
+            
+            const actionWord = type === 'add' ? 'Приход' : 'Списание';
+            const sign = type === 'add' ? '+' : '-';
+            addWhLog(`<b>${item.name}</b>: ${actionWord} ${sign}${num} ${item.unit}. Остаток: ${newQty}`);
+        }, 'qty');
+    }
+
+    function editWhName(id) {
+        if(!isAdmin) return;
+        const item = whItems.find(x => x.id === id);
+        uiPrompt("Изменить название:", item.name, (val) => {
+            if(val) db.ref(`warehouse/items/${id}/name`).set(val);
+        });
+    }
+
+    function deleteWhItem(id) {
+        if(!isAdmin) return;
+        const item = whItems.find(x => x.id === id);
+        uiConfirm(`Точно удалить позицию "${item.name}" из базы склада?`, (res) => {
+            if(res) {
+                db.ref(`warehouse/items/${id}`).remove();
+                addWhLog(`Удалена позиция: ${item.name}`);
+            }
+        });
+    }
+
+    function addWhLog(text) {
+        const logId = Date.now();
+        const dateStr = new Date().toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
+        db.ref(`warehouse/logs/${logId}`).set({ 
+            text: `<span style="color:var(--hint)">${dateStr} | ${roleName}</span><br>${text}` 
+        });
+    }
+
+    function renderWarehouse() {
+        const c = document.getElementById('wh-container');
+        const q = document.getElementById('wh-search').value.toLowerCase();
+        c.innerHTML = '';
+        whItems.filter(i => i.name.toLowerCase().includes(q)).forEach(i => {
+            c.innerHTML += `
+                <div class="wh-item">
+                    <div class="wh-info" onclick="editWhName(${i.id})">
+                        <div class="wh-name">${i.name}</div>
+                        <div class="wh-qty">Остаток: <b>${i.qty}</b> ${i.unit}</div>
+                    </div>
+                    <div class="wh-actions">
+                        <button class="wh-btn minus" onclick="changeWhQty(${i.id}, 'sub')">-</button>
+                        <button class="wh-btn plus" onclick="changeWhQty(${i.id}, 'add')">+</button>
+                        ${isAdmin ? `<button class="wh-btn" style="color:var(--hint); background:none;" onclick="deleteWhItem(${i.id})">🗑</button>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderWhLogs() {
+        const c = document.getElementById('wh-logs-container');
+        if(whLogs.length === 0) c.innerHTML = '<div style="font-size:11px; color:var(--hint); text-align:center;">Истории пока нет</div>';
+        else c.innerHTML = whLogs.map(l => `<div style="font-size:11px; padding:10px 0; border-bottom:1px solid var(--border); line-height:1.4;">${l.text}</div>`).join('');
+    }
+    // --- КОНЕЦ МОДУЛЯ СКЛАДА ---
+
+
+    // --- ЛОГИКА ЗАКАЗОВ ---
+    function deleteOrder(id) {
+        if(!isAdmin) return;
+        uiConfirm("Внимание! Вы точно хотите безвозвратно удалить этот заказ?", (res) => {
+            if(res) db.ref(`orders/${id}`).remove();
+        });
+    }
+
     function editField(id, field, title) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id === id);
-        const val = prompt(title, o[field] || '');
-        if(val !== null) db.ref(`orders/${id}/${field}`).set(val);
+        uiPrompt(title, o[field] || '', (val) => {
+            if(val !== null && val !== undefined) db.ref(`orders/${id}/${field}`).set(val);
+        }, 'text');
     }
 
     function editFinance(id, field, title) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id === id);
-        const val = prompt(title, o[field] || 0);
-        if(val !== null) db.ref(`orders/${id}/${field}`).set(extract(val));
+        uiPrompt(title, o[field] || 0, (val) => {
+            if(val) db.ref(`orders/${id}/${field}`).set(extract(val));
+        }, 'money');
     }
 
-    function editExpense(oid, eidx, field, title, isNum) {
+    function editExpense(oid, eidx, field, title, mode) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id === oid);
-        const val = prompt(title, o.expenses[eidx][field]);
-        if(val !== null) {
-            o.expenses[eidx][field] = isNum ? parseFloat(String(val).replace(',', '.')) : val;
+        uiPrompt(title, o.expenses[eidx][field], (val) => {
+            if(val === null || val === '') return;
+            
+            if (mode === 'money') o.expenses[eidx][field] = extract(val);
+            else if (mode === 'qty') o.expenses[eidx][field] = parseQty(val);
+            else o.expenses[eidx][field] = val;
+            
             o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
             db.ref(`orders/${oid}/expenses`).set(o.expenses);
-        }
+        }, mode);
     }
 
     function toggleBought(oid, originalIndex, currentStatus) {
@@ -264,38 +482,10 @@
         db.ref(`orders/${oid}/expenses/${originalIndex}/bought`).set(!currentStatus);
     }
 
-    function generateReceipt(id) {
-        const o = orders.find(x => x.id === id);
-        const text = `📄 ЧЕК ЗАКАЗА\nИзделие: ${o.title}\nКлиент: ${o.client}\n---\nСумма: ${fMoney(o.price)}\nАванс: ${fMoney(o.prepay)}\nК оплате: ${fMoney(o.price - o.prepay)}\n---\nСтатус: ${STAGES[o.status]}`;
-        navigator.clipboard.writeText(text).then(() => tg.showAlert("Текст чека скопирован!"));
-    }
-
-    function sendBossReport(id) {
-        const o = orders.find(x => x.id === id);
-        const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
-        const mat = o.expenses ? o.expenses.filter(e => e.cat !== 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
-        const work = o.expenses ? o.expenses.filter(e => e.cat === 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
-        const profit = o.price - totalExp;
-        
-        let text = `📊 ОТЧЕТ РУКОВОДИТЕЛЮ\n`;
-        text += `🛠 Заказ: ${o.title}\n`;
-        text += `👤 Клиент: ${o.client || '---'}\n`;
-        text += `👷 Мастер: ${o.mName || '---'}\n`;
-        text += `----------------------\n`;
-        text += `💰 Цена: ${fMoney(o.price)}\n`;
-        text += `📉 Расходы: ${fMoney(totalExp)}\n`;
-        text += `   ├ Материалы: ${fMoney(mat)}\n`;
-        text += `   └ Зарплата: ${fMoney(work)}\n`;
-        text += `----------------------\n`;
-        text += `✅ ЧИСТАЯ ПРИБЫЛЬ: ${fMoney(profit)}`;
-        
-        navigator.clipboard.writeText(text).then(() => tg.showAlert("Отчет скопирован! Можно отправлять боссу."));
-    }
-
     function createOrder() {
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
-        if(!title || price <= 0) return tg.showAlert("Заполните данные!");
+        if(!title || price <= 0) return tg.showAlert("Заполните изделие и цену!");
         const id = Date.now();
         db.ref('orders/' + id).set({
             id, title, price,
@@ -319,7 +509,7 @@
         const qInput = document.getElementById(`ex-q-${id}`);
         const pInput = document.getElementById(`ex-p-${id}`);
         const n = nInput.value;
-        const q = extract(qInput.value) || 1;
+        const q = parseQty(qInput.value) || 1;
         const p = extract(pInput.value);
         if(!n) return;
         const o = orders.find(x => x.id === id);
@@ -332,50 +522,66 @@
 
     function quickImport(oid) {
         if(!isAdmin) return;
-        const text = prompt("Вставьте текст (Например: кромка 100 мт клей 1.5 кг краска 2,5 лт):");
-        if (!text) return;
-        
-        const regex = /(.*?)\s+[-=:]?\s*(\d+(?:[.,]\d+)?)\s*(шт|уг|мт|м|ед|гр|комп|пач|кг|л|лт)/gi;
-        const o = orders.find(x => x.id === oid);
-        if(!o.expenses) o.expenses = [];
-        
-        let match;
-        let count = 0;
-
-        while ((match = regex.exec(text)) !== null) {
-            let name = match[1].replace(/^[\s,иа\-\+]+/i, '').trim();
-            let qty = parseFloat(match[2].replace(',', '.'));
+        uiPrompt("Вставьте текст (Например: кромка 100 мт клей 1.5 кг):", "", (text) => {
+            if (!text) return;
+            const regex = /(.*?)\s+[-=:]?\s*(\d+(?:[.,]\d+)?)\s*(шт|уг|мт|м|ед|гр|комп|пач|кг|л|лт)/gi;
+            const o = orders.find(x => x.id === oid);
+            if(!o.expenses) o.expenses = [];
             
-            if (name.length > 1) {
-                o.expenses.push({ name: name, qty: qty, price: 0, cost: 0, bought: false, cat: 'mat' });
-                count++;
-            }
-        }
-        
-        if (count === 0) {
-            const lines = text.split(/[\n,;]/);
-            lines.forEach(line => {
-                let raw = line.trim();
-                if (raw.length < 2) return;
-                
-                const fallbackMatch = raw.match(/^(.*?)[\s\-:=]+(\d+(?:[.,]\d+)?)\s*$/i);
-                if (fallbackMatch) {
-                    o.expenses.push({ name: fallbackMatch[1].trim(), qty: parseFloat(fallbackMatch[2].replace(',', '.')), price: 0, cost: 0, bought: false, cat: 'mat' });
-                    count++;
-                } else {
-                    o.expenses.push({ name: raw, qty: 1, price: 0, cost: 0, bought: false, cat: 'mat' });
+            let match;
+            let count = 0;
+
+            while ((match = regex.exec(text)) !== null) {
+                let name = match[1].replace(/^[\s,иа\-\+]+/i, '').trim();
+                let qty = parseQty(match[2]);
+                if (name.length > 1) {
+                    o.expenses.push({ name: name, qty: qty, price: 0, cost: 0, bought: false, cat: 'mat' });
                     count++;
                 }
-            });
-        }
+            }
+            
+            if (count === 0) {
+                const lines = text.split(/[\n,;]/);
+                lines.forEach(line => {
+                    let raw = line.trim();
+                    if (raw.length < 2) return;
+                    const fallbackMatch = raw.match(/^(.*?)[\s\-:=]+(\d+(?:[.,]\d+)?)\s*$/i);
+                    if (fallbackMatch) {
+                        o.expenses.push({ name: fallbackMatch[1].trim(), qty: parseQty(fallbackMatch[2]), price: 0, cost: 0, bought: false, cat: 'mat' });
+                        count++;
+                    } else {
+                        o.expenses.push({ name: raw, qty: 1, price: 0, cost: 0, bought: false, cat: 'mat' });
+                        count++;
+                    }
+                });
+            }
+            
+            if (count > 0) {
+                db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
+                    tg.showAlert(`Распознано позиций: ${count}. Проставьте цены!`);
+                });
+            } else {
+                tg.showAlert("Не удалось распознать. Пишите так: Название - Число шт");
+            }
+        }, 'text');
+    }
+
+    // --- ОТЧЕТЫ ---
+    function generateReceipt(id) {
+        const o = orders.find(x => x.id === id);
+        const text = `📄 ЧЕК ЗАКАЗА\nИзделие: ${o.title}\nКлиент: ${o.client}\n---\nСумма: ${fMoney(o.price)}\nАванс: ${fMoney(o.prepay)}\nК оплате: ${fMoney(o.price - o.prepay)}\n---\nСтатус: ${STAGES[o.status]}`;
+        navigator.clipboard.writeText(text).then(() => tg.showAlert("Текст чека скопирован!"));
+    }
+
+    function sendBossReport(id) {
+        const o = orders.find(x => x.id === id);
+        const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
+        const mat = o.expenses ? o.expenses.filter(e => e.cat !== 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
+        const work = o.expenses ? o.expenses.filter(e => e.cat === 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
+        const profit = o.price - totalExp;
         
-        if (count > 0) {
-            db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
-                tg.showAlert(`Распознано позиций: ${count}. Проставьте цены!`);
-            });
-        } else {
-            tg.showAlert("Не удалось распознать. Пишите так: Название - Число шт");
-        }
+        let text = `📊 ОТЧЕТ РУКОВОДИТЕЛЮ\n🛠 Заказ: ${o.title}\n👤 Клиент: ${o.client || '---'}\n👷 Мастер: ${o.mName || '---'}\n----------------------\n💰 Цена: ${fMoney(o.price)}\n📉 Расходы: ${fMoney(totalExp)}\n   ├ Материалы: ${fMoney(mat)}\n   └ Зарплата: ${fMoney(work)}\n----------------------\n✅ ЧИСТАЯ ПРИБЫЛЬ: ${fMoney(profit)}`;
+        navigator.clipboard.writeText(text).then(() => tg.showAlert("Отчет скопирован!"));
     }
 
     function sendIndividualShoppingList(id) {
@@ -400,6 +606,7 @@
         navigator.clipboard.writeText(list).then(() => tg.showAlert("Общий список скопирован!"));
     }
 
+    // --- РЕНДЕРИНГ ЗАКАЗОВ ---
     function renderOrders() {
         const listContainer = document.getElementById('orders-container');
         const archiveContainer = document.getElementById('archive-container');
@@ -416,7 +623,6 @@
 
             const isExp = expanded.has(o.id);
             const totalExp = o.expenses ? o.expenses.reduce((s, e) => s + e.cost, 0) : 0;
-            
             const displayExpenses = o.expenses ? (isSupplier ? o.expenses.filter(e => e.cat !== 'work') : o.expenses) : [];
 
             const card = document.createElement('div');
@@ -441,7 +647,7 @@
                 </div>
                 ${isAdmin ? `
                 <div class="finances">
-                    <div class="fin-row"><span>Цена:</span> <b onclick="editFinance(${o.id}, 'price', 'Цена:')" style="cursor:pointer;">${fMoney(o.price)} ✏️</b></div>
+                    <div class="fin-row"><span>Цена:</span> <b onclick="editFinance(${o.id}, 'price', 'Цена:')" style="cursor:pointer; color:var(--primary)">${fMoney(o.price)} ✏️</b></div>
                     <div class="fin-row" style="color:var(--red)"><span>Остаток:</span> <b>${fMoney(o.price - totalExp)}</b></div>
                     <button class="btn btn-outline" style="font-size:9px; padding:5px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
                 </div>` : ''}
@@ -452,17 +658,17 @@
                 
                 <div style="display:${isExp?'block':'none'}; margin-top:10px;">
                     <div class="exp-table-row header">
-                        <div>Наименование</div><div>Кол</div><div class="supplier-hide">Цена</div><div class="supplier-hide">Итого</div><div></div>
+                        <div>Название</div><div>Кол</div><div class="supplier-hide">Цена</div><div class="supplier-hide">Итог</div><div></div>
                     </div>
                     ${displayExpenses.map((e) => {
                         const originalIndex = o.expenses.indexOf(e);
                         return `
                         <div class="exp-table-row ${e.bought ? 'bought' : ''}">
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Наименование:', false)" style="font-size:10px; cursor:pointer;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Количество:', true)" style="cursor:pointer;">${e.qty}</div>
-                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Цена ед.:', true)" style="cursor:pointer;">${Math.round(e.price).toLocaleString()}</div>
+                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Изменить название:', 'text')" style="font-size:10px; cursor:pointer;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
+                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Изменить количество:', 'qty')" style="cursor:pointer; font-weight:700;">${e.qty}</div>
+                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Изменить цену:', 'money')" style="cursor:pointer;">${Math.round(e.price).toLocaleString()}</div>
                             <div class="supplier-hide" style="font-weight:600;">${Math.round(e.cost).toLocaleString()}</div>
-                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
+                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; font-size:16px; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `}).join('')}
                     
@@ -474,17 +680,20 @@
                         </div>
                         <div style="display:flex; gap:5px;">
                             <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:11px;" placeholder="Что?">
-                            <input type="text" inputmode="numeric" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:11px;" placeholder="Кол" oninput="formatNumberInput(this)">
+                            <input type="text" inputmode="decimal" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:11px;" placeholder="Кол">
                             <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:11px;" placeholder="Цена" oninput="formatNumberInput(this)">
                             <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:8px; width:35px; border:none; font-weight:bold;">+</button>
                         </div>
-                        <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
+                        <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод (Текст)</button>
                         <button class="btn btn-shopping" style="margin-top:10px;" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп заказа</button>
                     </div>` : ''}
                 </div>
                 
-                ${o.status === 4 && isAdmin ? `
-                <button class="btn btn-outline" style="font-size:10px; padding:8px; margin-top:15px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
+                ${isAdmin ? `
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    ${o.status === 4 ? `<button class="btn btn-outline" style="font-size:10px; padding:8px; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отчет</button>` : ''}
+                    <button class="btn btn-outline" style="font-size:10px; padding:8px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить</button>
+                </div>
                 ` : ''}
             `;
             if(o.status === 4) archiveContainer.appendChild(card);

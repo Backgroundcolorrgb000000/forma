@@ -921,7 +921,8 @@
     }
 
 
-    // --- ЛОГИКА ЗАКАЗОВ И СИНХРОНИЗАЦИИ СО СКЛАДОМ ---
+    // --- ЛОГИКА ЗАКАЗОВ И СИНХРОНИЗАЦИИ СО СКЛАДОМ (С УСИЛЕННОЙ ЗАЩИТОЙ) ---
+    
     function deleteOrder(id) {
         if(!isAdmin) return;
         uiConfirm("Внимание! Вы точно хотите удалить этот заказ? (Все списанные материалы автоматически вернутся на склад!)", (res) => {
@@ -979,7 +980,7 @@
                 const diff = o.expenses[eidx].qty - newQty; // вычисляем разницу
                 
                 // СИНХРОНИЗАЦИЯ: Если количество изменилось, возвращаем или до-списываем со склада
-                if (diff !== 0) {
+                if (diff !== 0 && o.expenses[eidx].cat !== 'work') {
                     const itemName = o.expenses[eidx].name;
                     const whItem = whItems.find(x => x.name.toLowerCase() === itemName.toLowerCase());
                     if (whItem) {
@@ -1002,9 +1003,11 @@
                 o.expenses[eidx][field] = val.trim();
             }
             
-            // Пересчитываем итог (cost) только если строку не удалили
-            if (o.expenses[eidx] && mode !== 'text') {
-                o.expenses[eidx].cost = o.expenses[eidx].qty * o.expenses[eidx].price;
+            // ЖЕЛЕЗНО пересчитываем итог (cost) для всех строк, чтобы избежать любых багов базы данных
+            if (o.expenses && o.expenses.length > 0) {
+                o.expenses.forEach(e => {
+                    e.cost = (e.qty || 0) * (e.price || 0);
+                });
             }
             
             db.ref(`orders/${oid}/expenses`).set(o.expenses);

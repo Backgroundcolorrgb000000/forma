@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -17,73 +17,73 @@
         body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 40vh; }
         header { background: var(--card); padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .logo-text { font-weight: 800; font-size: 20px; color: var(--primary); }
+        .logo-text { font-weight: 800; font-size: 22px; color: var(--primary); }
         
         .page { display: none !important; padding: 15px; min-height: 85vh; }
         .page.active { display: block !important; }
 
-        .order-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); position: relative; }
-        .finances { background: rgba(0,0,0,0.03); padding: 15px; border-radius: 15px; margin-top: 12px; }
-        .fin-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+        .order-card { background: var(--card); border-radius: 20px; padding: 22px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); position: relative; }
+        .finances { background: rgba(0,0,0,0.03); padding: 16px; border-radius: 15px; margin-top: 15px; }
+        .fin-row { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 10px; }
         
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid var(--border); z-index: 2000; }
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 14px 0 28px 0; border-top: 1px solid var(--border); z-index: 2000; }
         .tab-item { flex: 1; display: none; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
-        .tab-item span { font-size: 22px; margin-bottom: 4px; }
+        .tab-item span { font-size: 24px; margin-bottom: 5px; }
         .tab-item.active { color: var(--primary) !important; }
         .tab-item.visible { display: flex; }
-        .tab-label { font-size: 11px; font-weight: 700; margin-top: 4px; }
+        .tab-label { font-size: 12px; font-weight: 700; margin-top: 4px; }
 
-        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 16px;}
-        .custom-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 16px; outline: none; }
+        .custom-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 14px; font-size: 16px;}
+        .custom-select { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 14px; font-size: 16px; outline: none; }
         
-        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px;}
+        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;}
         .btn-primary { background: var(--primary); color: white; }
         .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); margin-top: 5px; }
-        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; }
-        .btn-quick { background: var(--purple); color: white; margin-top: 10px; }
-        .btn-warehouse { background: var(--orange); color: white; margin-top: 10px; }
+        .btn-shopping { background: var(--soft-green); color: white; margin-top: 12px; }
+        .btn-quick { background: var(--purple); color: white; margin-top: 12px; }
+        .btn-warehouse { background: var(--orange); color: white; margin-top: 12px; }
         
-        .exp-table-row { display: grid; grid-template-columns: 2.5fr 1fr 1.2fr 1.2fr 30px; gap: 6px; align-items: center; font-size: 13px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); padding-bottom: 6px;}
+        .exp-table-row { display: grid; grid-template-columns: 2.5fr 1fr 1.2fr 1.2fr 30px; gap: 8px; align-items: center; font-size: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); padding-bottom: 8px;}
         .exp-table-row.bought { color: var(--green); opacity: 0.5; background: rgba(46, 204, 113, 0.05); }
         
-        .edit-icon { cursor: pointer; opacity: 0.4; font-size: 14px; margin-left: 5px; display: none; }
+        .edit-icon { cursor: pointer; opacity: 0.4; font-size: 15px; margin-left: 6px; display: none; }
         body.is-admin .edit-icon { display: inline-block; }
         
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip { padding: 8px 16px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-chip { padding: 10px 18px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
         .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .cat-tag { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
-        .status-select { font-size: 12px; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
+        .cat-tag { font-size: 10px; padding: 4px 6px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
+        .status-select { font-size: 13px; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
         
         body.is-supplier .supplier-hide { display: none !important; }
         body.is-supplier .exp-table-row { grid-template-columns: 3fr 1.2fr 40px; }
 
         /* СКЛАД UI */
-        .wh-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); }
+        .wh-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); }
         .wh-info { flex: 1; cursor: pointer; }
-        .wh-name { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
-        .wh-qty { font-size: 13px; color: var(--hint); }
-        .wh-qty b { color: var(--primary); font-size: 16px; margin-right: 3px;}
+        .wh-name { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+        .wh-qty { font-size: 14px; color: var(--hint); }
+        .wh-qty b { color: var(--primary); font-size: 18px; margin-right: 4px;}
         .wh-actions { display: flex; gap: 8px; align-items: center; }
-        .wh-btn { border: none; background: rgba(0,0,0,0.05); width: 44px; height: 44px; border-radius: 12px; font-weight: 800; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s;}
+        .wh-btn { border: none; background: rgba(0,0,0,0.05); width: 48px; height: 48px; border-radius: 12px; font-weight: 800; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s;}
         .wh-btn:active { transform: scale(0.9); }
         .wh-btn.plus { color: var(--green); background: rgba(46, 204, 113, 0.15); }
         .wh-btn.minus { color: var(--red); background: rgba(220, 53, 69, 0.15); }
 
-        .search-group { display: flex; gap: 5px; margin-bottom: 12px; }
-        .search-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0 18px; font-size: 22px; cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; }
+        .search-group { display: flex; gap: 6px; margin-bottom: 14px; }
+        .search-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0 20px; font-size: 24px; cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; }
 
         /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА */
         .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
-        .modal-box { background: var(--card); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease-out; }
+        .modal-box { background: var(--card); border-radius: 20px; padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease-out; }
         
         /* УМНЫЙ ПИКЕР СКЛАДА */
         .picker-row { 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 14px; border: 1px solid var(--border); border-radius: 12px; 
+            padding: 16px; border: 1px solid var(--border); border-radius: 12px; 
             margin-bottom: 10px; transition: 0.2s; cursor: pointer;
         }
         .picker-row.selected { 
@@ -104,7 +104,7 @@
 <header>
     <div class="logo-area">
         <div class="logo-text">FORMA <span id="role-badge" style="font-size:12px; border:1px solid; padding:3px 6px; border-radius:4px; vertical-align: middle;">...</span></div>
-        <div id="cloud-status" style="font-size:11px; font-weight:700;">● ПОДКЛЮЧЕНИЕ...</div>
+        <div id="cloud-status" style="font-size:12px; font-weight:700;">● ПОДКЛЮЧЕНИЕ...</div>
     </div>
     <div class="search-group">
         <input type="text" id="main-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск (изделие, клиент)..." oninput="renderOrders()">
@@ -126,11 +126,11 @@
     <!-- СКЛАД -->
     <section id="page-warehouse" class="page">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px;">
-            <h2 style="font-weight: 800; margin: 0; font-size: 22px;">Склад</h2>
+            <h2 style="font-weight: 800; margin: 0; font-size: 24px;">Склад</h2>
             <div style="display:flex; gap: 8px;">
-                <button class="btn btn-primary supplier-hide" style="width:auto; padding:10px 14px; font-size:13px; background:var(--purple);" onclick="document.getElementById('ai-file').click()">📸 ИИ-Скан</button>
+                <button class="btn btn-primary supplier-hide" style="width:auto; padding:10px 16px; font-size:14px; background:var(--purple);" onclick="document.getElementById('ai-file').click()">📸 ИИ-Скан</button>
                 <input type="file" id="ai-file" accept="image/*" capture="environment" style="display:none" onchange="handleAiScan(this)">
-                <button class="btn btn-primary supplier-hide" style="width:auto; padding:10px 14px; font-size:13px;" onclick="openWhCreateModal()">+ НОВЫЙ</button>
+                <button class="btn btn-primary supplier-hide" style="width:auto; padding:10px 16px; font-size:14px;" onclick="openWhCreateModal()">+ НОВЫЙ</button>
             </div>
         </div>
 
@@ -155,14 +155,14 @@
 
         <!-- ОТДЕЛЬНАЯ СТРАНИЧКА "РАСХОДЫ" ДЛЯ СКЛАДА -->
         <div id="wh-view-usage" style="display:none;">
-            <div style="font-size:14px; font-weight:700; color:var(--hint); margin-bottom:12px;">Списания на заказы:</div>
+            <div style="font-size:15px; font-weight:700; color:var(--hint); margin-bottom:12px;">Списания на заказы:</div>
             <div id="wh-usage-container"></div>
         </div>
     </section>
 
     <!-- ФИНАНСЫ -->
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800; font-size: 22px;">Аналитика</h2>
+        <h2 style="font-weight: 800; font-size: 24px;">Аналитика</h2>
         <div class="finances" style="font-size:18px; margin-bottom: 20px;">
             <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
@@ -171,16 +171,16 @@
                 <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
         </div>
-        <h3 style="font-size: 18px;">👷 Зарплаты по мастерам:</h3>
-        <div id="master-salaries" class="finances" style="font-size:14px;"></div>
+        <h3 style="font-size: 20px;">👷 Зарплаты по мастерам:</h3>
+        <div id="master-salaries" class="finances" style="font-size:15px;"></div>
         <button class="btn btn-shopping" style="margin-top:20px;" onclick="copyGlobalShoppingList()">📦 Копировать ОБЩИЙ закуп</button>
-        <h3 style="margin-top:25px; font-size: 18px;">✅ Архив (Готово):</h3>
+        <h3 style="margin-top:25px; font-size: 20px;">✅ Архив (Готово):</h3>
         <div id="archive-container"></div>
     </section>
 
     <!-- ДОБАВЛЕНИЕ (НОВЫЙ ЗАКАЗ) -->
     <section id="page-add" class="page">
-        <h2 style="font-weight: 800; font-size: 22px;">Новый проект</h2>
+        <h2 style="font-weight: 800; font-size: 24px;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
         <input type="tel" id="in-phone" class="custom-input" placeholder="998 XX XXX XX XX" maxlength="16" oninput="formatPhone(this)">
@@ -197,9 +197,9 @@
         <div style="margin-top: 15px; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 15px; padding: 15px; background: rgba(0,0,0,0.01);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
                 <div style="font-weight: 700; font-size: 15px; color:var(--primary);">📦 Выбрано со склада:</div>
-                <button class="btn btn-outline" style="width:auto; padding:8px 14px; font-size:12px; margin:0; border-color:var(--primary); color:var(--primary);" onclick="openWhPicker('new_order')">Выбрать материалы</button>
+                <button class="btn btn-outline" style="width:auto; padding:8px 14px; font-size:13px; margin:0; border-color:var(--primary); color:var(--primary);" onclick="openWhPicker('new_order')">Выбрать материалы</button>
             </div>
-            <div id="new-order-wh-summary" style="font-size:14px; color:var(--text); line-height: 1.6; background:var(--card); padding:12px; border-radius:10px; border:1px solid var(--border);">
+            <div id="new-order-wh-summary" style="font-size:14px; color:var(--text); line-height: 1.6; background:var(--card); padding:14px; border-radius:12px; border:1px solid var(--border);">
                 <span style="color:var(--hint)">Ничего не выбрано. Нажмите кнопку выше ⬆️</span>
             </div>
         </div>
@@ -226,8 +226,8 @@
             <button class="search-btn" id="modal-mic-btn" onclick="startDictation('modal-input')" style="display:none; padding:0 15px; height: 56px; font-size: 24px;">🎤</button>
         </div>
         <div style="display:flex; gap:12px; margin-top:15px;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 15px;" onclick="closeModal('modal-overlay')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; font-size: 15px;" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 16px; padding: 14px;" onclick="closeModal('modal-overlay')">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0; font-size: 16px; padding: 14px;" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
         </div>
     </div>
 </div>
@@ -235,9 +235,9 @@
 <!-- Окно добавления товара на склад -->
 <div id="modal-wh-create" class="modal-overlay">
     <div class="modal-box">
-        <h3 style="margin-top:0; font-size:18px; margin-bottom: 15px;">Новый товар на склад</h3>
+        <h3 style="margin-top:0; font-size:20px; margin-bottom: 15px;">Новый товар на склад</h3>
         
-        <label style="font-size:12px; font-weight:bold; color:var(--hint);">НАЗВАНИЕ</label>
+        <label style="font-size:13px; font-weight:bold; color:var(--hint);">НАЗВАНИЕ</label>
         <div class="search-group">
             <input type="text" id="wh-c-name" class="custom-input" style="margin-bottom:12px;" placeholder="Напр: Саморезы 3.5x16">
             <button class="search-btn" style="margin-bottom:12px;" onclick="startDictation('wh-c-name')">🎤</button>
@@ -245,7 +245,7 @@
 
         <div style="display:flex; gap:12px;">
             <div style="flex:1;">
-                <label style="font-size:12px; font-weight:bold; color:var(--hint);">ЕД. ИЗМЕРЕНИЯ</label>
+                <label style="font-size:13px; font-weight:bold; color:var(--hint);">ЕД. ИЗМЕРЕНИЯ</label>
                 <select id="wh-c-unit" class="custom-select" style="margin-bottom: 12px;">
                     <option value="шт">шт (Штуки)</option>
                     <option value="м">м (Метры)</option>
@@ -257,20 +257,20 @@
                 </select>
             </div>
             <div style="flex:1;">
-                <label style="font-size:12px; font-weight:bold; color:var(--hint);">ОСТАТОК</label>
+                <label style="font-size:13px; font-weight:bold; color:var(--hint);">ОСТАТОК</label>
                 <input type="text" inputmode="decimal" id="wh-c-qty" class="custom-input" placeholder="0">
             </div>
         </div>
 
-        <label style="font-size:12px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Если есть)</label>
+        <label style="font-size:13px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Если есть)</label>
         <div class="search-group">
             <input type="text" id="wh-c-code" class="custom-input" style="margin-bottom:0;" placeholder="Авто-генерация...">
             <button class="search-btn" onclick="startScan('wh-c-code')">📷</button>
         </div>
 
         <div style="display:flex; gap:12px; margin-top:20px;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 15px;" onclick="closeModal('modal-wh-create')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; font-size: 15px;" onclick="saveNewWhItem()">Добавить</button>
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 16px; padding: 14px;" onclick="closeModal('modal-wh-create')">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0; font-size: 16px; padding: 14px;" onclick="saveNewWhItem()">Добавить</button>
         </div>
     </div>
 </div>
@@ -278,18 +278,18 @@
 <!-- Окно ИИ Превью -->
 <div id="modal-ai-preview" class="modal-overlay">
     <div class="modal-box" style="max-width: 400px;">
-        <h3 style="margin-top:0; font-size:18px; color:var(--purple);">🤖 ИИ Нашел товары:</h3>
-        <div style="font-size:13px; color:var(--hint); margin-bottom:15px;">Проверьте данные с чека перед сохранением:</div>
+        <h3 style="margin-top:0; font-size:20px; color:var(--purple);">🤖 ИИ Нашел товары:</h3>
+        <div style="font-size:14px; color:var(--hint); margin-bottom:15px;">Проверьте данные с чека перед сохранением:</div>
         <div id="ai-items-list" style="max-height: 45vh; overflow-y: auto; margin-bottom: 15px; padding-right:5px;"></div>
-        <button class="btn btn-primary" style="font-size:15px;" onclick="applyAiItems()">Сохранить на склад</button>
-        <button class="btn btn-outline" style="margin-top:10px; border:none; font-size:15px;" onclick="closeModal('modal-ai-preview')">Отмена</button>
+        <button class="btn btn-primary" style="font-size:16px; padding: 14px;" onclick="applyAiItems()">Сохранить на склад</button>
+        <button class="btn btn-outline" style="margin-top:10px; border:none; font-size:16px; padding: 14px;" onclick="closeModal('modal-ai-preview')">Отмена</button>
     </div>
 </div>
 
 <!-- ЕДИНЫЙ УМНЫЙ ПИКЕР ТОВАРОВ СО СКЛАДА (ДЛЯ НОВЫХ И СТАРЫХ ЗАКАЗОВ) -->
 <div id="modal-wh-picker" class="modal-overlay">
     <div class="modal-box" style="max-width: 400px; display: flex; flex-direction: column; max-height: 90vh;">
-        <h3 style="margin-top:0; font-size:18px; margin-bottom: 15px;" id="wh-picker-title">Взять материалы</h3>
+        <h3 style="margin-top:0; font-size:20px; margin-bottom: 15px;" id="wh-picker-title">Взять материалы</h3>
         <div class="search-group" style="flex-shrink: 0;">
             <input type="text" id="wh-picker-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск по складу..." oninput="renderWhPickerList()">
             <button class="search-btn" onclick="startDictation('wh-picker-search')">🎤</button>
@@ -301,8 +301,8 @@
         </div>
 
         <div style="display:flex; gap:12px; margin-top:15px; flex-shrink: 0;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); flex:1; font-size:15px;" onclick="closeModal('modal-wh-picker')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; flex:2; font-size:15px;" onclick="confirmPicker()">✅ Добавить выбранные</button>
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); flex:1; font-size:16px; padding: 14px;" onclick="closeModal('modal-wh-picker')">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0; flex:2; font-size:16px; padding: 14px;" onclick="confirmPicker()">✅ Добавить выбранные</button>
         </div>
     </div>
 </div>
@@ -559,7 +559,7 @@
         tg.showAlert(`✅ Успешно добавлено ${addedCount} позиций на склад!`);
     }
 
-    // --- МОДАЛЬНАЯ СИСТЕМА (ОБНОВЛЕННАЯ: ПРАВИЛЬНЫЕ ПУСТЫЕ ЗНАЧЕНИЯ) ---
+    // --- МОДАЛЬНАЯ СИСТЕМА (ИСПРАВЛЕН КРИТИЧЕСКИЙ БАГ) ---
     let modalCallback = null;
     
     function uiPrompt(title, defaultVal, callback, mode = 'text') {
@@ -569,8 +569,8 @@
         
         input.style.display = 'block';
         
-        // БАГФИКС ЦЕН: Если передали 0, мы оставляем поле ПУСТЫМ, чтобы удобно было вводить новую цифру
-        input.value = (defaultVal && defaultVal !== '0' && defaultVal !== 0) ? defaultVal : ''; 
+        // Оставляем поле пустым, если передали "0" (очень удобно для изменения цен/кол-ва)
+        input.value = (defaultVal !== undefined && defaultVal !== null && defaultVal !== '0' && defaultVal !== 0) ? defaultVal : ''; 
         
         input.oninput = null;
         input.removeAttribute('inputmode');
@@ -612,10 +612,17 @@
     function confirmModal() {
         const input = document.getElementById('modal-input');
         const cb = modalCallback;
-        closeModal('modal-overlay');
+        
+        // КРИТИЧЕСКИЙ БАГФИКС: Мы обязаны сохранить значение (val) ДО того, 
+        // как вызовем closeModal(), потому что closeModal() полностью очищает input.value!
+        const val = input.value; 
+        const isConfirmMode = input.style.display === 'none';
+        
+        closeModal('modal-overlay'); // Теперь безопасно закрываем
+        
         if(cb) {
-            if(input.style.display === 'none') cb(true); 
-            else cb(input.value); 
+            if(isConfirmMode) cb(true); 
+            else cb(val); // Передаем бережно сохраненное значение
         }
     }
 
@@ -761,8 +768,8 @@
 
     function renderWhLogs() {
         const c = document.getElementById('wh-logs-container');
-        if(whLogs.length === 0) c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center;">Истории пока нет</div>';
-        else c.innerHTML = whLogs.map(l => `<div style="font-size:13px; padding:12px 0; border-bottom:1px solid var(--border); line-height:1.4;">${l.text}</div>`).join('');
+        if(whLogs.length === 0) c.innerHTML = '<div style="font-size:14px; color:var(--hint); text-align:center;">Истории пока нет</div>';
+        else c.innerHTML = whLogs.map(l => `<div style="font-size:14px; padding:12px 0; border-bottom:1px solid var(--border); line-height:1.5;">${l.text}</div>`).join('');
     }
 
     // Рендер страницы "Расходы" (Отдельная страничка для склада)
@@ -775,7 +782,7 @@
             c.innerHTML = '<div style="font-size:14px; color:var(--hint); text-align:center; margin-top:20px;">Расходов пока нет</div>';
         } else {
             c.innerHTML = usageLogs.map(l => `
-                <div style="font-size:14px; padding:15px; margin-bottom:10px; background:var(--card); border-radius:12px; border:1px solid var(--border); line-height:1.5; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                <div style="font-size:14px; padding:16px; margin-bottom:12px; background:var(--card); border-radius:12px; border:1px solid var(--border); line-height:1.6; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
                     ${l.text}
                 </div>
             `).join('');
@@ -857,7 +864,7 @@
                         <div style="font-size:15px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:6px;">${i.name}</div>
                         <div style="font-size:13px; color:var(--hint);">Остаток: <b style="color:var(--text)">${i.qty}</b> ${i.unit}</div>
                     </div>
-                    <input type="text" inputmode="decimal" value="${qty}" placeholder="Кол-во" class="custom-input" style="width:85px; margin:0; padding:12px; text-align:center; font-weight:bold; font-size:15px;" onclick="event.stopPropagation()" oninput="updatePickQty(${i.id}, this.value)">
+                    <input type="text" inputmode="decimal" value="${qty}" placeholder="Кол-во" class="custom-input" style="width:85px; margin:0; padding:12px; text-align:center; font-weight:bold; font-size:16px;" onclick="event.stopPropagation()" oninput="updatePickQty(${i.id}, this.value)">
                 </div>
             `;
         });
@@ -963,7 +970,7 @@
         }, 'money');
     }
 
-    // БАГФИКС: ИДЕАЛЬНОЕ РЕДАКТИРОВАНИЕ ЦЕН И КОЛИЧЕСТВ С ВОЗВРАТОМ НА СКЛАД
+    // ИДЕАЛЬНОЕ РЕДАКТИРОВАНИЕ ЦЕН И КОЛИЧЕСТВ С ВОЗВРАТОМ НА СКЛАД
     function editExpense(oid, eidx, field, title, mode) {
         if(!isAdmin) return;
         const o = orders.find(x => x.id == oid);
@@ -972,7 +979,7 @@
         const currentVal = o.expenses[eidx][field];
         
         uiPrompt(title, currentVal, (val) => {
-            if(val === null) return; // Нажали "Отмена"
+            if(val === null || val === undefined) return; // Нажали "Отмена"
             
             if (mode === 'money') {
                 o.expenses[eidx][field] = extract(val);
@@ -1004,7 +1011,7 @@
                 o.expenses[eidx][field] = val.trim();
             }
             
-            // ЖЕЛЕЗНО пересчитываем итог (cost) для всех строк, чтобы избежать любых багов базы данных
+            // ЖЕЛЕЗНО пересчитываем итог (cost) для всех строк
             if (o.expenses && o.expenses.length > 0) {
                 o.expenses.forEach(e => {
                     e.cost = (e.qty || 0) * (e.price || 0);
@@ -1189,16 +1196,16 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <div style="font-weight:800; font-size:18px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
-                        <div style="font-size:13px; opacity:0.6;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
+                        <div style="font-weight:800; font-size:20px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
+                        <div style="font-size:14px; opacity:0.6; margin-top:4px;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
                         
-                        <div class="supplier-hide" style="font-size:13px; margin-top:6px; padding:6px 8px; background:rgba(0,0,0,0.03); border-radius:8px; line-height: 1.6;">
+                        <div class="supplier-hide" style="font-size:14px; margin-top:8px; padding:10px; background:rgba(0,0,0,0.03); border-radius:10px; line-height: 1.6;">
                             🛠 <b>Мастер:</b> ${o.mName || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:')">✏️</span> | 📞 ${o.mPhone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:')">✏️</span><br>
                             🗺 <b>Гео:</b> ${o.locLink ? `<a href="${o.locLink}" target="_blank">Открыть карту</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'locLink', 'Ссылка на гео:')">🔗</span><br>
                             🎨 <b>Дизайн:</b> ${o.link ? `<a href="${o.link}" target="_blank">Смотреть проект</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка на дизайн:')">🔗</span>
                         </div>
 
-                        <div style="font-size:12px; margin-top:5px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
+                        <div style="font-size:13px; margin-top:8px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''}>
                         ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
@@ -1208,10 +1215,10 @@
                 <div class="finances">
                     <div class="fin-row"><span>Цена:</span> <b onclick="editFinance(${o.id}, 'price', 'Цена:')" style="cursor:pointer; color:var(--primary)">${fMoney(o.price)} ✏️</b></div>
                     <div class="fin-row" style="color:var(--red)"><span>Остаток:</span> <b>${fMoney(o.price - totalExp)}</b></div>
-                    <button class="btn btn-outline" style="font-size:11px; padding:8px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
+                    <button class="btn btn-outline" style="font-size:13px; padding:10px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
                 </div>` : ''}
                 
-                <div style="margin-top:10px; font-size:14px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
+                <div style="margin-top:15px; font-size:15px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
                     📦 Расходы (${displayExpenses.length}) ${isExp?'▲':'▼'}
                 </div>
                 
@@ -1223,47 +1230,47 @@
                         const originalIndex = o.expenses.indexOf(e);
                         return `
                         <div class="exp-table-row ${e.bought ? 'bought' : ''}">
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Изменить название:', 'text')" style="font-size:13px; cursor:pointer; line-height:1.2;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
+                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Изменить название:', 'text')" style="font-size:14px; cursor:pointer; line-height:1.3;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
                             
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Изменить количество:', 'qty')" style="cursor:pointer; font-weight:700; color:var(--primary);">${e.qty} <span style="font-size:10px;">✏️</span></div>
+                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Изменить количество:', 'qty')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:15px;">${e.qty} <span style="font-size:10px;">✏️</span></div>
                             
-                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Изменить цену:', 'money')" style="cursor:pointer; font-weight:700; color:var(--primary);">
+                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Изменить цену:', 'money')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:14px;">
                                 ${e.price > 0 ? Math.round(e.price).toLocaleString() + ' <span style="font-size:10px;">✏️</span>' : '<span style="text-decoration:underline dashed;">Указать ✏️</span>'}
                             </div>
                             
-                            <div class="supplier-hide" style="font-weight:600;">${e.cost > 0 ? Math.round(e.cost).toLocaleString() : '0'}</div>
+                            <div class="supplier-hide" style="font-weight:700; font-size:14px;">${e.cost > 0 ? Math.round(e.cost).toLocaleString() : '0'}</div>
                             
-                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; font-size:20px; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
+                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; font-size:24px; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `}).join('')}
                     
                     ${isAdmin ? `
-                    <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
-                        <div style="display:flex; gap:10px; font-size:12px; margin-bottom:5px;">
-                            <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer">МАТЕРИАЛ</span>
-                            <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; opacity:0.5">ЗАРПЛАТА</span>
+                    <div style="margin-top:15px; background:rgba(0,0,0,0.02); padding:15px; border-radius:12px;">
+                        <div style="display:flex; gap:12px; font-size:13px; margin-bottom:10px;">
+                            <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer; font-weight:bold;">МАТЕРИАЛ</span>
+                            <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; font-weight:bold; opacity:0.5">ЗАРПЛАТА</span>
                         </div>
-                        <div style="display:flex; gap:5px;">
-                            <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:14px;" placeholder="Что?">
-                            <input type="text" inputmode="decimal" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:14px;" placeholder="Кол">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:14px;" placeholder="Цена" oninput="formatNumberInput(this)">
-                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:12px; width:44px; border:none; font-weight:bold; font-size:18px;">+</button>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:15px; margin-bottom:0;" placeholder="Что?">
+                            <input type="text" inputmode="decimal" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:15px; margin-bottom:0; text-align:center;" placeholder="Кол">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:15px; margin-bottom:0;" placeholder="Цена" oninput="formatNumberInput(this)">
+                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:12px; width:52px; border:none; font-weight:bold; font-size:24px;">+</button>
                         </div>
-                        <div style="display:flex; gap:5px;">
+                        <div style="display:flex; gap:8px; margin-top:12px;">
                             <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
                             <button class="btn btn-warehouse" onclick="openWhPicker(${o.id})">📦 Взять со склада</button>
                         </div>
-                        <button class="btn btn-shopping" style="margin-top:10px;" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп заказа</button>
+                        <button class="btn btn-shopping" style="margin-top:12px;" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп заказа</button>
                     </div>` : ''}
                 </div>
                 
                 ${o.status === 4 && isAdmin ? `
-                <button class="btn btn-outline" style="font-size:13px; padding:10px; margin-top:15px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
+                <button class="btn btn-outline" style="font-size:14px; padding:12px; margin-top:20px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
                 ` : ''}
 
                 ${isAdmin ? `
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn btn-outline" style="font-size:13px; padding:10px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить заказ</button>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn btn-outline" style="font-size:14px; padding:12px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить заказ</button>
                 </div>
                 ` : ''}
             `;

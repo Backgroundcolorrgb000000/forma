@@ -81,6 +81,9 @@
         
         .picker-row { display: grid; grid-template-columns: 2fr 1fr 40px; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
         
+        /* Чекбоксы нового дизайна заказа */
+        .custom-checkbox { transform: scale(1.3); margin-right: 10px; accent-color: var(--primary); }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
@@ -113,7 +116,13 @@
     <section id="page-warehouse" class="page">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
             <h2 style="font-weight: 800; margin: 0;">Склад</h2>
-            <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 16px; font-size:11px;" onclick="openWhCreateModal()">+ НОВЫЙ ТОВАР</button>
+            <div style="display:flex; gap: 5px;">
+                <!-- Кнопка ИИ-Скан -->
+                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px; font-size:11px; background:var(--purple);" onclick="document.getElementById('ai-file').click()">📸 ИИ-Скан</button>
+                <input type="file" id="ai-file" accept="image/*" capture="environment" style="display:none" onchange="handleAiScan(this)">
+                
+                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px; font-size:11px;" onclick="openWhCreateModal()">+ НОВЫЙ</button>
+            </div>
         </div>
 
         <div class="filter-bar">
@@ -153,7 +162,7 @@
         <div id="archive-container"></div>
     </section>
 
-    <!-- ДОБАВЛЕНИЕ -->
+    <!-- ДОБАВЛЕНИЕ (НОВЫЙ ЗАКАЗ) -->
     <section id="page-add" class="page">
         <h2 style="font-weight: 800;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
@@ -167,6 +176,19 @@
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
             <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
         </div>
+
+        <!-- ИНТЕГРАЦИЯ СКЛАДА ПРИ СОЗДАНИИ ЗАКАЗА -->
+        <div style="margin-top: 15px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: rgba(0,0,0,0.01);">
+            <div style="font-weight: 700; font-size: 13px; margin-bottom: 10px; color:var(--primary);">📦 Взять материалы со склада</div>
+            <div class="search-group">
+                <input type="text" id="add-wh-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск товара..." oninput="renderAddWhList()">
+                <button class="search-btn" onclick="startDictation('add-wh-search')">🎤</button>
+            </div>
+            <div id="add-wh-list" style="max-height: 250px; overflow-y: auto; margin-top: 10px;">
+                <div style="font-size:11px; color:var(--hint); text-align:center;">Загрузка склада...</div>
+            </div>
+        </div>
+
         <button class="btn btn-primary" onclick="createOrder()">🚀 СОЗДАТЬ ЗАКАЗ</button>
     </section>
 </main>
@@ -180,11 +202,14 @@
 
 <!-- КАСТОМНЫЕ ОКНА (MODALS) -->
 
-<!-- Простое окно prompt/confirm -->
+<!-- Простое окно prompt/confirm (ТЕПЕРЬ С МИКРОФОНОМ) -->
 <div id="modal-overlay" class="modal-overlay">
     <div class="modal-box">
         <h3 id="modal-title" style="margin-top:0; margin-bottom: 15px; font-size:15px; line-height: 1.4;"></h3>
-        <input type="text" id="modal-input" class="custom-input" style="display:none; font-size:16px;">
+        <div style="display:flex; gap: 5px; align-items: center;" id="modal-input-wrapper">
+            <input type="text" id="modal-input" class="custom-input" style="display:none; font-size:16px; margin-bottom:0; flex:1;">
+            <button class="search-btn" id="modal-mic-btn" onclick="startDictation('modal-input')" style="display:none; padding:0 10px; height: 44px;">🎤</button>
+        </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05)" onclick="closeModal('modal-overlay')">Отмена</button>
             <button class="btn btn-primary" style="margin-top:0" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
@@ -235,7 +260,18 @@
     </div>
 </div>
 
-<!-- Окно выбора товара со склада в заказ -->
+<!-- Модальное окно ИИ Превью -->
+<div id="modal-ai-preview" class="modal-overlay">
+    <div class="modal-box" style="max-width: 400px; padding: 20px;">
+        <h3 style="margin-top:0; color:var(--purple);">🤖 ИИ Нашел товары:</h3>
+        <div style="font-size:11px; color:var(--hint); margin-bottom:10px;">Проверьте данные с чека перед сохранением:</div>
+        <div id="ai-items-list" style="max-height: 45vh; overflow-y: auto; margin-bottom: 15px; font-size: 12px; padding-right:5px;"></div>
+        <button class="btn btn-primary" onclick="applyAiItems()">Сохранить на склад</button>
+        <button class="btn btn-outline" style="margin-top:10px; border:none;" onclick="closeModal('modal-ai-preview')">Отмена</button>
+    </div>
+</div>
+
+<!-- Окно выбора товара со склада в сущесвующий заказ -->
 <div id="modal-wh-picker" class="modal-overlay">
     <div class="modal-box" style="padding:15px; max-width: 400px;">
         <h3 style="margin-top:0; font-size:16px;">Взять материал со склада</h3>
@@ -270,6 +306,7 @@
     const SUPPLIER_IDS = [111222333]; 
 
     const STAGES = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Готово"];
+    const geminiKey = ""; // Runtime key for AI
     
     firebase.initializeApp({ 
         apiKey: atob(_0xData[3]), authDomain: atob(_0xData[4]), databaseURL: atob(_0xData[5]), 
@@ -311,6 +348,9 @@
     let currentFilter = 'all';
     let expanded = new Set();
     let currentExpCat = 'mat';
+    
+    // Состояние чекбоксов и количеств при создании нового заказа
+    let newOrderWhSelections = {};
 
     // Слушатели базы данных
     db.ref(".info/connected").on("value", (s) => {
@@ -330,6 +370,7 @@
             whItems = snap.val() ? Object.values(snap.val()) : [];
             renderWarehouse();
             if(document.getElementById('modal-wh-picker').classList.contains('active')) renderWhPickerList();
+            renderAddWhList(); // Обновляем список в новой вкладке заказа
         });
         db.ref('warehouse/logs').limitToLast(100).on('value', snap => {
             whLogs = snap.val() ? Object.values(snap.val()).reverse() : [];
@@ -366,22 +407,37 @@
             recognition.start();
             
             tg.HapticFeedback.impactOccurred('medium');
-            document.getElementById(targetId).placeholder = "Слушаю...";
+            const targetEl = document.getElementById(targetId);
+            
+            // Запоминаем старый плейсхолдер
+            const oldPlaceholder = targetEl.placeholder;
+            targetEl.placeholder = "Слушаю... Говорите";
+            targetEl.value = ""; // очищаем для новой записи
             
             recognition.onresult = function(e) {
-                document.getElementById(targetId).value = e.results[0][0].transcript;
-                document.getElementById(targetId).placeholder = "Поиск...";
-                // Вызываем триггеры обновления
+                let transcript = e.results[0][0].transcript;
+                // Автоматически преобразуем текстовые числа в цифры, если это ввод количества
+                if (targetId === 'modal-input') {
+                     // Очень простая проверка (браузер часто сам возвращает цифры)
+                     transcript = transcript.replace(/[^\d.,]/g, '').trim(); 
+                     if(!transcript) transcript = e.results[0][0].transcript; // возврат если не цифры
+                }
+                
+                targetEl.value = transcript;
+                targetEl.placeholder = oldPlaceholder;
+                
+                // Вызываем триггеры обновления UI
                 if(targetId === 'wh-search') renderWarehouse();
                 if(targetId === 'wh-picker-search') renderWhPickerList();
                 if(targetId === 'main-search') renderOrders();
+                if(targetId === 'add-wh-search') renderAddWhList();
             };
             recognition.onerror = function(e) { 
-                document.getElementById(targetId).placeholder = "Поиск...";
-                tg.showAlert("Ошибка микрофона. Убедитесь что дали доступ браузеру."); 
+                targetEl.placeholder = oldPlaceholder;
+                if(e.error !== 'no-speech') tg.showAlert("Ошибка микрофона. Дайте доступ браузеру."); 
             };
         } else {
-            tg.showAlert("Голосовой ввод не поддерживается на вашем устройстве/браузере");
+            tg.showAlert("Голосовой ввод не поддерживается на вашем устройстве.");
         }
     }
 
@@ -394,19 +450,95 @@
                 
                 if(targetId === 'wh-search') renderWarehouse();
                 if(targetId === 'wh-picker-search') renderWhPickerList();
-                return true; // Закрыть попап сканера
+                return true; 
             });
         } else {
             tg.showAlert("Сканер доступен только в приложении Telegram на смартфоне.");
         }
     }
 
-    // --- МОДАЛЬНАЯ СИСТЕМА ---
+    // --- AI РАСПОЗНАВАНИЕ НАКЛАДНЫХ ---
+    let pendingAiItems = [];
+    
+    async function handleAiScan(input) {
+        const file = input.files[0];
+        if (!file) return;
+        tg.showAlert("🤖 ИИ начал анализ фото. Пожалуйста, подождите 5-10 секунд...");
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64 = e.target.result.split(',')[1];
+            try {
+                const prompt = "Распознай товары и их количество из этой накладной/чека. Верни ТОЛЬКО валидный JSON массив объектов в формате: [{\"name\": \"Название товара\", \"qty\": 10, \"unit\": \"шт\"}]. Если единицы нет, пиши 'шт'. Никакого текста вокруг JSON, только массив.";
+                const payload = {
+                    contents: [{ role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64 } } ] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                };
+                
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
+                    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!data.candidates) throw new Error("Сервер не вернул данные");
+                
+                const text = data.candidates[0].content.parts[0].text;
+                pendingAiItems = JSON.parse(text);
+                
+                // Рендер в модалку проверки
+                const list = document.getElementById('ai-items-list');
+                list.innerHTML = pendingAiItems.map((item, i) => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom:1px solid var(--border);">
+                        <input type="text" id="ai-name-${i}" value="${item.name}" class="custom-input" style="padding:8px; font-size:12px; margin:0; flex:2;">
+                        <input type="text" inputmode="decimal" id="ai-qty-${i}" value="${item.qty}" class="custom-input" style="padding:8px; font-size:12px; margin:0; flex:0.7; margin-left:5px; text-align:center;">
+                        <input type="text" id="ai-unit-${i}" value="${item.unit || 'шт'}" class="custom-input" style="padding:8px; font-size:12px; margin:0; flex:0.6; margin-left:5px; text-align:center;">
+                    </div>
+                `).join('');
+                
+                document.getElementById('modal-ai-preview').classList.add('active');
+            } catch (err) {
+                tg.showAlert("❌ Ошибка распознавания: Не удалось прочитать фото.");
+                console.error(err);
+            } finally {
+                input.value = ''; // сброс инпута
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function applyAiItems() {
+        let addedCount = 0;
+        pendingAiItems.forEach((_, i) => {
+            const name = document.getElementById(`ai-name-${i}`).value.trim();
+            const qty = parseQty(document.getElementById(`ai-qty-${i}`).value);
+            const unit = document.getElementById(`ai-unit-${i}`).value.trim() || 'шт';
+            
+            if (name && qty > 0) {
+                const existing = whItems.find(x => x.name.toLowerCase() === name.toLowerCase());
+                if (existing) {
+                    const newQty = existing.qty + qty;
+                    db.ref(`warehouse/items/${existing.id}/qty`).set(newQty);
+                    addWhLog(`<b>${name}</b>: Приход (AI-Скан) +${qty} ${unit}. Остаток: ${newQty}`);
+                } else {
+                    const id = Date.now() + i;
+                    db.ref(`warehouse/items/${id}`).set({ id, name, qty, unit, barcode: '' });
+                    addWhLog(`Создана позиция (AI-Скан): ${name} (${qty} ${unit})`);
+                }
+                addedCount++;
+            }
+        });
+        closeModal('modal-ai-preview');
+        tg.showAlert(`✅ Успешно добавлено ${addedCount} позиций на склад!`);
+    }
+
+    // --- МОДАЛЬНАЯ СИСТЕМА (ОБНОВЛЕННАЯ С МИКРОФОНОМ) ---
     let modalCallback = null;
     
     function uiPrompt(title, defaultVal, callback, mode = 'text') {
         document.getElementById('modal-title').innerText = title;
         const input = document.getElementById('modal-input');
+        const micBtn = document.getElementById('modal-mic-btn');
+        
         input.style.display = 'block';
         input.value = defaultVal;
         input.oninput = null;
@@ -415,8 +547,14 @@
         if (mode === 'money') {
             input.setAttribute('inputmode', 'numeric');
             input.oninput = () => formatNumberInput(input);
+            micBtn.style.display = 'block';
         } else if (mode === 'qty') {
             input.setAttribute('inputmode', 'decimal');
+            micBtn.style.display = 'block';
+        } else if (mode === 'text') {
+            micBtn.style.display = 'block';
+        } else {
+            micBtn.style.display = 'none';
         }
 
         modalCallback = callback;
@@ -427,6 +565,7 @@
     function uiConfirm(title, callback) {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-input').style.display = 'none';
+        document.getElementById('modal-mic-btn').style.display = 'none';
         modalCallback = callback;
         document.getElementById('modal-overlay').classList.add('active');
     }
@@ -459,6 +598,8 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active'); el.classList.add('active');
+        
+        if (id === 'page-add') renderAddWhList(); // Обновляем список склада при входе
     }
 
     function setFilter(f, el) {
@@ -584,7 +725,54 @@
     }
 
 
-    // --- ИНТЕГРАЦИЯ: ВЗЯТЬ СО СКЛАДА В ЗАКАЗ ---
+    // --- ИНТЕГРАЦИЯ: ВЗЯТЬ СО СКЛАДА В НОВЫЙ ЗАКАЗ (ЧЕКБОКСЫ) ---
+    function renderAddWhList() {
+        const container = document.getElementById('add-wh-list');
+        const q = document.getElementById('add-wh-search').value.toLowerCase();
+        container.innerHTML = '';
+        
+        // Показываем первые 20 позиций или отфильтрованные
+        const filtered = whItems.filter(i => 
+            i.name.toLowerCase().includes(q) || 
+            (i.barcode && i.barcode.toLowerCase().includes(q))
+        ).slice(0, 20);
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="font-size:11px; color:var(--hint); text-align:center;">Ничего не найдено</div>';
+            return;
+        }
+        
+        filtered.forEach(i => {
+            const state = newOrderWhSelections[i.id] || { checked: false, qty: '' };
+            container.innerHTML += `
+                <div style="display:flex; align-items:center; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+                    <div style="display:flex; align-items:center; gap: 8px; flex:1; cursor:pointer;">
+                        <input type="checkbox" id="add-chk-${i.id}" class="custom-checkbox" ${state.checked ? 'checked' : ''} onchange="updateAddWhState(${i.id}, 'checked', this.checked)">
+                        <label for="add-chk-${i.id}" style="cursor:pointer;">
+                            <div style="font-size:12px; font-weight:700;">${i.name}</div>
+                            <div style="font-size:10px; color:var(--hint);">На складе: <b>${i.qty}</b> ${i.unit}</div>
+                        </label>
+                    </div>
+                    <input type="text" inputmode="decimal" value="${state.qty}" oninput="updateAddWhState(${i.id}, 'qty', this.value)" placeholder="Кол" class="custom-input" style="width: 75px; margin-bottom: 0; padding: 8px; font-size: 12px; text-align:center;">
+                </div>
+            `;
+        });
+    }
+    
+    function updateAddWhState(id, field, value) {
+        if (!newOrderWhSelections[id]) newOrderWhSelections[id] = { checked: false, qty: '' };
+        newOrderWhSelections[id][field] = value;
+        
+        // Автоматически ставим галочку, если человек начал вводить цифры
+        if (field === 'qty' && parseQty(value) > 0 && !newOrderWhSelections[id].checked) {
+            newOrderWhSelections[id].checked = true;
+            const chk = document.getElementById(`add-chk-${id}`);
+            if(chk) chk.checked = true;
+        }
+    }
+
+
+    // --- ИНТЕГРАЦИЯ: ВЗЯТЬ СО СКЛАДА В СУЩЕСТВУЮЩИЙ ЗАКАЗ ---
     function openWhPicker(orderId) {
         document.getElementById('wh-picker-order-id').value = orderId;
         document.getElementById('wh-picker-search').value = '';
@@ -635,28 +823,20 @@
         
         if(!item || !order) return;
 
-        // Обновляем склад
         const newWhQty = item.qty - takeQty;
         db.ref(`warehouse/items/${whItemId}/qty`).set(newWhQty);
         addWhLog(`<b>${item.name}</b>: Списано -${takeQty} ${item.unit} на заказ <b>"${order.title}"</b>. Остаток: ${newWhQty}`);
 
-        // Добавляем в расходы заказа
         if(!order.expenses) order.expenses = [];
-        // Проверяем, есть ли уже такая позиция в расходах, если есть - можно суммировать, но лучше добавить новой строкой (вдруг цены разные)
         order.expenses.push({ 
-            name: item.name, 
-            qty: takeQty, 
-            price: 0, // Цену можно будет проставить в карточке заказа позже, если нужно
-            cost: 0, 
-            bought: true, // Сразу отмечаем как "Куплено/Взято", так как это уже со склада
-            cat: 'mat' 
+            name: item.name, qty: takeQty, price: 0, cost: 0, bought: true, cat: 'mat' 
         });
         
         db.ref(`orders/${orderId}/expenses`).set(order.expenses).then(() => {
             tg.HapticFeedback.notificationOccurred('success');
-            takeInput.value = ''; // Очищаем инпут
+            takeInput.value = ''; 
             tg.showAlert(`Добавлено: ${item.name} (${takeQty} ${item.unit})`);
-            renderOrders(); // Обновляем UI заказов на фоне
+            renderOrders(); 
         });
     }
 
@@ -709,6 +889,25 @@
         const title = document.getElementById('in-title').value;
         const price = extract(document.getElementById('in-price').value);
         if(!title || price <= 0) return tg.showAlert("Заполните изделие и цену!");
+        
+        // Собираем выбранные товары со склада для нового заказа
+        const orderExpenses = [];
+        for (const [itemId, data] of Object.entries(newOrderWhSelections)) {
+            const takeQty = parseQty(data.qty);
+            if (data.checked && takeQty > 0) {
+                const item = whItems.find(x => x.id == itemId);
+                if (item) {
+                    orderExpenses.push({
+                        name: item.name, qty: takeQty, price: 0, cost: 0, bought: true, cat: 'mat'
+                    });
+                    // Моментально списываем со склада
+                    const newWhQty = item.qty - takeQty;
+                    db.ref(`warehouse/items/${itemId}/qty`).set(newWhQty);
+                    addWhLog(`<b>${item.name}</b>: Списано -${takeQty} ${item.unit} на НОВЫЙ заказ <b>"${title}"</b>. Остаток: ${newWhQty}`);
+                }
+            }
+        }
+
         const id = Date.now();
         db.ref('orders/' + id).set({
             id, title, price,
@@ -719,10 +918,12 @@
             link: document.getElementById('in-link').value,
             deadline: document.getElementById('in-deadline').value,
             prepay: extract(document.getElementById('in-prepay').value),
-            status: 0, mName: '', mPhone: '', expenses: []
+            status: 0, mName: '', mPhone: '', expenses: orderExpenses
         }).then(() => {
             ['in-title','in-client','in-phone','in-loc','in-loc-link','in-link','in-deadline','in-price','in-prepay'].forEach(k => document.getElementById(k).value = '');
+            newOrderWhSelections = {}; // Очищаем выбор склада
             nav('page-list', document.querySelectorAll('.tab-item')[0]);
+            if(orderExpenses.length > 0) tg.showAlert(`Заказ создан! ${orderExpenses.length} позиций списано со склада.`);
         });
     }
 

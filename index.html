@@ -15,83 +15,84 @@
             --purple: #6f42c1;
         }
         body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 40vh; }
-        header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .logo-text { font-weight: 800; font-size: 20px; color: var(--primary); }
+        header { background: var(--card); padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .logo-text { font-weight: 800; font-size: 18px; color: var(--primary); }
         
-        .page { display: none !important; padding: 15px; min-height: 85vh; }
+        .page { display: none !important; padding: 12px; min-height: 85vh; }
         .page.active { display: block !important; }
 
-        .order-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); position: relative; }
-        .finances { background: rgba(0,0,0,0.03); padding: 14px; border-radius: 15px; margin-top: 15px; }
-        .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+        .order-card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: relative; }
+        .finances { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 12px; margin-top: 12px; }
+        .fin-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
         
-        /* ЗАЩИТА ОТ РАЗРЫВА ВЕРСТКИ ГИГАНТСКИМИ ЧИСЛАМИ */
+        /* ЖЕЛЕЗНАЯ ЗАЩИТА ОТ РАЗРЫВА ВЕРСТКИ ГИГАНТСКИМИ ЧИСЛАМИ */
         .word-wrap, .fin-row b, .exp-table-row > div, .wh-name, .wh-qty b {
             min-width: 0;
-            word-break: break-word;
+            word-break: break-all; /* Жесткий перенос для цифр */
             overflow-wrap: anywhere;
         }
         .fin-row b { text-align: right; max-width: 65%; }
 
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 24px 0; border-top: 1px solid var(--border); z-index: 2000; }
+        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0 20px 0; border-top: 1px solid var(--border); z-index: 2000; }
         .tab-item { flex: 1; display: none; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
-        .tab-item span { font-size: 22px; margin-bottom: 4px; }
+        .tab-item span { font-size: 20px; margin-bottom: 4px; }
         .tab-item.active { color: var(--primary) !important; }
         .tab-item.visible { display: flex; }
-        .tab-label { font-size: 11px; font-weight: 700; margin-top: 4px; }
+        .tab-label { font-size: 10px; font-weight: 700; margin-top: 4px; }
 
-        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 14px;}
-        .custom-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 14px; outline: none; }
+        .custom-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; font-size: 13px; min-width: 0;}
+        .custom-select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 10px; font-size: 13px; outline: none; min-width: 0;}
         
-        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;}
+        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;}
         .btn-primary { background: var(--primary); color: white; }
         .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); margin-top: 5px; }
-        .btn-shopping { background: var(--soft-green); color: white; margin-top: 12px; }
-        .btn-quick { background: var(--purple); color: white; margin-top: 12px; }
-        .btn-warehouse { background: var(--orange); color: white; margin-top: 12px; }
+        .btn-shopping { background: var(--soft-green); color: white; margin-top: 10px; }
+        .btn-quick { background: var(--purple); color: white; margin-top: 10px; }
+        .btn-warehouse { background: var(--orange); color: white; margin-top: 10px; }
         
-        .exp-table-row { display: grid; grid-template-columns: 2.5fr 1fr 1.2fr 1.2fr 30px; gap: 8px; align-items: center; font-size: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        /* ИСПОЛЬЗУЕМ minmax(0, Xfr) чтобы колонки могли сжиматься и ломать длинный текст внутри */
+        .exp-table-row { display: grid; grid-template-columns: minmax(0, 2.5fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 30px; gap: 6px; align-items: center; font-size: 11px; padding: 10px 0; border-bottom: 1px solid var(--border); }
         .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); padding-bottom: 6px;}
         .exp-table-row.bought { color: var(--green); opacity: 0.5; background: rgba(46, 204, 113, 0.05); }
         
-        .edit-icon { cursor: pointer; opacity: 0.4; font-size: 13px; margin-left: 6px; display: none; }
+        .edit-icon { cursor: pointer; opacity: 0.4; font-size: 12px; margin-left: 5px; display: none; }
         body.is-admin .edit-icon { display: inline-block; }
         
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip { padding: 8px 16px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-chip { padding: 6px 14px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
         .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .cat-tag { font-size: 9px; padding: 3px 5px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
-        .status-select { font-size: 11px; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
+        .cat-tag { font-size: 8px; padding: 2px 4px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
+        .status-select { font-size: 10px; padding: 6px 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
         
         body.is-supplier .supplier-hide { display: none !important; }
-        body.is-supplier .exp-table-row { grid-template-columns: 3fr 1.2fr 40px; }
+        body.is-supplier .exp-table-row { grid-template-columns: minmax(0, 3fr) minmax(0, 1.2fr) 40px; }
 
         /* СКЛАД UI */
-        .wh-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 14px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); }
+        .wh-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); }
         .wh-info { flex: 1; cursor: pointer; min-width: 0; padding-right: 10px; }
-        .wh-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.3;}
-        .wh-qty { font-size: 12px; color: var(--hint); }
-        .wh-qty b { color: var(--primary); font-size: 16px; margin-right: 4px;}
+        .wh-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; line-height: 1.3;}
+        .wh-qty { font-size: 11px; color: var(--hint); }
+        .wh-qty b { color: var(--primary); font-size: 14px; margin-right: 4px;}
         .wh-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0;}
-        .wh-btn { border: none; background: rgba(0,0,0,0.05); width: 42px; height: 42px; border-radius: 10px; font-weight: 800; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s;}
+        .wh-btn { border: none; background: rgba(0,0,0,0.05); width: 38px; height: 38px; border-radius: 10px; font-weight: 800; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s;}
         .wh-btn:active { transform: scale(0.9); }
         .wh-btn.plus { color: var(--green); background: rgba(46, 204, 113, 0.15); }
         .wh-btn.minus { color: var(--red); background: rgba(220, 53, 69, 0.15); }
 
-        .search-group { display: flex; gap: 6px; margin-bottom: 12px; }
-        .search-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0 16px; font-size: 22px; cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+        .search-group { display: flex; gap: 6px; margin-bottom: 10px; }
+        .search-btn { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0 14px; font-size: 20px; cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
 
         /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА */
-        .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+        .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(2px); }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
-        .modal-box { background: var(--card); border-radius: 20px; padding: 20px; width: 100%; max-width: 360px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease-out; }
+        .modal-box { background: var(--card); border-radius: 16px; padding: 18px; width: 100%; max-width: 340px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease-out; }
         
         /* УМНЫЙ ПИКЕР СКЛАДА */
         .picker-row { 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 14px; border: 1px solid var(--border); border-radius: 12px; 
+            padding: 12px; border: 1px solid var(--border); border-radius: 12px; 
             margin-bottom: 8px; transition: 0.2s; cursor: pointer;
         }
         .picker-row.selected { 
@@ -111,8 +112,8 @@
 
 <header>
     <div class="logo-area">
-        <div class="logo-text">FORMA <span id="role-badge" style="font-size:11px; border:1px solid; padding:3px 6px; border-radius:4px; vertical-align: middle;">...</span></div>
-        <div id="cloud-status" style="font-size:11px; font-weight:700;">● ПОДКЛЮЧЕНИЕ...</div>
+        <div class="logo-text">FORMA <span id="role-badge" style="font-size:10px; border:1px solid; padding:3px 5px; border-radius:4px; vertical-align: middle;">...</span></div>
+        <div id="cloud-status" style="font-size:10px; font-weight:700;">● ПОДКЛЮЧЕНИЕ...</div>
     </div>
     <div class="search-group">
         <input type="text" id="main-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск (изделие, клиент)..." oninput="renderOrders()">
@@ -121,6 +122,7 @@
 </header>
 
 <main>
+    <!-- ЗАКАЗЫ -->
     <section id="page-list" class="page active">
         <div class="filter-bar">
             <div class="filter-chip active" onclick="setFilter('all', this)">Все</div>
@@ -130,13 +132,14 @@
         <div id="orders-container"></div>
     </section>
 
+    <!-- СКЛАД -->
     <section id="page-warehouse" class="page">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h2 style="font-weight: 800; margin: 0; font-size: 22px;">Склад</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+            <h2 style="font-weight: 800; margin: 0; font-size: 20px;">Склад</h2>
             <div style="display:flex; gap: 6px;">
-                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 14px; font-size:12px; background:var(--purple);" onclick="document.getElementById('ai-file').click()">📸 ИИ-Скан</button>
+                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 12px; font-size:11px; background:var(--purple);" onclick="document.getElementById('ai-file').click()">📸 ИИ-Скан</button>
                 <input type="file" id="ai-file" accept="image/*" capture="environment" style="display:none" onchange="handleAiScan(this)">
-                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 14px; font-size:12px;" onclick="openWhCreateModal()">+ НОВЫЙ</button>
+                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 12px; font-size:11px;" onclick="openWhCreateModal()">+ НОВЫЙ</button>
             </div>
         </div>
 
@@ -155,35 +158,37 @@
             <div id="wh-container"></div>
         </div>
         
-        <div id="wh-view-logs" style="display:none; background:var(--card); border-radius:15px; padding:15px; border:1px solid var(--border);">
+        <div id="wh-view-logs" style="display:none; background:var(--card); border-radius:12px; padding:12px; border:1px solid var(--border);">
             <div id="wh-logs-container"></div>
         </div>
 
         <div id="wh-view-usage" style="display:none;">
-            <div style="font-size:14px; font-weight:700; color:var(--hint); margin-bottom:10px;">Списания на заказы:</div>
+            <div style="font-size:12px; font-weight:700; color:var(--hint); margin-bottom:10px;">Списания на заказы:</div>
             <div id="wh-usage-container"></div>
         </div>
     </section>
 
+    <!-- ФИНАНСЫ -->
     <section id="page-stats" class="page">
-        <h2 style="font-weight: 800; font-size: 22px;">Аналитика</h2>
-        <div class="finances" style="font-size:16px; margin-bottom: 20px;">
+        <h2 style="font-weight: 800; font-size: 20px;">Аналитика</h2>
+        <div class="finances" style="font-size:14px; margin-bottom: 16px;">
             <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
             <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
             <div class="fin-row" style="color:#4a148c"><span>ЗП (Все):</span> <b id="stat-work">0</b></div>
-            <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
+            <div class="fin-row" style="margin-top:12px; border-top:2px solid var(--primary); padding-top:12px; color:var(--green); font-size:18px;">
                 <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
             </div>
         </div>
-        <h3 style="font-size: 18px;">👷 Зарплаты по мастерам:</h3>
-        <div id="master-salaries" class="finances" style="font-size:13px;"></div>
-        <button class="btn btn-shopping" style="margin-top:15px;" onclick="copyGlobalShoppingList()">📦 Копировать ОБЩИЙ закуп</button>
-        <h3 style="margin-top:20px; font-size: 18px;">✅ Архив (Готово):</h3>
+        <h3 style="font-size: 16px;">👷 Зарплаты по мастерам:</h3>
+        <div id="master-salaries" class="finances" style="font-size:12px;"></div>
+        <button class="btn btn-shopping" style="margin-top:12px;" onclick="copyGlobalShoppingList()">📦 Копировать ОБЩИЙ закуп</button>
+        <h3 style="margin-top:16px; font-size: 16px;">✅ Архив (Готово):</h3>
         <div id="archive-container"></div>
     </section>
 
+    <!-- ДОБАВЛЕНИЕ (НОВЫЙ ЗАКАЗ) -->
     <section id="page-add" class="page">
-        <h2 style="font-weight: 800; font-size: 22px;">Новый проект</h2>
+        <h2 style="font-weight: 800; font-size: 20px;">Новый проект</h2>
         <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
         <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
         <input type="tel" id="in-phone" class="custom-input" placeholder="998 XX XXX XX XX" maxlength="16" oninput="formatPhone(this)">
@@ -191,22 +196,22 @@
         <input type="text" id="in-loc-link" class="custom-input" placeholder="Геолокация (ссылка на карту)">
         <input type="text" id="in-link" class="custom-input" placeholder="Ссылка на дизайн-проект">
         <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дата сдачи">
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:8px;">
             <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
             <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
         </div>
 
-        <div style="margin-top: 15px; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 15px; padding: 12px; background: rgba(0,0,0,0.01);">
+        <div style="margin-top: 12px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: rgba(0,0,0,0.01);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                <div style="font-weight: 700; font-size: 14px; color:var(--primary);">📦 Выбрано со склада:</div>
-                <button class="btn btn-outline" style="width:auto; padding:6px 12px; font-size:11px; margin:0; border-color:var(--primary); color:var(--primary);" onclick="openWhPicker('new_order')">Выбрать материалы</button>
+                <div style="font-weight: 700; font-size: 13px; color:var(--primary);">📦 Выбрано со склада:</div>
+                <button class="btn btn-outline" style="width:auto; padding:6px 12px; font-size:10px; margin:0; border-color:var(--primary); color:var(--primary);" onclick="openWhPicker('new_order')">Выбрать материалы</button>
             </div>
-            <div id="new-order-wh-summary" style="font-size:13px; color:var(--text); line-height: 1.5; background:var(--card); padding:12px; border-radius:10px; border:1px solid var(--border);">
+            <div id="new-order-wh-summary" style="font-size:12px; color:var(--text); line-height: 1.5; background:var(--card); padding:10px; border-radius:8px; border:1px solid var(--border);">
                 <span style="color:var(--hint)">Ничего не выбрано. Нажмите кнопку выше ⬆️</span>
             </div>
         </div>
 
-        <button class="btn btn-primary" onclick="createOrder()" style="font-size:15px; padding:16px;">🚀 СОЗДАТЬ ЗАКАЗ</button>
+        <button class="btn btn-primary" onclick="createOrder()" style="font-size:14px; padding:14px;">🚀 СОЗДАТЬ ЗАКАЗ</button>
     </section>
 </main>
 
@@ -217,34 +222,35 @@
     <div id="tab-add" class="tab-item" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
 </nav>
 
+<!-- КАСТОМНЫЕ ОКНА (MODALS) -->
 <div id="modal-overlay" class="modal-overlay">
     <div class="modal-box">
-        <h3 id="modal-title" style="margin-top:0; margin-bottom: 15px; font-size:16px; line-height: 1.4;" class="word-wrap"></h3>
+        <h3 id="modal-title" style="margin-top:0; margin-bottom: 12px; font-size:15px; line-height: 1.4;" class="word-wrap"></h3>
         <div style="display:flex; gap: 6px; align-items: center;" id="modal-input-wrapper">
-            <input type="text" id="modal-input" class="custom-input" style="display:none; font-size:16px; margin-bottom:0; flex:1; padding: 14px;">
-            <button class="search-btn" id="modal-mic-btn" onclick="startDictation('modal-input')" style="display:none; padding:0 14px; height: 50px; font-size: 20px;">🎤</button>
+            <input type="text" id="modal-input" class="custom-input" style="display:none; font-size:15px; margin-bottom:0; flex:1; padding: 12px;">
+            <button class="search-btn" id="modal-mic-btn" onclick="startDictation('modal-input')" style="display:none; padding:0 12px; height: 44px; font-size: 18px;">🎤</button>
         </div>
-        <div style="display:flex; gap:10px; margin-top:14px;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 14px; padding: 12px;" onclick="closeModal('modal-overlay')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; font-size: 14px; padding: 12px;" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 13px; padding: 10px;" onclick="closeModal('modal-overlay')">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0; font-size: 13px; padding: 10px;" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
         </div>
     </div>
 </div>
 
 <div id="modal-wh-create" class="modal-overlay">
     <div class="modal-box">
-        <h3 style="margin-top:0; font-size:18px; margin-bottom: 12px;">Новый товар на склад</h3>
+        <h3 style="margin-top:0; font-size:16px; margin-bottom: 10px;">Новый товар на склад</h3>
         
-        <label style="font-size:11px; font-weight:bold; color:var(--hint);">НАЗВАНИЕ</label>
+        <label style="font-size:10px; font-weight:bold; color:var(--hint);">НАЗВАНИЕ</label>
         <div class="search-group">
-            <input type="text" id="wh-c-name" class="custom-input" style="margin-bottom:10px;" placeholder="Напр: Саморезы 3.5x16">
-            <button class="search-btn" style="margin-bottom:10px;" onclick="startDictation('wh-c-name')">🎤</button>
+            <input type="text" id="wh-c-name" class="custom-input" style="margin-bottom:8px;" placeholder="Напр: Саморезы 3.5x16">
+            <button class="search-btn" style="margin-bottom:8px;" onclick="startDictation('wh-c-name')">🎤</button>
         </div>
 
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:8px;">
             <div style="flex:1;">
-                <label style="font-size:11px; font-weight:bold; color:var(--hint);">ЕД. ИЗМЕРЕНИЯ</label>
-                <select id="wh-c-unit" class="custom-select" style="margin-bottom: 10px;">
+                <label style="font-size:10px; font-weight:bold; color:var(--hint);">ЕД. ИЗМЕРЕНИЯ</label>
+                <select id="wh-c-unit" class="custom-select" style="margin-bottom: 8px;">
                     <option value="шт">шт (Штуки)</option>
                     <option value="м">м (Метры)</option>
                     <option value="кг">кг (Килограммы)</option>
@@ -255,49 +261,49 @@
                 </select>
             </div>
             <div style="flex:1;">
-                <label style="font-size:11px; font-weight:bold; color:var(--hint);">ОСТАТОК</label>
+                <label style="font-size:10px; font-weight:bold; color:var(--hint);">ОСТАТОК</label>
                 <input type="text" inputmode="decimal" id="wh-c-qty" class="custom-input" placeholder="0">
             </div>
         </div>
 
-        <label style="font-size:11px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Если есть)</label>
+        <label style="font-size:10px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Если есть)</label>
         <div class="search-group">
             <input type="text" id="wh-c-code" class="custom-input" style="margin-bottom:0;" placeholder="Авто-генерация...">
             <button class="search-btn" onclick="startScan('wh-c-code')">📷</button>
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:16px;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 14px; padding: 12px;" onclick="closeModal('modal-wh-create')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; font-size: 14px; padding: 12px;" onclick="saveNewWhItem()">Добавить</button>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 13px; padding: 10px;" onclick="closeModal('modal-wh-create')">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0; font-size: 13px; padding: 10px;" onclick="saveNewWhItem()">Добавить</button>
         </div>
     </div>
 </div>
 
 <div id="modal-ai-preview" class="modal-overlay">
     <div class="modal-box" style="max-width: 400px;">
-        <h3 style="margin-top:0; font-size:18px; color:var(--purple);">🤖 ИИ Нашел товары:</h3>
-        <div style="font-size:13px; color:var(--hint); margin-bottom:12px;">Проверьте данные с чека перед сохранением:</div>
-        <div id="ai-items-list" style="max-height: 45vh; overflow-y: auto; margin-bottom: 12px; padding-right:5px;"></div>
-        <button class="btn btn-primary" style="font-size:14px; padding: 12px;" onclick="applyAiItems()">Сохранить на склад</button>
-        <button class="btn btn-outline" style="margin-top:8px; border:none; font-size:14px; padding: 12px;" onclick="closeModal('modal-ai-preview')">Отмена</button>
+        <h3 style="margin-top:0; font-size:16px; color:var(--purple);">🤖 ИИ Нашел товары:</h3>
+        <div style="font-size:12px; color:var(--hint); margin-bottom:10px;">Проверьте данные с чека перед сохранением:</div>
+        <div id="ai-items-list" style="max-height: 45vh; overflow-y: auto; margin-bottom: 10px; padding-right:5px;"></div>
+        <button class="btn btn-primary" style="font-size:13px; padding: 10px;" onclick="applyAiItems()">Сохранить на склад</button>
+        <button class="btn btn-outline" style="margin-top:8px; border:none; font-size:13px; padding: 10px;" onclick="closeModal('modal-ai-preview')">Отмена</button>
     </div>
 </div>
 
 <div id="modal-wh-picker" class="modal-overlay">
     <div class="modal-box" style="max-width: 400px; display: flex; flex-direction: column; max-height: 90vh;">
-        <h3 style="margin-top:0; font-size:18px; margin-bottom: 12px;" id="wh-picker-title" class="word-wrap">Взять материалы</h3>
+        <h3 style="margin-top:0; font-size:16px; margin-bottom: 10px;" id="wh-picker-title" class="word-wrap">Взять материалы</h3>
         <div class="search-group" style="flex-shrink: 0;">
             <input type="text" id="wh-picker-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск по складу..." oninput="renderWhPickerList()">
             <button class="search-btn" onclick="startDictation('wh-picker-search')">🎤</button>
             <button class="search-btn" onclick="startScan('wh-picker-search')">📷</button>
         </div>
         
-        <div id="wh-picker-list" style="margin-top:8px; overflow-y: auto; flex: 1; padding-right: 5px; padding-bottom: 5px;">
+        <div id="wh-picker-list" style="margin-top:6px; overflow-y: auto; flex: 1; padding-right: 5px; padding-bottom: 5px;">
             </div>
 
-        <div style="display:flex; gap:10px; margin-top:12px; flex-shrink: 0;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); flex:1; font-size:14px; padding: 12px;" onclick="closeModal('modal-wh-picker')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; flex:2; font-size:14px; padding: 12px;" onclick="confirmPicker()">✅ Добавить</button>
+        <div style="display:flex; gap:8px; margin-top:10px; flex-shrink: 0;">
+            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); flex:1; font-size:13px; padding: 10px;" onclick="closeModal('modal-wh-picker')">Отмена</button>
+            <button class="btn btn-primary" style="margin-top:0; flex:2; font-size:13px; padding: 10px;" onclick="confirmPicker()">✅ Добавить</button>
         </div>
     </div>
 </div>
@@ -505,10 +511,10 @@
                 
                 const list = document.getElementById('ai-items-list');
                 list.innerHTML = pendingAiItems.map((item, i) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom:1px solid var(--border);">
-                        <input type="text" id="ai-name-${i}" value="${item.name}" class="custom-input" style="padding:10px; font-size:13px; margin:0; flex:2; min-width:0;">
-                        <input type="text" inputmode="decimal" id="ai-qty-${i}" value="${item.qty}" class="custom-input" style="padding:10px; font-size:13px; margin:0; flex:0.7; margin-left:6px; text-align:center; min-width:0;">
-                        <input type="text" id="ai-unit-${i}" value="${item.unit || 'шт'}" class="custom-input" style="padding:10px; font-size:13px; margin:0; flex:0.6; margin-left:6px; text-align:center; min-width:0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom:1px solid var(--border);">
+                        <input type="text" id="ai-name-${i}" value="${item.name}" class="custom-input" style="padding:8px; font-size:12px; margin:0; flex:2; min-width:0;">
+                        <input type="text" inputmode="decimal" id="ai-qty-${i}" value="${item.qty}" class="custom-input" style="padding:8px; font-size:12px; margin:0; flex:0.7; margin-left:6px; text-align:center; min-width:0;">
+                        <input type="text" id="ai-unit-${i}" value="${item.unit || 'шт'}" class="custom-input" style="padding:8px; font-size:12px; margin:0; flex:0.6; margin-left:6px; text-align:center; min-width:0;">
                     </div>
                 `).join('');
                 document.getElementById('modal-ai-preview').classList.add('active');
@@ -722,7 +728,7 @@
         );
 
         if(filtered.length === 0) {
-            c.innerHTML = '<div style="text-align:center; color:var(--hint); padding: 20px; font-size:13px;">Ничего не найдено</div>';
+            c.innerHTML = '<div style="text-align:center; color:var(--hint); padding: 20px; font-size:12px;">Ничего не найдено</div>';
             return;
         }
 
@@ -730,8 +736,8 @@
             c.innerHTML += `
                 <div class="wh-item">
                     <div class="wh-info" onclick="editWhName(${i.id})">
-                        <div class="wh-name">${i.name}</div>
-                        <div class="wh-qty">Остаток: <b>${i.qty}</b> ${i.unit} ${i.barcode ? `<span style="font-size:10px; color:var(--hint)">| Код: ${i.barcode}</span>` : ''}</div>
+                        <div class="wh-name word-wrap">${i.name}</div>
+                        <div class="wh-qty word-wrap">Остаток: <b>${i.qty}</b> ${i.unit} ${i.barcode ? `<span style="font-size:10px; color:var(--hint)">| Код: ${i.barcode}</span>` : ''}</div>
                     </div>
                     <div class="wh-actions">
                         <button class="wh-btn minus" onclick="changeWhQty(${i.id}, 'sub')">-</button>
@@ -745,8 +751,8 @@
 
     function renderWhLogs() {
         const c = document.getElementById('wh-logs-container');
-        if(whLogs.length === 0) c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center;">Истории пока нет</div>';
-        else c.innerHTML = whLogs.map(l => `<div style="font-size:13px; padding:12px 0; border-bottom:1px solid var(--border); line-height:1.4;">${l.text}</div>`).join('');
+        if(whLogs.length === 0) c.innerHTML = '<div style="font-size:12px; color:var(--hint); text-align:center;">Истории пока нет</div>';
+        else c.innerHTML = whLogs.map(l => `<div style="font-size:12px; padding:10px 0; border-bottom:1px solid var(--border); line-height:1.4;">${l.text}</div>`).join('');
     }
 
     function renderWhUsage() {
@@ -754,10 +760,10 @@
         const usageLogs = whLogs.filter(l => l.text.includes('Списано') || l.text.includes('Списание') || l.text.includes('Возврат') || l.text.includes('корректировка'));
         
         if(usageLogs.length === 0) {
-            c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center; margin-top:20px;">Расходов пока нет</div>';
+            c.innerHTML = '<div style="font-size:12px; color:var(--hint); text-align:center; margin-top:20px;">Расходов пока нет</div>';
         } else {
             c.innerHTML = usageLogs.map(l => `
-                <div style="font-size:13px; padding:14px; margin-bottom:10px; background:var(--card); border-radius:12px; border:1px solid var(--border); line-height:1.5; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                <div style="font-size:12px; padding:12px; margin-bottom:10px; background:var(--card); border-radius:12px; border:1px solid var(--border); line-height:1.5; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
                     ${l.text}
                 </div>
             `).join('');
@@ -821,7 +827,7 @@
         );
 
         if(filtered.length === 0) {
-            c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center; padding:20px;">Товар не найден на складе</div>';
+            c.innerHTML = '<div style="font-size:12px; color:var(--hint); text-align:center; padding:20px;">Товар не найден на складе</div>';
             return;
         }
 
@@ -831,10 +837,10 @@
             c.innerHTML += `
                 <div class="picker-row ${isSelected ? 'selected' : ''}" id="p-row-${i.id}" onclick="togglePick(${i.id})">
                     <div style="flex:1; min-width:0; padding-right:10px;">
-                        <div class="word-wrap" style="font-size:14px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:4px;">${i.name}</div>
-                        <div class="word-wrap" style="font-size:12px; color:var(--hint);">Остаток: <b style="color:var(--text)">${i.qty}</b> ${i.unit}</div>
+                        <div class="word-wrap" style="font-size:13px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:4px;">${i.name}</div>
+                        <div class="word-wrap" style="font-size:11px; color:var(--hint);">Остаток: <b style="color:var(--text)">${i.qty}</b> ${i.unit}</div>
                     </div>
-                    <input type="text" inputmode="decimal" value="${qty}" placeholder="Кол-во" class="custom-input" style="width:80px; flex-shrink:0; margin:0; padding:12px 6px; text-align:center; font-weight:bold; font-size:15px;" onclick="event.stopPropagation()" oninput="updatePickQty(${i.id}, this.value)">
+                    <input type="text" inputmode="decimal" value="${qty}" placeholder="Кол-во" class="custom-input" style="width:70px; flex-shrink:0; margin:0; padding:10px 4px; text-align:center; font-weight:bold; font-size:13px;" onclick="event.stopPropagation()" oninput="updatePickQty(${i.id}, this.value)">
                 </div>
             `;
         });
@@ -1155,16 +1161,16 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div style="min-width:0; padding-right:8px; flex:1;">
-                        <div class="word-wrap" style="font-weight:800; font-size:18px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
-                        <div class="word-wrap" style="font-size:12px; opacity:0.6; margin-top:4px;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
+                        <div class="word-wrap" style="font-weight:800; font-size:16px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
+                        <div class="word-wrap" style="font-size:11px; opacity:0.6; margin-top:4px;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
                         
-                        <div class="supplier-hide word-wrap" style="font-size:12px; margin-top:8px; padding:10px; background:rgba(0,0,0,0.03); border-radius:10px; line-height: 1.5;">
+                        <div class="supplier-hide word-wrap" style="font-size:11px; margin-top:8px; padding:8px; background:rgba(0,0,0,0.03); border-radius:10px; line-height: 1.5;">
                             🛠 <b>Мастер:</b> ${o.mName || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:')">✏️</span> | 📞 ${o.mPhone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:')">✏️</span><br>
                             🗺 <b>Гео:</b> ${o.locLink ? `<a href="${o.locLink}" target="_blank">Открыть карту</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'locLink', 'Ссылка на гео:')">🔗</span><br>
                             🎨 <b>Дизайн:</b> ${o.link ? `<a href="${o.link}" target="_blank">Смотреть проект</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка на дизайн:')">🔗</span>
                         </div>
 
-                        <div style="font-size:11px; margin-top:8px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
+                        <div style="font-size:10px; margin-top:8px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
                     </div>
                     <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''} style="flex-shrink:0;">
                         ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
@@ -1174,10 +1180,10 @@
                 <div class="finances">
                     <div class="fin-row"><span>Цена:</span> <b class="word-wrap" onclick="editFinance(${o.id}, 'price', 'Цена:')" style="cursor:pointer; color:var(--primary)">${fMoney(o.price)} ✏️</b></div>
                     <div class="fin-row" style="color:var(--red)"><span>Остаток:</span> <b class="word-wrap">${fMoney(o.price - totalExp)}</b></div>
-                    <button class="btn btn-outline" style="font-size:12px; padding:10px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
+                    <button class="btn btn-outline" style="font-size:11px; padding:10px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
                 </div>` : ''}
                 
-                <div style="margin-top:12px; font-size:13px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
+                <div style="margin-top:12px; font-size:12px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
                     📦 Расходы (${displayExpenses.length}) ${isExp?'▲':'▼'}
                 </div>
                 
@@ -1189,31 +1195,31 @@
                         const originalIndex = o.expenses.indexOf(e);
                         return `
                         <div class="exp-table-row ${e.bought ? 'bought' : ''}">
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Изменить название:', 'text')" style="font-size:12px; cursor:pointer; line-height:1.3; min-width:0; word-break:break-word;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
+                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Изменить название:', 'text')" style="font-size:11px; cursor:pointer; line-height:1.3; min-width:0; word-break:break-all;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
                             
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Изменить количество:', 'qty')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:13px; min-width:0; word-break:break-word;">${e.qty} <span style="font-size:9px;">✏️</span></div>
+                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Изменить количество:', 'qty')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:12px; min-width:0; word-break:break-all;">${e.qty} <span style="font-size:9px;">✏️</span></div>
                             
-                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Изменить цену:', 'money')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:12px; min-width:0; word-break:break-word;">
+                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Изменить цену:', 'money')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:11px; min-width:0; word-break:break-all;">
                                 ${e.price > 0 ? Math.round(e.price).toLocaleString() + ' <span style="font-size:9px;">✏️</span>' : '<span style="text-decoration:underline dashed;">Указать ✏️</span>'}
                             </div>
                             
-                            <div class="supplier-hide" style="font-weight:700; font-size:12px; min-width:0; word-break:break-word;">${e.cost > 0 ? Math.round(e.cost).toLocaleString() : '0'}</div>
+                            <div class="supplier-hide" style="font-weight:700; font-size:11px; min-width:0; word-break:break-all;">${e.cost > 0 ? Math.round(e.cost).toLocaleString() : '0'}</div>
                             
-                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; font-size:20px; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
+                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; font-size:18px; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
                         </div>
                     `}).join('')}
                     
                     ${isAdmin ? `
-                    <div style="margin-top:12px; background:rgba(0,0,0,0.02); padding:12px; border-radius:12px;">
-                        <div style="display:flex; gap:12px; font-size:11px; margin-bottom:8px;">
+                    <div style="margin-top:10px; background:rgba(0,0,0,0.02); padding:10px; border-radius:10px;">
+                        <div style="display:flex; gap:10px; font-size:10px; margin-bottom:8px;">
                             <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer; font-weight:bold;">МАТЕРИАЛ</span>
                             <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; font-weight:bold; opacity:0.5">ЗАРПЛАТА</span>
                         </div>
                         <div style="display:flex; gap:6px;">
-                            <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:13px; margin-bottom:0; min-width:0;" placeholder="Что?">
-                            <input type="text" inputmode="decimal" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:13px; margin-bottom:0; text-align:center; min-width:0;" placeholder="Кол">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:13px; margin-bottom:0; min-width:0;" placeholder="Цена" oninput="formatNumberInput(this)">
-                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:12px; width:44px; border:none; font-weight:bold; font-size:22px; flex-shrink:0;">+</button>
+                            <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:12px; margin-bottom:0; min-width:0;" placeholder="Что?">
+                            <input type="text" inputmode="decimal" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:12px; margin-bottom:0; text-align:center; min-width:0;" placeholder="Кол">
+                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:12px; margin-bottom:0; min-width:0;" placeholder="Цена" oninput="formatNumberInput(this)">
+                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:10px; width:40px; border:none; font-weight:bold; font-size:20px; flex-shrink:0;">+</button>
                         </div>
                         <div style="display:flex; gap:6px; margin-top:10px;">
                             <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
@@ -1224,12 +1230,12 @@
                 </div>
                 
                 ${o.status === 4 && isAdmin ? `
-                <button class="btn btn-outline" style="font-size:12px; padding:10px; margin-top:16px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
+                <button class="btn btn-outline" style="font-size:11px; padding:10px; margin-top:14px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
                 ` : ''}
 
                 ${isAdmin ? `
-                <div style="display:flex; gap:8px; margin-top:12px;">
-                    <button class="btn btn-outline" style="font-size:12px; padding:10px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить заказ</button>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="btn btn-outline" style="font-size:11px; padding:10px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить заказ</button>
                 </div>
                 ` : ''}
             `;

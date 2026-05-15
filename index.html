@@ -3,1262 +3,1298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FORMA CRM ULTRA V34</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <title>FinanceAI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: '#7C3AED', primaryLight: '#8B5CF6', primaryDark: '#5B21B6', bgLight: '#F3F4F6', bgDark: '#030712', textDark: '#111827', cardDark: '#1F2937' } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        :root { 
-            --bg: #f4f6f8; --card: #ffffff; --primary: #007bff; --text: #333; --hint: #888; 
-            --green: #198754; --soft-green: #2ecc71; --red: #dc3545; --orange: #fd7e14; --border: rgba(0,0,0,0.1);
-            --purple: #6f42c1;
-        }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 40vh; }
-        header { background: var(--card); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .logo-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .logo-text { font-weight: 800; font-size: 20px; color: var(--primary); }
-        
-        .page { display: none !important; padding: 15px; min-height: 85vh; }
-        .page.active { display: block !important; }
-
-        .order-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); position: relative; }
-        .finances { background: rgba(0,0,0,0.03); padding: 14px; border-radius: 15px; margin-top: 15px; }
-        .fin-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
-        
-        /* ЗАЩИТА ОТ РАЗРЫВА ВЕРСТКИ ГИГАНТСКИМИ ЧИСЛАМИ */
-        .word-wrap, .fin-row b, .exp-table-row > div, .wh-name, .wh-qty b {
-            min-width: 0;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        .fin-row b { text-align: right; max-width: 65%; }
-
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 24px 0; border-top: 1px solid var(--border); z-index: 2000; }
-        .tab-item { flex: 1; display: none; flex-direction: column; align-items: center; color: var(--hint); cursor: pointer; border: none; background: none; }
-        .tab-item span { font-size: 22px; margin-bottom: 4px; }
-        .tab-item.active { color: var(--primary) !important; }
-        .tab-item.visible { display: flex; }
-        .tab-label { font-size: 11px; font-weight: 700; margin-top: 4px; }
-
-        .custom-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-sizing: border-box; background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 14px;}
-        .custom-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 14px; outline: none; }
-        
-        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;}
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); margin-top: 5px; }
-        .btn-shopping { background: var(--soft-green); color: white; margin-top: 12px; }
-        .btn-quick { background: var(--purple); color: white; margin-top: 12px; }
-        .btn-warehouse { background: var(--orange); color: white; margin-top: 12px; }
-        
-        .exp-table-row { display: grid; grid-template-columns: 2.5fr 1fr 1.2fr 1.2fr 30px; gap: 8px; align-items: center; font-size: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        .exp-table-row.header { font-weight: 700; color: var(--hint); border-bottom: 2px solid var(--border); padding-bottom: 6px;}
-        .exp-table-row.bought { color: var(--green); opacity: 0.5; background: rgba(46, 204, 113, 0.05); }
-        
-        .edit-icon { cursor: pointer; opacity: 0.4; font-size: 13px; margin-left: 6px; display: none; }
-        body.is-admin .edit-icon { display: inline-block; }
-        
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip { padding: 8px 16px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
-        .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-        .cat-tag { font-size: 9px; padding: 3px 5px; border-radius: 4px; font-weight: 900; margin-right: 4px; background: #f3e5f5; color: #4a148c; }
-        .status-select { font-size: 11px; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer; outline: none; }
-        
-        body.is-supplier .supplier-hide { display: none !important; }
-        body.is-supplier .exp-table-row { grid-template-columns: 3fr 1.2fr 40px; }
-
-        /* СКЛАД UI */
-        .wh-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 14px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); }
-        .wh-info { flex: 1; cursor: pointer; min-width: 0; padding-right: 10px; }
-        .wh-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.3;}
-        .wh-qty { font-size: 12px; color: var(--hint); }
-        .wh-qty b { color: var(--primary); font-size: 16px; margin-right: 4px;}
-        .wh-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0;}
-        .wh-btn { border: none; background: rgba(0,0,0,0.05); width: 42px; height: 42px; border-radius: 10px; font-weight: 800; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s;}
-        .wh-btn:active { transform: scale(0.9); }
-        .wh-btn.plus { color: var(--green); background: rgba(46, 204, 113, 0.15); }
-        .wh-btn.minus { color: var(--red); background: rgba(220, 53, 69, 0.15); }
-
-        .search-group { display: flex; gap: 6px; margin-bottom: 12px; }
-        .search-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0 16px; font-size: 22px; cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-
-        /* КАСТОМНЫЕ МОДАЛЬНЫЕ ОКНА */
-        .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
-        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
-        .modal-box { background: var(--card); border-radius: 20px; padding: 20px; width: 100%; max-width: 360px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease-out; }
-        
-        /* УМНЫЙ ПИКЕР СКЛАДА */
-        .picker-row { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 14px; border: 1px solid var(--border); border-radius: 12px; 
-            margin-bottom: 8px; transition: 0.2s; cursor: pointer;
-        }
-        .picker-row.selected { 
-            background: rgba(46, 204, 113, 0.1); 
-            border-color: var(--green); 
-        }
-        .picker-row.selected .custom-input {
-            border-color: var(--green);
-            background: #fff;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(124, 58, 237, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); } }
+        .animate-pulse-ring { animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1); }
+        @keyframes scanline { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+        .animate-scanline { position: absolute; left: 0; width: 100%; height: 2px; background-color: #10B981; box-shadow: 0 0 10px #10B981, 0 0 20px #10B981; animation: scanline 2s linear infinite; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body>
+<body class="bg-bgLight dark:bg-bgDark transition-colors duration-300">
+    <div id="root"></div>
 
-<header>
-    <div class="logo-area">
-        <div class="logo-text">FORMA <span id="role-badge" style="font-size:11px; border:1px solid; padding:3px 6px; border-radius:4px; vertical-align: middle;">...</span></div>
-        <div id="cloud-status" style="font-size:11px; font-weight:700;">● ПОДКЛЮЧЕНИЕ...</div>
-    </div>
-    <div class="search-group">
-        <input type="text" id="main-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск (изделие, клиент)..." oninput="renderOrders()">
-        <button class="search-btn" onclick="startDictation('main-search')">🎤</button>
-    </div>
-</header>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-<main>
-    <section id="page-list" class="page active">
-        <div class="filter-bar">
-            <div class="filter-chip active" onclick="setFilter('all', this)">Все</div>
-            <div class="filter-chip" onclick="setFilter('work', this)">В работе</div>
-            <div class="filter-chip" onclick="setFilter('late', this)">Просрочены</div>
-        </div>
-        <div id="orders-container"></div>
-    </section>
+        const API_URL = 'https://mytest-production-6436.up.railway.app/api';
 
-    <section id="page-warehouse" class="page">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h2 style="font-weight: 800; margin: 0; font-size: 22px;">Склад</h2>
-            <div style="display:flex; gap: 6px;">
-                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 14px; font-size:12px; background:var(--purple);" onclick="document.getElementById('ai-file').click()">📸 ИИ-Скан</button>
-                <input type="file" id="ai-file" accept="image/*" capture="environment" style="display:none" onchange="handleAiScan(this)">
-                <button class="btn btn-primary supplier-hide" style="width:auto; padding:8px 14px; font-size:12px;" onclick="openWhCreateModal()">+ НОВЫЙ</button>
-            </div>
-        </div>
+        const TOP_ICONS = [
+            'fa-basket-shopping', 'fa-bus', 'fa-utensils', 'fa-play', 'fa-cart-shopping', 'fa-pills', 
+            'fa-car', 'fa-house', 'fa-bolt', 'fa-mobile-screen', 'fa-wifi', 'fa-plane', 'fa-dumbbell', 
+            'fa-paw', 'fa-book', 'fa-gamepad', 'fa-mug-hot', 'fa-shirt', 'fa-gift', 'fa-music', 
+            'fa-baby-carriage', 'fa-scissors', 'fa-hammer', 'fa-camera', 'fa-graduation-cap', 'fa-heart', 
+            'fa-briefcase', 'fa-gas-pump', 'fa-tooth', 'fa-seedling', 'fa-bicycle', 'fa-burger',
+            'fa-ticket', 'fa-laptop', 'fa-pen', 'fa-wallet', 'fa-piggy-bank', 'fa-coins', 'fa-gem',
+            'fa-globe', 'fa-medal', 'fa-key', 'fa-truck', 'fa-tools', 'fa-umbrella', 'fa-fire',
+            'fa-water', 'fa-leaf', 'fa-moon', 'fa-sun'
+        ];
 
-        <div class="filter-bar">
-            <div class="filter-chip active" id="tab-wh-stock" onclick="switchWhTab('stock')">Остатки</div>
-            <div class="filter-chip" id="tab-wh-logs" onclick="switchWhTab('logs')">История</div>
-            <div class="filter-chip" id="tab-wh-usage" onclick="switchWhTab('usage')">Расходы</div>
-        </div>
-        
-        <div id="wh-view-stock">
-            <div class="search-group">
-                <input type="text" id="wh-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск или штрихкод..." oninput="renderWarehouse()">
-                <button class="search-btn" onclick="startDictation('wh-search')">🎤</button>
-                <button class="search-btn" onclick="startScan('wh-search')">📷</button>
-            </div>
-            <div id="wh-container"></div>
-        </div>
-        
-        <div id="wh-view-logs" style="display:none; background:var(--card); border-radius:15px; padding:15px; border:1px solid var(--border);">
-            <div id="wh-logs-container"></div>
-        </div>
+        const CATEGORY_COLORS = [
+            'text-red-500 bg-red-100 dark:bg-red-900/30', 'text-orange-500 bg-orange-100 dark:bg-orange-900/30', 
+            'text-amber-500 bg-amber-100 dark:bg-amber-900/30', 'text-green-500 bg-green-100 dark:bg-green-900/30', 
+            'text-blue-500 bg-blue-100 dark:bg-blue-900/30', 'text-purple-500 bg-purple-100 dark:bg-purple-900/30',
+            'text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30', 'text-teal-500 bg-teal-100 dark:bg-teal-900/30', 
+            'text-cyan-500 bg-cyan-100 dark:bg-cyan-900/30', 'text-sky-500 bg-sky-100 dark:bg-sky-900/30', 
+            'text-indigo-500 bg-indigo-100 dark:bg-indigo-900/30', 'text-violet-500 bg-violet-100 dark:bg-violet-900/30', 
+            'text-fuchsia-500 bg-fuchsia-100 dark:bg-fuchsia-900/30', 'text-pink-500 bg-pink-100 dark:bg-pink-900/30', 
+            'text-rose-500 bg-rose-100 dark:bg-rose-900/30', 'text-lime-500 bg-lime-100 dark:bg-lime-900/30',
+            'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30', 'text-stone-500 bg-stone-100 dark:bg-stone-900/30',
+            'text-gray-500 bg-gray-100 dark:bg-gray-900/30', 'text-zinc-500 bg-zinc-100 dark:bg-zinc-900/30'
+        ];
 
-        <div id="wh-view-usage" style="display:none;">
-            <div style="font-size:14px; font-weight:700; color:var(--hint); margin-bottom:10px;">Списания на заказы:</div>
-            <div id="wh-usage-container"></div>
-        </div>
-    </section>
+        const PRO_EMOJIS = [
+            '🍔', '🚕', '🛒', '💊', '🏠', '🎮', '🐾', '👕', '📱', '✈️',
+            '🍕', '🍣', '🥩', '🍩', '☕', '🍷', '🥂', '🚗', '🚌', '🚂', 
+            '🛳️', '🛥️', '🚀', '⛽', '🏡', '🏢', '🛍️', '👗', '👠', '👟', 
+            '💍', '💎', '💄', '💻', '⌚', '📺', '🎧', '🧸', '🎈', '📚', 
+            '🖊️', '🎨', '🎵', '🎸', '⚽', '🏀', '🎾', '🏋️‍♂️', '🚴', '🏊'
+        ];
 
-    <section id="page-stats" class="page">
-        <h2 style="font-weight: 800; font-size: 22px;">Аналитика</h2>
-        <div class="finances" style="font-size:16px; margin-bottom: 20px;">
-            <div class="fin-row"><span>Выручка:</span> <b id="stat-rev">0</b></div>
-            <div class="fin-row" style="color:var(--orange)"><span>Материалы:</span> <b id="stat-mat">0</b></div>
-            <div class="fin-row" style="color:#4a148c"><span>ЗП (Все):</span> <b id="stat-work">0</b></div>
-            <div class="fin-row" style="margin-top:15px; border-top:2px solid var(--primary); padding-top:15px; color:var(--green); font-size:20px;">
-                <span>ПРИБЫЛЬ:</span> <b id="stat-profit">0</b>
-            </div>
-        </div>
-        <h3 style="font-size: 18px;">👷 Зарплаты по мастерам:</h3>
-        <div id="master-salaries" class="finances" style="font-size:13px;"></div>
-        <button class="btn btn-shopping" style="margin-top:15px;" onclick="copyGlobalShoppingList()">📦 Копировать ОБЩИЙ закуп</button>
-        <h3 style="margin-top:20px; font-size: 18px;">✅ Архив (Готово):</h3>
-        <div id="archive-container"></div>
-    </section>
-
-    <section id="page-add" class="page">
-        <h2 style="font-weight: 800; font-size: 22px;">Новый проект</h2>
-        <input type="text" id="in-title" class="custom-input" placeholder="Изделие">
-        <input type="text" id="in-client" class="custom-input" placeholder="Имя клиента">
-        <input type="tel" id="in-phone" class="custom-input" placeholder="998 XX XXX XX XX" maxlength="16" oninput="formatPhone(this)">
-        <input type="text" id="in-loc" class="custom-input" placeholder="Адрес">
-        <input type="text" id="in-loc-link" class="custom-input" placeholder="Геолокация (ссылка на карту)">
-        <input type="text" id="in-link" class="custom-input" placeholder="Ссылка на дизайн-проект">
-        <input type="text" id="in-deadline" class="custom-input" onfocus="(this.type='date')" placeholder="Дата сдачи">
-        <div style="display:flex; gap:10px;">
-            <input type="text" inputmode="numeric" id="in-price" class="custom-input" placeholder="Цена" oninput="formatNumberInput(this)">
-            <input type="text" inputmode="numeric" id="in-prepay" class="custom-input" placeholder="Аванс" oninput="formatNumberInput(this)">
-        </div>
-
-        <div style="margin-top: 15px; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 15px; padding: 12px; background: rgba(0,0,0,0.01);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                <div style="font-weight: 700; font-size: 14px; color:var(--primary);">📦 Выбрано со склада:</div>
-                <button class="btn btn-outline" style="width:auto; padding:6px 12px; font-size:11px; margin:0; border-color:var(--primary); color:var(--primary);" onclick="openWhPicker('new_order')">Выбрать материалы</button>
-            </div>
-            <div id="new-order-wh-summary" style="font-size:13px; color:var(--text); line-height: 1.5; background:var(--card); padding:12px; border-radius:10px; border:1px solid var(--border);">
-                <span style="color:var(--hint)">Ничего не выбрано. Нажмите кнопку выше ⬆️</span>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="createOrder()" style="font-size:15px; padding:16px;">🚀 СОЗДАТЬ ЗАКАЗ</button>
-    </section>
-</main>
-
-<nav class="tab-bar">
-    <div class="tab-item visible active" onclick="nav('page-list', this)"><span>📋</span><div class="tab-label">Заказы</div></div>
-    <div id="tab-warehouse" class="tab-item" onclick="nav('page-warehouse', this)"><span>📦</span><div class="tab-label">Склад</div></div>
-    <div id="tab-fin" class="tab-item" onclick="nav('page-stats', this)"><span>📊</span><div class="tab-label">Финансы</div></div>
-    <div id="tab-add" class="tab-item" onclick="nav('page-add', this)"><span>➕</span><div class="tab-label">Создать</div></div>
-</nav>
-
-<div id="modal-overlay" class="modal-overlay">
-    <div class="modal-box">
-        <h3 id="modal-title" style="margin-top:0; margin-bottom: 15px; font-size:16px; line-height: 1.4;" class="word-wrap"></h3>
-        <div style="display:flex; gap: 6px; align-items: center;" id="modal-input-wrapper">
-            <input type="text" id="modal-input" class="custom-input" style="display:none; font-size:16px; margin-bottom:0; flex:1; padding: 14px;">
-            <button class="search-btn" id="modal-mic-btn" onclick="startDictation('modal-input')" style="display:none; padding:0 14px; height: 50px; font-size: 20px;">🎤</button>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:14px;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 14px; padding: 12px;" onclick="closeModal('modal-overlay')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; font-size: 14px; padding: 12px;" id="modal-btn-confirm" onclick="confirmModal()">Готово</button>
-        </div>
-    </div>
-</div>
-
-<div id="modal-wh-create" class="modal-overlay">
-    <div class="modal-box">
-        <h3 style="margin-top:0; font-size:18px; margin-bottom: 12px;">Новый товар на склад</h3>
-        
-        <label style="font-size:11px; font-weight:bold; color:var(--hint);">НАЗВАНИЕ</label>
-        <div class="search-group">
-            <input type="text" id="wh-c-name" class="custom-input" style="margin-bottom:10px;" placeholder="Напр: Саморезы 3.5x16">
-            <button class="search-btn" style="margin-bottom:10px;" onclick="startDictation('wh-c-name')">🎤</button>
-        </div>
-
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1;">
-                <label style="font-size:11px; font-weight:bold; color:var(--hint);">ЕД. ИЗМЕРЕНИЯ</label>
-                <select id="wh-c-unit" class="custom-select" style="margin-bottom: 10px;">
-                    <option value="шт">шт (Штуки)</option>
-                    <option value="м">м (Метры)</option>
-                    <option value="кг">кг (Килограммы)</option>
-                    <option value="м2">м² (Квадраты)</option>
-                    <option value="л">л (Литры)</option>
-                    <option value="упак">упак (Упаковки)</option>
-                    <option value="лист">лист (Листы)</option>
-                </select>
-            </div>
-            <div style="flex:1;">
-                <label style="font-size:11px; font-weight:bold; color:var(--hint);">ОСТАТОК</label>
-                <input type="text" inputmode="decimal" id="wh-c-qty" class="custom-input" placeholder="0">
-            </div>
-        </div>
-
-        <label style="font-size:11px; font-weight:bold; color:var(--hint);">ШТРИХКОД (Если есть)</label>
-        <div class="search-group">
-            <input type="text" id="wh-c-code" class="custom-input" style="margin-bottom:0;" placeholder="Авто-генерация...">
-            <button class="search-btn" onclick="startScan('wh-c-code')">📷</button>
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:16px;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); font-size: 14px; padding: 12px;" onclick="closeModal('modal-wh-create')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; font-size: 14px; padding: 12px;" onclick="saveNewWhItem()">Добавить</button>
-        </div>
-    </div>
-</div>
-
-<div id="modal-ai-preview" class="modal-overlay">
-    <div class="modal-box" style="max-width: 400px;">
-        <h3 style="margin-top:0; font-size:18px; color:var(--purple);">🤖 ИИ Нашел товары:</h3>
-        <div style="font-size:13px; color:var(--hint); margin-bottom:12px;">Проверьте данные с чека перед сохранением:</div>
-        <div id="ai-items-list" style="max-height: 45vh; overflow-y: auto; margin-bottom: 12px; padding-right:5px;"></div>
-        <button class="btn btn-primary" style="font-size:14px; padding: 12px;" onclick="applyAiItems()">Сохранить на склад</button>
-        <button class="btn btn-outline" style="margin-top:8px; border:none; font-size:14px; padding: 12px;" onclick="closeModal('modal-ai-preview')">Отмена</button>
-    </div>
-</div>
-
-<div id="modal-wh-picker" class="modal-overlay">
-    <div class="modal-box" style="max-width: 400px; display: flex; flex-direction: column; max-height: 90vh;">
-        <h3 style="margin-top:0; font-size:18px; margin-bottom: 12px;" id="wh-picker-title" class="word-wrap">Взять материалы</h3>
-        <div class="search-group" style="flex-shrink: 0;">
-            <input type="text" id="wh-picker-search" class="custom-input" style="margin-bottom:0;" placeholder="Поиск по складу..." oninput="renderWhPickerList()">
-            <button class="search-btn" onclick="startDictation('wh-picker-search')">🎤</button>
-            <button class="search-btn" onclick="startScan('wh-picker-search')">📷</button>
-        </div>
-        
-        <div id="wh-picker-list" style="margin-top:8px; overflow-y: auto; flex: 1; padding-right: 5px; padding-bottom: 5px;">
-            </div>
-
-        <div style="display:flex; gap:10px; margin-top:12px; flex-shrink: 0;">
-            <button class="btn btn-outline" style="margin-top:0; border:none; background:rgba(0,0,0,0.05); flex:1; font-size:14px; padding: 12px;" onclick="closeModal('modal-wh-picker')">Отмена</button>
-            <button class="btn btn-primary" style="margin-top:0; flex:2; font-size:14px; padding: 12px;" onclick="confirmPicker()">✅ Добавить</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const _0xData = [
-        "NjkyMjI0NTczOA==", "MTI5Njk0MDg0Mw==", "NDIyODI5MzYx", 
-        "QUl6YVN5Qk1iMkNmMzBRZmZQZTNFbzhqSlFrUmxyaU1sejd5ZUh3", 
-        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VhcHAuY29t",             
-        "aHR0cHM6Ly9mb3JtYWNybS1hNWZmOC1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw", 
-        "Zm9ybWFjcm0tYTVmZjg=",                                 
-        "Zm9ybWFjcm0tYTVmZjguZmlyZWJhc2VzdG9yYWdlLmFwcA==",     
-        "ODAwMzU5NTAzODQ0",                                     
-        "MTo4MDAzNTk1MDM4NDQ6d2ViOjNiMWZkMWJiZWJiODk1MDA0YmQ5ZjE=" 
-    ];
-
-    const ADMIN_IDS = [parseInt(atob(_0xData[0])), parseInt(atob(_0xData[1])), parseInt(atob(_0xData[2]))];
-    const SUPPLIER_IDS = [111222333]; 
-
-    const STAGES = ["Замер", "Распил", "Сборка", "Монтаж", "✅ Готово"];
-    const geminiKey = ""; 
-    
-    firebase.initializeApp({ 
-        apiKey: atob(_0xData[3]), authDomain: atob(_0xData[4]), databaseURL: atob(_0xData[5]), 
-        projectId: atob(_0xData[6]), storageBucket: atob(_0xData[7]), messagingSenderId: atob(_0xData[8]), appId: atob(_0xData[9]) 
-    });
-    
-    const db = firebase.database();
-    const tg = window.Telegram.WebApp; 
-    tg.expand();
-
-    window.addEventListener('focusin', (e) => {
-        if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-            setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-        }
-    });
-
-    const currentUserId = tg.initDataUnsafe?.user?.id;
-    const isAdmin = ADMIN_IDS.includes(currentUserId);
-    const isSupplier = SUPPLIER_IDS.includes(currentUserId);
-    const canCheckExp = isAdmin || isSupplier;
-
-    let roleName = 'МАСТЕР';
-    if(isAdmin) {
-        document.body.classList.add('is-admin');
-        document.getElementById('tab-fin').classList.add('visible');
-        document.getElementById('tab-add').classList.add('visible');
-        document.getElementById('tab-warehouse').classList.add('visible');
-        roleName = 'ADMIN';
-    } else if (isSupplier) {
-        document.body.classList.add('is-supplier');
-        document.getElementById('tab-warehouse').classList.add('visible');
-        roleName = 'СНАБЖЕНЕЦ';
-    }
-    document.getElementById('role-badge').innerText = roleName;
-
-    let orders = [];
-    let whItems = [];
-    let whLogs = [];
-    let currentFilter = 'all';
-    let expanded = new Set();
-    let currentExpCat = 'mat';
-    
-    // --- ПЕРЕМЕННЫЕ УМНОГО ПИКЕРА СКЛАДА ---
-    let pickerMode = null; 
-    let pickerSelections = {}; 
-    let newOrderAttachedItems = {}; 
-
-    // Слушатели базы данных
-    db.ref(".info/connected").on("value", (s) => {
-        const el = document.getElementById('cloud-status');
-        el.innerText = s.val() ? "● ONLINE" : "● OFFLINE";
-        el.style.color = s.val() ? "var(--green)" : "var(--red)";
-    });
-
-    db.ref('orders').on('value', snap => {
-        const rawOrders = snap.val() ? Object.values(snap.val()) : [];
-        orders = rawOrders.map(o => {
-            if (o.expenses) {
-                if (!Array.isArray(o.expenses)) o.expenses = Object.values(o.expenses).filter(x => x !== null);
-            } else { o.expenses = []; }
-            return o;
-        }).reverse();
-        renderOrders();
-        if(isAdmin) renderStats();
-    });
-
-    if (isAdmin || isSupplier) {
-        db.ref('warehouse/items').on('value', snap => {
-            whItems = snap.val() ? Object.values(snap.val()) : [];
-            renderWarehouse();
-            if(document.getElementById('modal-wh-picker').classList.contains('active')) renderWhPickerList();
-            renderNewOrderAttachedItems();
-        });
-        db.ref('warehouse/logs').limitToLast(150).on('value', snap => {
-            whLogs = snap.val() ? Object.values(snap.val()).reverse() : [];
-            renderWhLogs();
-            renderWhUsage(); 
-        });
-    }
-
-    // УТИЛИТЫ
-    function fMoney(n) { return Math.round(n || 0).toLocaleString('ru-RU') + " сум"; }
-    function extract(s) { 
-        if(!s) return 0;
-        return parseFloat(String(s).replace(/[^\d]/g, '')) || 0; 
-    } 
-    function parseQty(s) { 
-        if(!s) return 0;
-        return parseFloat(String(s).replace(',', '.')) || 0; 
-    }     
-    
-    function formatNumberInput(el) {
-        let val = el.value.replace(/[^\d]/g, '');
-        el.value = val ? parseInt(val).toLocaleString('ru-RU') : '';
-    }
-    function formatPhone(el) {
-        let v = el.value.replace(/\D/g, '');
-        let m = '';
-        if (v.length > 0) m += v.substring(0, 3);
-        if (v.length > 3) m += ' ' + v.substring(3, 5);
-        if (v.length > 5) m += ' ' + v.substring(5, 8);
-        if (v.length > 8) m += ' ' + v.substring(8, 10);
-        if (v.length > 10) m += ' ' + v.substring(10, 12);
-        el.value = m;
-    }
-
-    // --- ИНТЕГРАЦИЯ УСТРОЙСТВ ---
-    function startDictation(targetId) {
-        if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'ru-RU';
-            recognition.start();
-            
-            tg.HapticFeedback.impactOccurred('medium');
-            const targetEl = document.getElementById(targetId);
-            const oldPlaceholder = targetEl.placeholder;
-            targetEl.placeholder = "Слушаю... Говорите";
-            targetEl.value = ""; 
-            
-            recognition.onresult = function(e) {
-                let transcript = e.results[0][0].transcript;
-                if (targetId === 'modal-input') {
-                     transcript = transcript.replace(/[^\d.,]/g, '').trim(); 
-                     if(!transcript) transcript = e.results[0][0].transcript; 
-                }
-                targetEl.value = transcript;
-                targetEl.placeholder = oldPlaceholder;
-                
-                if(targetId === 'wh-search') renderWarehouse();
-                if(targetId === 'wh-picker-search') renderWhPickerList();
-                if(targetId === 'main-search') renderOrders();
-            };
-            recognition.onerror = function(e) { 
-                targetEl.placeholder = oldPlaceholder;
-                if(e.error !== 'no-speech') tg.showAlert("Ошибка микрофона. Дайте доступ браузеру."); 
-            };
-        } else {
-            tg.showAlert("Голосовой ввод не поддерживается на вашем устройстве.");
-        }
-    }
-
-    function startScan(targetId) {
-        if(tg.showScanQrPopup) {
-            tg.showScanQrPopup({ text: "Наведите камеру на штрихкод товара" }, (text) => {
-                document.getElementById(targetId).value = text;
-                tg.closeScanQrPopup();
-                tg.HapticFeedback.impactOccurred('heavy');
-                
-                if(targetId === 'wh-search') renderWarehouse();
-                if(targetId === 'wh-picker-search') renderWhPickerList();
-                return true; 
-            });
-        } else {
-            tg.showAlert("Сканер доступен только в приложении Telegram на смартфоне.");
-        }
-    }
-
-    // --- AI РАСПОЗНАВАНИЕ НАКЛАДНЫХ ---
-    let pendingAiItems = [];
-    async function handleAiScan(input) {
-        const file = input.files[0];
-        if (!file) return;
-        tg.showAlert("🤖 ИИ начал анализ фото. Пожалуйста, подождите 5-10 секунд...");
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const base64 = e.target.result.split(',')[1];
-            try {
-                const prompt = "Распознай товары и их количество из этой накладной/чека. Верни ТОЛЬКО JSON массив объектов в формате: [{\"name\": \"Название товара\", \"qty\": 10, \"unit\": \"шт\"}]. Если единицы нет, пиши 'шт'. Никакого текста вокруг JSON, только массив.";
-                const payload = {
-                    contents: [{ role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64 } } ] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                };
-                
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
-                    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)
-                });
-                
-                const data = await res.json();
-                if (!data.candidates) throw new Error("Сервер не вернул данные");
-                
-                const text = data.candidates[0].content.parts[0].text;
-                pendingAiItems = JSON.parse(text);
-                
-                const list = document.getElementById('ai-items-list');
-                list.innerHTML = pendingAiItems.map((item, i) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom:1px solid var(--border);">
-                        <input type="text" id="ai-name-${i}" value="${item.name}" class="custom-input" style="padding:10px; font-size:13px; margin:0; flex:2; min-width:0;">
-                        <input type="text" inputmode="decimal" id="ai-qty-${i}" value="${item.qty}" class="custom-input" style="padding:10px; font-size:13px; margin:0; flex:0.7; margin-left:6px; text-align:center; min-width:0;">
-                        <input type="text" id="ai-unit-${i}" value="${item.unit || 'шт'}" class="custom-input" style="padding:10px; font-size:13px; margin:0; flex:0.6; margin-left:6px; text-align:center; min-width:0;">
-                    </div>
-                `).join('');
-                document.getElementById('modal-ai-preview').classList.add('active');
-            } catch (err) {
-                tg.showAlert("❌ Ошибка распознавания: Не удалось прочитать фото.");
-            } finally {
-                input.value = ''; 
+        const triggerHaptic = (type = 'light') => {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred(type);
             }
         };
-        reader.readAsDataURL(file);
-    }
 
-    function applyAiItems() {
-        let addedCount = 0;
-        pendingAiItems.forEach((_, i) => {
-            const name = document.getElementById(`ai-name-${i}`).value.trim();
-            const qty = parseQty(document.getElementById(`ai-qty-${i}`).value);
-            const unit = document.getElementById(`ai-unit-${i}`).value.trim() || 'шт';
-            
-            if (name && qty > 0) {
-                const existing = whItems.find(x => x.name.toLowerCase() === name.toLowerCase());
-                if (existing) {
-                    const newQty = existing.qty + qty;
-                    db.ref(`warehouse/items/${existing.id}/qty`).set(newQty);
-                    addWhLog(`<b>${name}</b>: Приход (AI-Скан) +${qty} ${unit}. Остаток: ${newQty}`);
-                } else {
-                    const id = Date.now() + i;
-                    const code = "WH-" + Math.floor(100000 + Math.random() * 900000);
-                    db.ref(`warehouse/items/${id}`).set({ id, name, qty, unit, barcode: code });
-                    addWhLog(`Создана позиция (AI-Скан): ${name} (${qty} ${unit})`);
-                }
-                addedCount++;
-            }
-        });
-        closeModal('modal-ai-preview');
-        tg.showAlert(`✅ Успешно добавлено ${addedCount} позиций на склад!`);
-    }
+        const formatMoneyInput = (value) => {
+            return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        };
 
-    // --- МОДАЛЬНАЯ СИСТЕМА ---
-    let modalCallback = null;
-    
-    function uiPrompt(title, defaultVal, callback, mode = 'text') {
-        document.getElementById('modal-title').innerText = title;
-        const input = document.getElementById('modal-input');
-        const micBtn = document.getElementById('modal-mic-btn');
-        
-        input.style.display = 'block';
-        input.value = (defaultVal !== undefined && defaultVal !== null && defaultVal !== '0' && defaultVal !== 0) ? defaultVal : ''; 
-        input.oninput = null;
-        input.removeAttribute('inputmode');
-        
-        if (mode === 'money') {
-            input.setAttribute('inputmode', 'numeric');
-            input.oninput = () => formatNumberInput(input);
-            micBtn.style.display = 'block';
-        } else if (mode === 'qty') {
-            input.setAttribute('inputmode', 'decimal');
-            micBtn.style.display = 'block';
-        } else if (mode === 'text') {
-            micBtn.style.display = 'block';
-        } else {
-            micBtn.style.display = 'none';
-        }
+        const getMonthYear = (dateStr) => {
+            if(!dateStr) return "";
+            const parts = dateStr.split(' ');
+            if(!parts[0]) return "";
+            const [d, m, y] = parts[0].split('.');
+            if(!m || !y) return "";
+            return `${m}.${y}`;
+        };
 
-        modalCallback = callback;
-        document.getElementById('modal-overlay').classList.add('active');
-        setTimeout(() => input.focus(), 100);
-    }
+        const getMonthName = (monthYearStr) => {
+            if(!monthYearStr) return "";
+            const [m, y] = monthYearStr.split('.');
+            const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            return `${months[parseInt(m)-1]}, ${y}`;
+        };
 
-    function uiConfirm(title, callback) {
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-input').style.display = 'none';
-        document.getElementById('modal-mic-btn').style.display = 'none';
-        modalCallback = callback;
-        document.getElementById('modal-overlay').classList.add('active');
-    }
-
-    function closeModal(modalId = 'modal-overlay') {
-        document.getElementById(modalId).classList.remove('active');
-        if(modalId === 'modal-overlay') {
-            document.getElementById('modal-input').value = '';
-            modalCallback = null;
-        }
-    }
-
-    function confirmModal() {
-        const input = document.getElementById('modal-input');
-        const cb = modalCallback;
-        const val = input.value; 
-        const isConfirmMode = input.style.display === 'none';
-        
-        closeModal('modal-overlay'); 
-        
-        if(cb) {
-            if(isConfirmMode) cb(true); 
-            else cb(val); 
-        }
-    }
-
-    document.getElementById('modal-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') confirmModal();
-    });
-
-
-    // --- НАВИГАЦИЯ ---
-    function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active'); el.classList.add('active');
-    }
-
-    function setFilter(f, el) {
-        currentFilter = f;
-        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        renderOrders();
-    }
-
-    // --- МОДУЛЬ СКЛАДА ---
-    function switchWhTab(tab) {
-        document.getElementById('tab-wh-stock').classList.toggle('active', tab === 'stock');
-        document.getElementById('tab-wh-logs').classList.toggle('active', tab === 'logs');
-        document.getElementById('tab-wh-usage').classList.toggle('active', tab === 'usage');
-
-        document.getElementById('wh-view-stock').style.display = tab === 'stock' ? 'block' : 'none';
-        document.getElementById('wh-view-logs').style.display = tab === 'logs' ? 'block' : 'none';
-        document.getElementById('wh-view-usage').style.display = tab === 'usage' ? 'block' : 'none';
-    }
-
-    function openWhCreateModal() {
-        if(!isAdmin) return;
-        document.getElementById('wh-c-name').value = '';
-        document.getElementById('wh-c-qty').value = '';
-        document.getElementById('wh-c-code').value = '';
-        document.getElementById('modal-wh-create').classList.add('active');
-    }
-
-    function saveNewWhItem() {
-        const name = document.getElementById('wh-c-name').value.trim();
-        const unit = document.getElementById('wh-c-unit').value;
-        const qty = parseQty(document.getElementById('wh-c-qty').value) || 0;
-        let code = document.getElementById('wh-c-code').value.trim();
-
-        if(!name) { tg.showAlert("Введите название товара!"); return; }
-        if(!code) code = "WH-" + Math.floor(100000 + Math.random() * 900000);
-
-        const id = Date.now();
-        db.ref(`warehouse/items/${id}`).set({ id, name, qty, unit, barcode: code });
-        addWhLog(`Создана позиция: ${name} (${qty} ${unit})`);
-        
-        closeModal('modal-wh-create');
-        tg.HapticFeedback.notificationOccurred('success');
-    }
-
-    function changeWhQty(id, type) {
-        const item = whItems.find(x => x.id == id);
-        if(!item) return tg.showAlert("Ошибка: товар не найден в базе!");
-
-        const actionTitle = type === 'add' ? `🟢 ПРИХОД: ${item.name}` : `🔴 РАСХОД: ${item.name}`;
-        uiPrompt(`${actionTitle}\nВведите количество (${item.unit}):`, "", (val) => {
-            if(!val) return;
-            const num = parseQty(val);
-            if(num <= 0) return;
-            
-            const newQty = type === 'add' ? (item.qty + num) : (item.qty - num);
-            db.ref(`warehouse/items/${id}/qty`).set(newQty);
-            
-            const actionWord = type === 'add' ? 'Приход' : 'Списание (вручную)';
-            const sign = type === 'add' ? '+' : '-';
-            addWhLog(`<b>${item.name}</b>: ${actionWord} ${sign}${num} ${item.unit}. Остаток: ${newQty}`);
-        }, 'qty');
-    }
-
-    function editWhName(id) {
-        if(!isAdmin) return;
-        const item = whItems.find(x => x.id == id);
-        if(!item) return;
-        uiPrompt("Изменить название:", item.name, (val) => {
-            if(val) db.ref(`warehouse/items/${id}/name`).set(val);
-        });
-    }
-
-    function deleteWhItem(id) {
-        if(!isAdmin) return;
-        const item = whItems.find(x => x.id == id);
-        if(!item) return;
-        uiConfirm(`Точно удалить позицию "${item.name}" из базы склада?`, (res) => {
-            if(res) {
-                db.ref(`warehouse/items/${id}`).remove();
-                addWhLog(`Удалена позиция: ${item.name}`);
-            }
-        });
-    }
-
-    function addWhLog(text) {
-        const logId = Date.now();
-        const dateStr = new Date().toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
-        db.ref(`warehouse/logs/${logId}`).set({ 
-            text: `<span style="color:var(--hint)">${dateStr} | ${roleName}</span><br>${text}` 
-        });
-    }
-
-    function renderWarehouse() {
-        const c = document.getElementById('wh-container');
-        const q = document.getElementById('wh-search').value.toLowerCase();
-        c.innerHTML = '';
-        
-        const filtered = whItems.filter(i => 
-            i.name.toLowerCase().includes(q) || 
-            (i.barcode && i.barcode.toLowerCase().includes(q))
+        const TopHeader = ({ title, showBack = false, onBack, rightIcon = null, onRightClick = null }) => (
+            <div className="flex justify-between items-center px-4 py-4 bg-white dark:bg-gray-900 sticky top-0 z-10 transition-colors duration-300 border-b border-gray-50 dark:border-gray-800/50">
+                <div className="flex items-center gap-3">
+                    {showBack && (
+                        <button onClick={() => {triggerHaptic('light'); onBack();}} className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <i className="fa-solid fa-arrow-left text-lg"></i>
+                        </button>
+                    )}
+                    <h1 className="text-xl font-bold text-textDark dark:text-white transition-colors">{title}</h1>
+                </div>
+                <div className="flex gap-4">
+                    {rightIcon && (
+                        <button onClick={() => {triggerHaptic('light'); if(onRightClick) onRightClick();}} className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <i className={`fa-regular ${rightIcon} text-xl`}></i>
+                        </button>
+                    )}
+                </div>
+            </div>
         );
 
-        if(filtered.length === 0) {
-            c.innerHTML = '<div style="text-align:center; color:var(--hint); padding: 20px; font-size:13px;">Ничего не найдено</div>';
-            return;
-        }
+        const ScreenHome = ({ setScreen, transactions, user, onTransactionClick, activeMonth, prevMonth, nextMonth, currency, rates, openAddModal }) => {
+            const userName = (user && user.first_name) ? user.first_name : 'Ильхом';
+            const [activeCard, setActiveCard] = useState('all');
 
-        filtered.forEach(i => {
-            c.innerHTML += `
-                <div class="wh-item">
-                    <div class="wh-info" onclick="editWhName(${i.id})">
-                        <div class="wh-name">${i.name}</div>
-                        <div class="wh-qty">Остаток: <b>${i.qty}</b> ${i.unit} ${i.barcode ? `<span style="font-size:10px; color:var(--hint)">| Код: ${i.barcode}</span>` : ''}</div>
+            const filteredTxs = activeCard === 'all' ? transactions : transactions.filter(t => t.wallet === activeCard);
+            const totalIncome = transactions.filter(t => t.amount > 0).reduce((acc, curr) => acc + curr.amount, 0);
+            const totalExpense = transactions.filter(t => t.amount < 0).reduce((acc, curr) => acc + Math.abs(curr.amount), 0);
+            
+            const baseBalance = 12150000;
+            const currentBalance = baseBalance + totalIncome - totalExpense;
+
+            const formatCurrency = (amount) => {
+                if(currency === 'USD') return '$ ' + (amount / rates.USD).toFixed(2);
+                if(currency === 'EUR') return '€ ' + (amount / rates.EUR).toFixed(2);
+                return amount.toLocaleString('ru-RU').replace(/,/g, ' ') + ' сум';
+            };
+
+            return (
+                <div className="pb-24 animate-fade-in">
+                    <div className="px-4 pt-4 pb-2 flex justify-between items-center bg-bgLight dark:bg-bgDark transition-colors">
+                        <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Добрый день,</p>
+                            <h2 className="text-xl font-bold text-textDark dark:text-white">{userName}</h2>
+                        </div>
+                        <div className="flex gap-3">
+                            <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm text-gray-600 dark:text-gray-300 transition-colors">
+                                <i className="fa-regular fa-calendar"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="wh-actions">
-                        <button class="wh-btn minus" onclick="changeWhQty(${i.id}, 'sub')">-</button>
-                        <button class="wh-btn plus" onclick="changeWhQty(${i.id}, 'add')">+</button>
-                        ${isAdmin ? `<button class="wh-btn" style="color:var(--hint); background:none;" onclick="deleteWhItem(${i.id})">🗑</button>` : ''}
+
+                    <div className="flex justify-center items-center gap-4 py-2">
+                        <button onClick={() => {triggerHaptic('light'); prevMonth();}} className="text-gray-400 hover:text-primary p-2"><i className="fa-solid fa-chevron-left"></i></button>
+                        <h2 className="font-bold text-textDark dark:text-white w-32 text-center capitalize">{getMonthName(activeMonth)}</h2>
+                        <button onClick={() => {triggerHaptic('light'); nextMonth();}} className="text-gray-400 hover:text-primary p-2"><i className="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <div className="px-4 py-2 flex overflow-x-auto snap-x snap-mandatory no-scrollbar space-x-4">
+                        <div onClick={() => {triggerHaptic('medium'); setActiveCard('all');}} className={`min-w-[90%] snap-center rounded-3xl p-5 text-white shadow-lg relative overflow-hidden flex-shrink-0 cursor-pointer transition-transform ${activeCard === 'all' ? 'bg-gradient-to-r from-primary to-purple-600 scale-100 ring-2 ring-primaryLight' : 'bg-gray-400 dark:bg-gray-700 scale-95 opacity-80'}`}>
+                            <i className="fa-solid fa-wallet absolute -right-4 -bottom-4 text-white opacity-10 text-6xl"></i>
+                            <div className="flex justify-between items-center mb-1 relative z-10">
+                                <span className="text-sm text-white/80">Общий баланс</span>
+                            </div>
+                            <h2 className="text-3xl font-bold mb-4 relative z-10">{formatCurrency(currentBalance)}</h2>
+                            <div className="flex justify-between relative z-10">
+                                <div>
+                                    <p className="text-xs text-white/80">Доходы</p>
+                                    <p className="font-semibold text-sm">{formatCurrency(totalIncome)}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-white/80">Расходы</p>
+                                    <p className="font-semibold text-sm">{formatCurrency(totalExpense)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div onClick={() => {triggerHaptic('medium'); setActiveCard('card');}} className={`min-w-[90%] snap-center rounded-3xl p-5 text-white shadow-lg relative overflow-hidden flex-shrink-0 cursor-pointer transition-transform ${activeCard === 'card' ? 'bg-gray-900 scale-100 ring-2 ring-gray-400' : 'bg-gray-400 dark:bg-gray-700 scale-95 opacity-80'}`}>
+                            <div className="absolute right-4 top-4 text-gray-400 text-2xl font-bold italic">UZCARD</div>
+                            <div className="flex justify-between items-center mb-1 relative z-10">
+                                <span className="text-sm text-gray-400">Зарплатная карта</span>
+                            </div>
+                            <h2 className="text-3xl font-bold mb-6 relative z-10">{formatCurrency(8400000 + transactions.filter(t => t.wallet === 'card' && t.amount > 0).reduce((a,c)=>a+c.amount,0) - transactions.filter(t => t.wallet === 'card' && t.amount < 0).reduce((a,c)=>a+Math.abs(c.amount),0))}</h2>
+                            <div className="flex justify-between items-end relative z-10">
+                                <p className="font-mono tracking-widest text-sm text-gray-300">**** 4512</p>
+                            </div>
+                        </div>
+
+                        <div onClick={() => {triggerHaptic('medium'); setActiveCard('cash');}} className={`min-w-[90%] snap-center rounded-3xl p-5 text-white shadow-lg relative overflow-hidden flex-shrink-0 cursor-pointer transition-transform ${activeCard === 'cash' ? 'bg-gradient-to-br from-emerald-500 to-green-600 scale-100 ring-2 ring-emerald-400' : 'bg-gray-400 dark:bg-gray-700 scale-95 opacity-80'}`}>
+                            <i className="fa-solid fa-money-bill absolute -right-2 -bottom-2 text-white opacity-20 text-6xl"></i>
+                            <div className="flex justify-between items-center mb-1 relative z-10">
+                                <span className="text-sm text-green-100">Наличные</span>
+                            </div>
+                            <h2 className="text-3xl font-bold mb-6 relative z-10">{formatCurrency(1200000 + transactions.filter(t => t.wallet === 'cash' && t.amount > 0).reduce((a,c)=>a+c.amount,0) - transactions.filter(t => t.wallet === 'cash' && t.amount < 0).reduce((a,c)=>a+Math.abs(c.amount),0))}</h2>
+                            <div className="flex justify-between items-end relative z-10">
+                                <p className="text-sm text-green-100">В кошельке</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between px-6 py-4">
+                        <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => {triggerHaptic('light'); openAddModal('income');}}>
+                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-2xl flex items-center justify-center text-green-500 text-xl shadow-sm transition-colors"><i className="fa-solid fa-arrow-down"></i></div>
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors">Доход</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => {triggerHaptic('light'); openAddModal('expense');}}>
+                            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-2xl flex items-center justify-center text-red-500 text-xl shadow-sm transition-colors"><i className="fa-solid fa-arrow-up"></i></div>
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors">Расход</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => {triggerHaptic('light'); setScreen('calculator');}}>
+                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/40 rounded-2xl flex items-center justify-center text-primary text-xl shadow-sm transition-colors"><i className="fa-solid fa-piggy-bank"></i></div>
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors">Вклад</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => {triggerHaptic('light'); setScreen('categories');}}>
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-2xl flex items-center justify-center text-blue-500 text-xl shadow-sm transition-colors"><i className="fa-solid fa-layer-group"></i></div>
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors">Категории</span>
+                        </div>
+                    </div>
+
+                    <div className="px-4 py-4">
+                        <div className="flex justify-between items-center mb-3">
+                            <h3 className="font-bold text-textDark dark:text-white transition-colors">{activeCard === 'all' ? 'Последние операции' : (activeCard === 'card' ? 'Операции по карте' : 'Наличные')}</h3>
+                            <button onClick={() => {triggerHaptic('light'); setScreen('analytics');}} className="text-xs font-medium text-primary">Отчеты <i className="fa-solid fa-chevron-right ml-1"></i></button>
+                        </div>
+                        <div className="space-y-3">
+                            {filteredTxs.length === 0 ? (
+                                <p className="text-center text-sm text-gray-400 py-4">У вас пока нет транзакций.</p>
+                            ) : filteredTxs.slice(0, 10).map(t => (
+                                <div key={t.id} onClick={() => onTransactionClick(t)} className="flex items-center justify-between bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-sm active:bg-gray-50 dark:active:bg-gray-800 transition-colors cursor-pointer border border-gray-50 dark:border-gray-800/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.bg} dark:bg-opacity-20 ${t.color}`}>
+                                            {t.icon.startsWith('fa-') ? <i className={`fa-solid ${t.icon}`}></i> : <span className="text-xl">{t.icon}</span>}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-textDark dark:text-white transition-colors">{t.title}</h4>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 transition-colors">{t.category}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={`font-bold text-sm ${t.amount > 0 ? 'text-green-500' : 'text-textDark dark:text-white transition-colors'}`}>
+                                            {t.amount > 0 ? '+' : ''}{formatCurrency(t.amount)}
+                                        </p>
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 transition-colors">{t.date}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            `;
-        });
-    }
+            );
+        };
 
-    function renderWhLogs() {
-        const c = document.getElementById('wh-logs-container');
-        if(whLogs.length === 0) c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center;">Истории пока нет</div>';
-        else c.innerHTML = whLogs.map(l => `<div style="font-size:13px; padding:12px 0; border-bottom:1px solid var(--border); line-height:1.4;">${l.text}</div>`).join('');
-    }
-
-    function renderWhUsage() {
-        const c = document.getElementById('wh-usage-container');
-        const usageLogs = whLogs.filter(l => l.text.includes('Списано') || l.text.includes('Списание') || l.text.includes('Возврат') || l.text.includes('корректировка'));
-        
-        if(usageLogs.length === 0) {
-            c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center; margin-top:20px;">Расходов пока нет</div>';
-        } else {
-            c.innerHTML = usageLogs.map(l => `
-                <div style="font-size:13px; padding:14px; margin-bottom:10px; background:var(--card); border-radius:12px; border:1px solid var(--border); line-height:1.5; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
-                    ${l.text}
-                </div>
-            `).join('');
-        }
-    }
-
-
-    // --- УНИФИЦИРОВАННАЯ СИСТЕМА ПИКЕРА СКЛАДА ---
-    function openWhPicker(mode) {
-        pickerMode = mode; 
-        
-        if (mode === 'new_order') {
-            pickerSelections = { ...newOrderAttachedItems };
-            document.getElementById('wh-picker-title').innerText = "Материалы для нового заказа";
-        } else {
-            pickerSelections = {}; 
-            document.getElementById('wh-picker-title').innerText = "Списание на существующий заказ";
-        }
-        
-        document.getElementById('wh-picker-search').value = '';
-        renderWhPickerList();
-        document.getElementById('modal-wh-picker').classList.add('active');
-    }
-
-    function togglePick(id) {
-        const row = document.getElementById(`p-row-${id}`);
-        const inp = row.querySelector('input');
-        
-        if (pickerSelections[id]) {
-            delete pickerSelections[id];
-            row.classList.remove('selected');
-            inp.value = '';
-        } else {
-            pickerSelections[id] = 1; 
-            row.classList.add('selected');
-            inp.value = '1';
-            setTimeout(() => { inp.focus(); inp.select(); }, 50); 
-        }
-    }
-
-    function updatePickQty(id, val) {
-        const num = parseQty(val);
-        const row = document.getElementById(`p-row-${id}`);
-        if (num > 0) {
-            pickerSelections[id] = num;
-            row.classList.add('selected');
-        } else {
-            delete pickerSelections[id];
-            row.classList.remove('selected');
-        }
-    }
-
-    function renderWhPickerList() {
-        const c = document.getElementById('wh-picker-list');
-        const q = document.getElementById('wh-picker-search').value.toLowerCase();
-        c.innerHTML = '';
-        
-        const filtered = whItems.filter(i => 
-            i.name.toLowerCase().includes(q) || 
-            (i.barcode && i.barcode.toLowerCase().includes(q))
-        );
-
-        if(filtered.length === 0) {
-            c.innerHTML = '<div style="font-size:13px; color:var(--hint); text-align:center; padding:20px;">Товар не найден на складе</div>';
-            return;
-        }
-
-        filtered.forEach(i => {
-            const isSelected = !!pickerSelections[i.id];
-            const qty = isSelected ? pickerSelections[i.id] : '';
-            c.innerHTML += `
-                <div class="picker-row ${isSelected ? 'selected' : ''}" id="p-row-${i.id}" onclick="togglePick(${i.id})">
-                    <div style="flex:1; min-width:0; padding-right:10px;">
-                        <div class="word-wrap" style="font-size:14px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:4px;">${i.name}</div>
-                        <div class="word-wrap" style="font-size:12px; color:var(--hint);">Остаток: <b style="color:var(--text)">${i.qty}</b> ${i.unit}</div>
-                    </div>
-                    <input type="text" inputmode="decimal" value="${qty}" placeholder="Кол-во" class="custom-input" style="width:80px; flex-shrink:0; margin:0; padding:12px 6px; text-align:center; font-weight:bold; font-size:15px;" onclick="event.stopPropagation()" oninput="updatePickQty(${i.id}, this.value)">
-                </div>
-            `;
-        });
-    }
-
-    function confirmPicker() {
-        if (pickerMode === 'new_order') {
-            newOrderAttachedItems = { ...pickerSelections };
-            renderNewOrderAttachedItems();
-            closeModal('modal-wh-picker');
-            tg.HapticFeedback.notificationOccurred('success');
-        } else {
-            const orderId = pickerMode;
-            const order = orders.find(x => x.id == orderId);
-            if(!order) return;
+        const ScreenAnalytics = ({ transactions, onTransactionClick, activeMonth, prevMonth, nextMonth, currency, rates }) => {
+            const chartRef = useRef(null);
+            const [expandedCat, setExpandedCat] = useState(null);
             
-            let addedCount = 0;
-            if(!order.expenses) order.expenses = [];
-            
-            for (const [itemId, qty] of Object.entries(pickerSelections)) {
-                const item = whItems.find(x => x.id == itemId);
-                if(item && qty > 0) {
-                    const newWhQty = item.qty - qty;
-                    db.ref(`warehouse/items/${itemId}/qty`).set(newWhQty);
-                    addWhLog(`<b>${item.name}</b>: Списано -${qty} ${item.unit} на заказ <b>"${order.title}"</b>. Остаток: ${newWhQty}`);
-                    
-                    order.expenses.push({ 
-                        name: item.name, qty: qty, price: 0, cost: 0, bought: true, cat: 'mat' 
-                    });
-                    addedCount++;
-                }
-            }
-            
-            if (addedCount > 0) {
-                db.ref(`orders/${orderId}/expenses`).set(order.expenses).then(() => {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`✅ Успешно добавлено ${addedCount} позиций!`);
-                    closeModal('modal-wh-picker');
-                });
-            } else {
-                closeModal('modal-wh-picker');
-            }
-        }
-    }
+            const formatCurrency = (amount) => {
+                if(currency === 'USD') return '$ ' + (amount / rates.USD).toFixed(2);
+                if(currency === 'EUR') return '€ ' + (amount / rates.EUR).toFixed(2);
+                return amount.toLocaleString('ru-RU').replace(/,/g, ' ') + ' сум';
+            };
 
-    function renderNewOrderAttachedItems() {
-        const c = document.getElementById('new-order-wh-summary');
-        const items = [];
-        for (const [itemId, qty] of Object.entries(newOrderAttachedItems)) {
-            const item = whItems.find(x => x.id == itemId);
-            if(item) items.push(`<b class="word-wrap">${item.name}</b> (${qty} ${item.unit})`);
-        }
-        if(items.length > 0) {
-            c.innerHTML = items.join('<br><div style="height:6px;"></div>');
-        } else {
-            c.innerHTML = '<span style="color:var(--hint)">Ничего не выбрано. Нажмите кнопку выше ⬆️</span>';
-        }
-    }
+            const expenses = transactions.filter(t => t.amount < 0);
+            const totalExp = expenses.reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
+            const catData = {};
+            expenses.forEach(t => {
+                if(!catData[t.category]) catData[t.category] = { total: 0, items: [], color: t.color, icon: t.icon, bg: t.bg };
+                catData[t.category].total += Math.abs(t.amount);
+                catData[t.category].items.push(t);
+            });
 
-    // --- ЛОГИКА ЗАКАЗОВ ---
-    function deleteOrder(id) {
-        if(!isAdmin) return;
-        uiConfirm("Внимание! Вы точно хотите удалить этот заказ? (Все списанные материалы автоматически вернутся на склад!)", (res) => {
-            if(res) {
-                const o = orders.find(x => x.id == id);
-                if (o && o.expenses) {
-                    o.expenses.forEach(e => {
-                        if (e.cat !== 'work') {
-                            const whItem = whItems.find(x => x.name.toLowerCase() === e.name.toLowerCase());
-                            if (whItem) {
-                                const newWhQty = whItem.qty + e.qty;
-                                db.ref(`warehouse/items/${whItem.id}/qty`).set(newWhQty);
-                                addWhLog(`<b>${whItem.name}</b>: Возврат +${e.qty} ${whItem.unit} (удален заказ <b>"${o.title}"</b>). Остаток: ${newWhQty}`);
-                            }
+            const categoryData = Object.keys(catData).map(k => ({
+                name: k, ...catData[k], percent: totalExp ? Math.round((catData[k].total / totalExp) * 100) : 0
+            })).sort((a,b) => b.total - a.total);
+
+            const getHexColor = (colorClass) => {
+                if(!colorClass) return '#9CA3AF';
+                if(colorClass.includes('orange')) return '#F97316';
+                if(colorClass.includes('blue') || colorClass.includes('sky')) return '#3B82F6';
+                if(colorClass.includes('pink') || colorClass.includes('rose') || colorClass.includes('fuchsia')) return '#EC4899';
+                if(colorClass.includes('green') || colorClass.includes('emerald') || colorClass.includes('teal') || colorClass.includes('lime')) return '#10B981';
+                if(colorClass.includes('purple') || colorClass.includes('violet') || colorClass.includes('indigo') || colorClass.includes('primary')) return '#7C3AED';
+                if(colorClass.includes('amber') || colorClass.includes('yellow')) return '#F59E0B';
+                if(colorClass.includes('red')) return '#EF4444';
+                if(colorClass.includes('cyan')) return '#06B6D4';
+                return '#9CA3AF';
+            };
+
+            useEffect(() => {
+                const ctx = document.getElementById('donutChart');
+                if (ctx && categoryData.length > 0) {
+                    if (chartRef.current) chartRef.current.destroy();
+                    chartRef.current = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: categoryData.map(c => c.name),
+                            datasets: [{
+                                data: categoryData.map(c => c.total),
+                                backgroundColor: categoryData.map(c => getHexColor(c.color)),
+                                borderWidth: 0, hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            cutout: '75%', responsive: true, maintainAspectRatio: false, animation: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } }
                         }
                     });
                 }
-                db.ref(`orders/${id}`).remove();
-            }
-        });
-    }
+            }, [categoryData]); 
 
-    function editField(id, field, title) {
-        if(!isAdmin) return;
-        const o = orders.find(x => x.id == id);
-        uiPrompt(title, o[field] || '', (val) => {
-            if(val !== null && val !== undefined) db.ref(`orders/${id}/${field}`).set(val);
-        }, 'text');
-    }
-
-    function editFinance(id, field, title) {
-        if(!isAdmin) return;
-        const o = orders.find(x => x.id == id);
-        uiPrompt(title, o[field] || 0, (val) => {
-            if(val !== null) db.ref(`orders/${id}/${field}`).set(extract(val));
-        }, 'money');
-    }
-
-    function editExpense(oid, eidx, field, title, mode) {
-        if(!isAdmin) return;
-        const o = orders.find(x => x.id == oid);
-        if (!o || !o.expenses || o.expenses[eidx] === undefined) return;
-        
-        const currentVal = o.expenses[eidx][field];
-        
-        uiPrompt(title, currentVal, (val) => {
-            if(val === null || val === undefined) return; 
-            
-            if (mode === 'money') {
-                o.expenses[eidx][field] = extract(val);
-            } else if (mode === 'qty') {
-                const newQty = parseQty(val);
-                const diff = o.expenses[eidx].qty - newQty; 
-                
-                if (diff !== 0 && o.expenses[eidx].cat !== 'work') {
-                    const itemName = o.expenses[eidx].name;
-                    const whItem = whItems.find(x => x.name.toLowerCase() === itemName.toLowerCase());
-                    if (whItem) {
-                        const newWhQty = whItem.qty + diff;
-                        db.ref(`warehouse/items/${whItem.id}/qty`).set(newWhQty);
-                        const actionWord = diff > 0 ? 'Возврат' : 'Доп. списание';
-                        const sign = diff > 0 ? '+' : '';
-                        addWhLog(`<b>${whItem.name}</b>: ${actionWord} ${sign}${diff} ${whItem.unit} (корректировка кол-ва в заказе <b>"${o.title}"</b>). Остаток: ${newWhQty}`);
-                    }
-                }
-                
-                if (newQty <= 0) {
-                    o.expenses.splice(eidx, 1);
-                } else {
-                    o.expenses[eidx][field] = newQty;
-                }
-            } else {
-                if (val.trim() === '') return;
-                o.expenses[eidx][field] = val.trim();
-            }
-            
-            if (o.expenses && o.expenses.length > 0) {
-                o.expenses.forEach(e => {
-                    e.cost = (e.qty || 0) * (e.price || 0);
+            const renderGroupedItems = (catItems, catName) => {
+                const groups = {};
+                catItems.forEach(t => {
+                    const cleanName = t.title.trim();
+                    if(!groups[cleanName]) groups[cleanName] = { total: 0, txs: [] };
+                    groups[cleanName].total += Math.abs(t.amount);
+                    groups[cleanName].txs.push(t);
                 });
-            }
-            
-            db.ref(`orders/${oid}/expenses`).set(o.expenses);
-        }, mode);
-    }
 
-    function toggleBought(oid, originalIndex, currentStatus) {
-        if(!canCheckExp) return;
-        db.ref(`orders/${oid}/expenses/${originalIndex}/bought`).set(!currentStatus);
-    }
+                const groupArr = Object.keys(groups).map(k => ({ name: k, ...groups[k] })).sort((a,b) => b.total - a.total);
 
-    function createOrder() {
-        const title = document.getElementById('in-title').value;
-        const price = extract(document.getElementById('in-price').value);
-        if(!title || price <= 0) return tg.showAlert("Заполните изделие и цену!");
-        
-        const orderExpenses = [];
-        
-        for (const [itemId, qty] of Object.entries(newOrderAttachedItems)) {
-            if (qty > 0) {
-                const item = whItems.find(x => x.id == itemId);
-                if (item) {
-                    orderExpenses.push({
-                        name: item.name, qty: qty, price: 0, cost: 0, bought: true, cat: 'mat'
-                    });
-                    const newWhQty = item.qty - qty;
-                    db.ref(`warehouse/items/${itemId}/qty`).set(newWhQty);
-                    addWhLog(`<b>${item.name}</b>: Списано -${qty} ${item.unit} на НОВЫЙ заказ <b>"${title}"</b>. Остаток: ${newWhQty}`);
-                }
-            }
-        }
-
-        const id = Date.now();
-        db.ref('orders/' + id).set({
-            id, title, price,
-            client: document.getElementById('in-client').value,
-            phone: document.getElementById('in-phone').value,
-            loc: document.getElementById('in-loc').value,
-            locLink: document.getElementById('in-loc-link').value,
-            link: document.getElementById('in-link').value,
-            deadline: document.getElementById('in-deadline').value,
-            prepay: extract(document.getElementById('in-prepay').value),
-            status: 0, mName: '', mPhone: '', expenses: orderExpenses
-        }).then(() => {
-            ['in-title','in-client','in-phone','in-loc','in-loc-link','in-link','in-deadline','in-price','in-prepay'].forEach(k => document.getElementById(k).value = '');
-            newOrderAttachedItems = {}; 
-            renderNewOrderAttachedItems();
-            nav('page-list', document.querySelectorAll('.tab-item')[0]);
-            if(orderExpenses.length > 0) tg.showAlert(`Заказ создан! ${orderExpenses.length} позиций списано со склада.`);
-        });
-    }
-
-    function addExp(id) {
-        if(!isAdmin) return;
-        const nInput = document.getElementById(`ex-n-${id}`);
-        const qInput = document.getElementById(`ex-q-${id}`);
-        const pInput = document.getElementById(`ex-p-${id}`);
-        const n = nInput.value;
-        const q = parseQty(qInput.value) || 1;
-        const p = extract(pInput.value);
-        if(!n) return;
-        const o = orders.find(x => x.id == id);
-        if(!o.expenses) o.expenses = [];
-        o.expenses.push({ name: n, qty: q, price: p, cost: q * p, bought: false, cat: currentExpCat });
-        db.ref(`orders/${id}/expenses`).set(o.expenses).then(() => {
-            nInput.value=''; qInput.value=''; pInput.value='';
-        });
-    }
-
-    function quickImport(oid) {
-        if(!isAdmin) return;
-        uiPrompt("Вставьте текст (Например: кромка 100 мт клей 1.5 кг):", "", (text) => {
-            if (!text) return;
-            const regex = /(.*?)\s+[-=:]?\s*(\d+(?:[.,]\d+)?)\s*(шт|уг|мт|м|ед|гр|комп|пач|кг|л|лт)/gi;
-            const o = orders.find(x => x.id == oid);
-            if(!o.expenses) o.expenses = [];
-            
-            let match;
-            let count = 0;
-
-            while ((match = regex.exec(text)) !== null) {
-                let name = match[1].replace(/^[\s,иа\-\+]+/i, '').trim();
-                let qty = parseQty(match[2]);
-                if (name.length > 1) {
-                    o.expenses.push({ name: name, qty: qty, price: 0, cost: 0, bought: false, cat: 'mat' });
-                    count++;
-                }
-            }
-            
-            if (count === 0) {
-                const lines = text.split(/[\n,;]/);
-                lines.forEach(line => {
-                    let raw = line.trim();
-                    if (raw.length < 2) return;
-                    const fallbackMatch = raw.match(/^(.*?)[\s\-:=]+(\d+(?:[.,]\d+)?)\s*$/i);
-                    if (fallbackMatch) {
-                        o.expenses.push({ name: fallbackMatch[1].trim(), qty: parseQty(fallbackMatch[2]), price: 0, cost: 0, bought: false, cat: 'mat' });
-                        count++;
-                    } else {
-                        o.expenses.push({ name: raw, qty: 1, price: 0, cost: 0, bought: false, cat: 'mat' });
-                        count++;
-                    }
-                });
-            }
-            
-            if (count > 0) {
-                db.ref(`orders/${oid}/expenses`).set(o.expenses).then(() => {
-                    tg.showAlert(`Распознано позиций: ${count}. Проставьте цены!`);
-                });
-            } else {
-                tg.showAlert("Не удалось распознать. Пишите так: Название - Число шт");
-            }
-        }, 'text');
-    }
-
-    // --- ОТЧЕТЫ ---
-    function generateReceipt(id) {
-        const o = orders.find(x => x.id == id);
-        const text = `📄 ЧЕК ЗАКАЗА\nИзделие: ${o.title}\nКлиент: ${o.client}\n---\nСумма: ${fMoney(o.price)}\nАванс: ${fMoney(o.prepay)}\nК оплате: ${fMoney(o.price - o.prepay)}\n---\nСтатус: ${STAGES[o.status]}`;
-        navigator.clipboard.writeText(text).then(() => tg.showAlert("Текст чека скопирован!"));
-    }
-
-    function sendBossReport(id) {
-        const o = orders.find(x => x.id == id);
-        const totalExp = o.expenses ? o.expenses.reduce((sum, e) => sum + e.cost, 0) : 0;
-        const mat = o.expenses ? o.expenses.filter(e => e.cat !== 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
-        const work = o.expenses ? o.expenses.filter(e => e.cat === 'work').reduce((sum, e) => sum + e.cost, 0) : 0;
-        const profit = o.price - totalExp;
-        
-        let text = `📊 ОТЧЕТ РУКОВОДИТЕЛЮ\n🛠 Заказ: ${o.title}\n👤 Клиент: ${o.client || '---'}\n👷 Мастер: ${o.mName || '---'}\n----------------------\n💰 Цена: ${fMoney(o.price)}\n📉 Расходы: ${fMoney(totalExp)}\n   ├ Материалы: ${fMoney(mat)}\n   └ Зарплата: ${fMoney(work)}\n----------------------\n✅ ЧИСТАЯ ПРИБЫЛЬ: ${fMoney(profit)}`;
-        navigator.clipboard.writeText(text).then(() => tg.showAlert("Отчет скопирован!"));
-    }
-
-    function sendIndividualShoppingList(id) {
-        const o = orders.find(x => x.id == id);
-        const toBuy = o.expenses ? o.expenses.filter(e => !e.bought && e.cat !== 'work') : [];
-        if(toBuy.length === 0) return tg.showAlert("Нет позиций для закупа");
-        let text = `🛒 ЗАКУП: ${o.title}\n📍 ${o.loc || '---'}\n\n`;
-        toBuy.forEach((e, i) => text += `${i+1}. ${e.name} — ${e.qty} шт.\n`);
-        navigator.clipboard.writeText(text).then(() => tg.showAlert("Список заказа скопирован!"));
-    }
-
-    function copyGlobalShoppingList() {
-        let list = "🛒 ОБЩИЙ ЗАКУП (ВСЕ ЗАКАЗЫ):\n\n";
-        orders.filter(o => o.status < 4 && o.expenses).forEach(o => {
-            const toBuy = o.expenses.filter(e => !e.bought && e.cat !== 'work');
-            if(toBuy.length > 0) {
-                list += `🛠 ${o.title}:\n`;
-                toBuy.forEach(e => list += `- ${e.name} (${e.qty} шт)\n`);
-                list += `\n`;
-            }
-        });
-        navigator.clipboard.writeText(list).then(() => tg.showAlert("Общий список скопирован!"));
-    }
-
-    // --- РЕНДЕРИНГ ЗАКАЗОВ ---
-    function renderOrders() {
-        const listContainer = document.getElementById('orders-container');
-        const archiveContainer = document.getElementById('archive-container');
-        const query = document.getElementById('main-search').value.toLowerCase();
-        listContainer.innerHTML = ''; archiveContainer.innerHTML = '';
-
-        orders.forEach(o => {
-            const isMatch = (o.title + (o.client||'') + (o.loc||'')).toLowerCase().includes(query);
-            if(!isMatch) return;
-
-            const isLate = o.deadline && new Date(o.deadline) < new Date().setHours(0,0,0,0) && o.status < 4;
-            if(currentFilter === 'work' && o.status === 4) return;
-            if(currentFilter === 'late' && !isLate) return;
-
-            const isExp = expanded.has(o.id);
-            const totalExp = o.expenses ? o.expenses.reduce((s, e) => s + e.cost, 0) : 0;
-            const displayExpenses = o.expenses ? (isSupplier ? o.expenses.filter(e => e.cat !== 'work') : o.expenses) : [];
-
-            const card = document.createElement('div');
-            card.className = 'order-card';
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div style="min-width:0; padding-right:8px; flex:1;">
-                        <div class="word-wrap" style="font-weight:800; font-size:18px;">${o.title} <span class="edit-icon" onclick="editField(${o.id}, 'title', 'Изделие:')">✏️</span></div>
-                        <div class="word-wrap" style="font-size:12px; opacity:0.6; margin-top:4px;">👤 ${o.client || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'client', 'Клиент:')">✏️</span> | 📍 ${o.loc || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'loc', 'Адрес:')">✏️</span></div>
-                        
-                        <div class="supplier-hide word-wrap" style="font-size:12px; margin-top:8px; padding:10px; background:rgba(0,0,0,0.03); border-radius:10px; line-height: 1.5;">
-                            🛠 <b>Мастер:</b> ${o.mName || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mName', 'Имя мастера:')">✏️</span> | 📞 ${o.mPhone || '---'} <span class="edit-icon" onclick="editField(${o.id}, 'mPhone', 'Тел. мастера:')">✏️</span><br>
-                            🗺 <b>Гео:</b> ${o.locLink ? `<a href="${o.locLink}" target="_blank">Открыть карту</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'locLink', 'Ссылка на гео:')">🔗</span><br>
-                            🎨 <b>Дизайн:</b> ${o.link ? `<a href="${o.link}" target="_blank">Смотреть проект</a>` : '---'} <span class="edit-icon" onclick="editField(${o.id}, 'link', 'Ссылка на дизайн:')">🔗</span>
-                        </div>
-
-                        <div style="font-size:11px; margin-top:8px; color:${isLate ? 'var(--red)' : 'var(--hint)'}">📅 ${o.deadline || 'Нет даты'} ${isLate ? '<b>(ПРОСРОЧЕНО)</b>' : ''}</div>
-                    </div>
-                    <select class="status-select" onchange="db.ref('orders/${o.id}/status').set(parseInt(this.value))" ${!isAdmin ? 'disabled' : ''} style="flex-shrink:0;">
-                        ${STAGES.map((s, i) => `<option value="${i}" ${o.status === i ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select>
-                </div>
-                ${isAdmin ? `
-                <div class="finances">
-                    <div class="fin-row"><span>Цена:</span> <b class="word-wrap" onclick="editFinance(${o.id}, 'price', 'Цена:')" style="cursor:pointer; color:var(--primary)">${fMoney(o.price)} ✏️</b></div>
-                    <div class="fin-row" style="color:var(--red)"><span>Остаток:</span> <b class="word-wrap">${fMoney(o.price - totalExp)}</b></div>
-                    <button class="btn btn-outline" style="font-size:12px; padding:10px;" onclick="generateReceipt(${o.id})">📄 Сформировать чек</button>
-                </div>` : ''}
-                
-                <div style="margin-top:12px; font-size:13px; color:var(--primary); font-weight:700; cursor:pointer;" onclick="expanded.has(${o.id})?expanded.delete(${o.id}):expanded.add(${o.id});renderOrders()">
-                    📦 Расходы (${displayExpenses.length}) ${isExp?'▲':'▼'}
-                </div>
-                
-                <div style="display:${isExp?'block':'none'}; margin-top:10px;">
-                    <div class="exp-table-row header">
-                        <div>Название</div><div>Кол</div><div class="supplier-hide">Цена</div><div class="supplier-hide">Итог</div><div></div>
-                    </div>
-                    ${displayExpenses.map((e) => {
-                        const originalIndex = o.expenses.indexOf(e);
-                        return `
-                        <div class="exp-table-row ${e.bought ? 'bought' : ''}">
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'name', 'Изменить название:', 'text')" style="font-size:12px; cursor:pointer; line-height:1.3; min-width:0; word-break:break-word;">${e.cat==='work'?'<span class="cat-tag">ЗП</span>':''}${e.name}</div>
-                            
-                            <div onclick="editExpense(${o.id}, ${originalIndex}, 'qty', 'Изменить количество:', 'qty')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:13px; min-width:0; word-break:break-word;">${e.qty} <span style="font-size:9px;">✏️</span></div>
-                            
-                            <div class="supplier-hide" onclick="editExpense(${o.id}, ${originalIndex}, 'price', 'Изменить цену:', 'money')" style="cursor:pointer; font-weight:700; color:var(--primary); font-size:12px; min-width:0; word-break:break-word;">
-                                ${e.price > 0 ? Math.round(e.price).toLocaleString() + ' <span style="font-size:9px;">✏️</span>' : '<span style="text-decoration:underline dashed;">Указать ✏️</span>'}
+                return groupArr.map((group, idx) => (
+                    <details key={idx} className="group mb-2 last:mb-0 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
+                        <summary className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 cursor-pointer list-none active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-textDark dark:text-white">{group.name}</span>
+                                <span className="text-[10px] bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-sm text-gray-500 dark:text-gray-300">x{group.txs.length}</span>
                             </div>
-                            
-                            <div class="supplier-hide" style="font-weight:700; font-size:12px; min-width:0; word-break:break-word;">${e.cost > 0 ? Math.round(e.cost).toLocaleString() : '0'}</div>
-                            
-                            <div onclick="toggleBought(${o.id}, ${originalIndex}, ${e.bought})" style="text-align:right; font-size:20px; cursor:${canCheckExp ? 'pointer' : 'default'};">${e.bought?'✅':'⬜'}</div>
+                            <div className="flex items-center gap-3">
+                                <span className="font-bold text-sm text-textDark dark:text-white">{formatCurrency(group.total)}</span>
+                                <i className="fa-solid fa-chevron-down text-xs text-gray-400 group-open:rotate-180 transition-transform"></i>
+                            </div>
+                        </summary>
+                        <div className="bg-white dark:bg-gray-900 px-3 py-2 space-y-2">
+                            {group.txs.map((t, tidx) => {
+                                let diffElement = null;
+                                if (tidx < group.txs.length - 1) {
+                                    const prevT = group.txs[tidx + 1];
+                                    const currAmt = Math.abs(t.amount);
+                                    const prevAmt = Math.abs(prevT.amount);
+                                    if (currAmt !== prevAmt && prevAmt > 0) {
+                                        const diffPerc = Math.round(((currAmt - prevAmt) / prevAmt) * 100);
+                                        if (diffPerc > 0) {
+                                            diffElement = <span className="text-[10px] text-red-500 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded ml-2">↑ +{diffPerc}%</span>;
+                                        } else if (diffPerc < 0) {
+                                            diffElement = <span className="text-[10px] text-green-500 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded ml-2">↓ {Math.abs(diffPerc)}%</span>;
+                                        }
+                                    }
+                                }
+
+                                const timeParts = t.date.split(' ');
+                                const dateStr = timeParts[0];
+                                const timeStr = timeParts[1] || "12:00";
+                                const hour = parseInt(timeStr.split(':')[0]);
+                                const isNight = hour >= 18 || hour < 6;
+                                const timeIcon = isNight ? '🌙' : '☀️';
+
+                                return (
+                                    <div key={t.id} className="flex justify-between items-center py-1 border-b border-gray-50 dark:border-gray-800/50 last:border-0" onClick={() => {triggerHaptic('light'); onTransactionClick(t);}}>
+                                        <div>
+                                            <p className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center">{timeIcon} <span className="ml-1 font-medium">{dateStr}</span> <span className="ml-1.5 opacity-70">{timeStr}</span></p>
+                                            <div className="mt-0.5">{diffElement}</div>
+                                        </div>
+                                        <span className="text-sm font-bold text-textDark dark:text-gray-300">{formatCurrency(Math.abs(t.amount))}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
-                    `}).join('')}
+                    </details>
+                ));
+            };
+
+            return (
+                <div className="bg-[#F9FAFB] dark:bg-gray-950 min-h-screen animate-fade-in pb-20 transition-colors duration-300">
+                    <TopHeader title="Отчет" rightIcon="fa-chart-pie" />
                     
-                    ${isAdmin ? `
-                    <div style="margin-top:12px; background:rgba(0,0,0,0.02); padding:12px; border-radius:12px;">
-                        <div style="display:flex; gap:12px; font-size:11px; margin-bottom:8px;">
-                            <span onclick="currentExpCat='mat'; this.style.opacity=1; this.nextElementSibling.style.opacity=0.5" style="cursor:pointer; font-weight:bold;">МАТЕРИАЛ</span>
-                            <span onclick="currentExpCat='work'; this.style.opacity=1; this.previousElementSibling.style.opacity=0.5" style="cursor:pointer; font-weight:bold; opacity:0.5">ЗАРПЛАТА</span>
-                        </div>
-                        <div style="display:flex; gap:6px;">
-                            <input type="text" id="ex-n-${o.id}" class="custom-input" style="flex:2; font-size:13px; margin-bottom:0; min-width:0;" placeholder="Что?">
-                            <input type="text" inputmode="decimal" id="ex-q-${o.id}" class="custom-input" style="flex:0.6; font-size:13px; margin-bottom:0; text-align:center; min-width:0;" placeholder="Кол">
-                            <input type="text" inputmode="numeric" id="ex-p-${o.id}" class="custom-input" style="flex:1.5; font-size:13px; margin-bottom:0; min-width:0;" placeholder="Цена" oninput="formatNumberInput(this)">
-                            <button onclick="addExp(${o.id})" style="background:var(--primary); color:white; border-radius:12px; width:44px; border:none; font-weight:bold; font-size:22px; flex-shrink:0;">+</button>
-                        </div>
-                        <div style="display:flex; gap:6px; margin-top:10px;">
-                            <button class="btn btn-quick" onclick="quickImport(${o.id})">🧠 Умный ввод</button>
-                            <button class="btn btn-warehouse" onclick="openWhPicker(${o.id})">📦 Взять со склада</button>
-                        </div>
-                        <button class="btn btn-shopping" style="margin-top:10px;" onclick="sendIndividualShoppingList(${o.id})">🛒 Копировать закуп</button>
-                    </div>` : ''}
+                    <div className="flex justify-center items-center gap-4 py-2">
+                        <button onClick={() => {triggerHaptic('light'); prevMonth();}} className="text-gray-400 hover:text-primary p-2"><i className="fa-solid fa-chevron-left"></i></button>
+                        <h2 className="font-bold text-textDark dark:text-white w-32 text-center capitalize">{getMonthName(activeMonth)}</h2>
+                        <button onClick={() => {triggerHaptic('light'); nextMonth();}} className="text-gray-400 hover:text-primary p-2"><i className="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    {totalExp > 0 ? (
+                        <>
+                            <div className="relative w-56 h-56 mx-auto my-6">
+                                <canvas id="donutChart"></canvas>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Всего</p>
+                                    <h2 className="text-xl font-bold text-textDark dark:text-white">{formatCurrency(totalExp)}</h2>
+                                </div>
+                            </div>
+
+                            <div className="px-4 space-y-3">
+                                {categoryData.map(c => (
+                                    <div key={c.name} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-50 dark:border-gray-800 overflow-hidden transition-colors">
+                                        <div onClick={() => {triggerHaptic('light'); setExpandedCat(expandedCat === c.name ? null : c.name);}} className="flex justify-between items-center p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-3 h-3 rounded-full`} style={{backgroundColor: getHexColor(c.color)}}></div>
+                                                <span className="font-bold text-sm text-textDark dark:text-white">{c.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-bold text-sm text-textDark dark:text-white">{formatCurrency(c.total)}</span>
+                                                <span className="text-xs text-gray-400 font-mono w-8 text-right">{c.percent}%</span>
+                                            </div>
+                                        </div>
+                                        {expandedCat === c.name && (
+                                            <div className="px-4 pb-4 animate-fade-in border-t border-gray-50 dark:border-gray-800 pt-3">
+                                                {renderGroupedItems(c.items, c.name)}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center py-20 text-gray-400">В этом месяце операций нет.</div>
+                    )}
                 </div>
+            );
+        };
+
+        const AddTransactionModal = ({ close, saveTx, categories, addCategory, isPremium, initialTab = 'expense' }) => {
+            const [tab, setTab] = useState(initialTab);
+            const [amount, setAmount] = useState('');
+            const [title, setTitle] = useState('');
+            const [selCat, setSelCat] = useState('');
+            const [wallet, setWallet] = useState('card');
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [smsText, setSmsText] = useState('');
+            const [addMethod, setAddMethod] = useState(null);
+            
+            const [newCatName, setNewCatName] = useState('');
+            const [newCatColor, setNewCatColor] = useState(CATEGORY_COLORS[0]);
+            const [newCatIcon, setNewCatIcon] = useState(TOP_ICONS[0]);
+            const [iconTab, setIconTab] = useState('icons');
+
+            useEffect(() => {
+                if (categories.length > 0 && !selCat) setSelCat(categories[0].name);
+            }, [categories]);
+
+            const simulateAI = (type) => {
+                setIsProcessing(true);
+                setTimeout(() => {
+                    setIsProcessing(false);
+                    setAmount(type === 'sms' ? '45000' : '150000');
+                    setTitle(type === 'sms' ? 'Yandex GO' : 'Супермаркет');
+                    setSelCat(type === 'sms' ? 'Транспорт' : 'Продукты');
+                    setAddMethod(null);
+                    triggerHaptic('success');
+                }, 2500);
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if(tab === 'category') {
+                    if(!newCatName) return;
+                    addCategory({ name: newCatName, icon: newCatIcon, colorClass: newCatColor, limit: null });
+                    setSelCat(newCatName);
+                    setTab('expense');
+                    triggerHaptic('success');
+                    return;
+                }
+
+                if(!amount || !title) return;
+                const numAmt = parseInt(amount.replace(/\s/g, ''));
+                const catObj = categories.find(c => c.name === selCat) || categories[0];
+                saveTx({
+                    title, category: selCat, wallet,
+                    amount: tab === 'expense' ? -numAmt : numAmt,
+                    icon: catObj.icon, color: catObj.colorClass.split(' ')[0], bg: catObj.colorClass.split(' ')[1]
+                });
+            };
+
+            return (
+                <div className="fixed inset-0 z-[60] flex items-end">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={close}></div>
+                    <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl p-6 relative z-10 animate-fade-in max-h-[90vh] overflow-y-auto no-scrollbar transition-colors">
+                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6"></div>
+                        
+                        {(addMethod === 'voice' || addMethod === 'scan' || addMethod === 'sms') ? (
+                            <div className="py-6 text-center">
+                                {addMethod === 'voice' && (
+                                    <>
+                                        <div className="relative mb-6 mx-auto w-24 h-24">
+                                            <div className="w-full h-full bg-blue-500 rounded-full flex items-center justify-center text-white text-4xl relative z-10">{isProcessing ? <i className="fa-solid fa-robot animate-pulse"></i> : <i className="fa-solid fa-microphone"></i>}</div>
+                                            {!isProcessing && <div className="absolute inset-0 rounded-full bg-blue-500 animate-pulse-ring z-0"></div>}
+                                        </div>
+                                        <h3 className="text-xl font-bold text-textDark dark:text-white mb-2">{isProcessing ? "AI распознает речь..." : "Внимательно слушаю"}</h3>
+                                        <button onClick={() => simulateAI('voice')} className="mt-6 bg-blue-50 text-blue-500 font-bold px-6 py-2 rounded-full">Имитировать</button>
+                                    </>
+                                )}
+                                {addMethod === 'scan' && (
+                                    <>
+                                        <div className="w-48 h-64 bg-gray-100 dark:bg-gray-800 mx-auto rounded-xl relative overflow-hidden flex items-center justify-center mb-6">
+                                            <i className="fa-solid fa-receipt text-6xl text-gray-300"></i>
+                                            {isProcessing && <div className="animate-scanline"></div>}
+                                        </div>
+                                        <h3 className="text-xl font-bold text-textDark dark:text-white mb-2">{isProcessing ? "AI читает чек..." : "Наведите камеру"}</h3>
+                                        <button onClick={() => simulateAI('scan')} className="mt-2 bg-green-50 text-green-500 font-bold px-6 py-2 rounded-full">Фото</button>
+                                    </>
+                                )}
+                                {addMethod === 'sms' && (
+                                    <>
+                                        <div className="w-16 h-16 bg-purple-100 text-purple-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><i className="fa-solid fa-comment-sms"></i></div>
+                                        <textarea value={smsText} onChange={e => setSmsText(e.target.value)} placeholder="Вставьте текст SMS..." className="w-full h-24 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm focus:border-primary mb-4 text-textDark dark:text-white"></textarea>
+                                        <button onClick={() => simulateAI('sms')} className="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30">Анализировать</button>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 mb-4 overflow-x-auto no-scrollbar">
+                                    <button type="button" onClick={() => {triggerHaptic('light'); setTab('expense');}} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap px-3 ${tab === 'expense' ? 'bg-white dark:bg-gray-700 shadow text-red-500' : 'text-gray-500'}`}>Расход</button>
+                                    <button type="button" onClick={() => {triggerHaptic('light'); setTab('income');}} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap px-3 ${tab === 'income' ? 'bg-white dark:bg-gray-700 shadow text-green-500' : 'text-gray-500'}`}>Доход</button>
+                                    <button type="button" onClick={() => {triggerHaptic('light'); setTab('category');}} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap px-3 ${tab === 'category' ? 'bg-white dark:bg-gray-700 shadow text-primary' : 'text-gray-500'}`}>Категория +</button>
+                                </div>
+
+                                {tab === 'category' ? (
+                                    <div className="space-y-4 animate-fade-in">
+                                        <div>
+                                            <label className="text-xs text-gray-500 dark:text-gray-400 ml-1">Название категории</label>
+                                            <input required type="text" value={newCatName} onChange={e=>setNewCatName(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 mt-1 text-textDark dark:text-white focus:outline-none focus:border-primary" placeholder="Например: Питомцы" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 dark:text-gray-400 ml-1 mb-2 block flex justify-between">
+                                                Выберите цвет <span className="text-primary font-bold text-[10px] bg-primary/10 px-2 py-0.5 rounded">PRO: 20 цветов</span>
+                                            </label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {CATEGORY_COLORS.map((c, i) => {
+                                                    const locked = !isPremium && i >= 6;
+                                                    return (
+                                                        <div key={i} onClick={() => { if(!locked) { triggerHaptic('light'); setNewCatColor(c); } else { alert("Требуется PRO версия!"); } }} className={`w-8 h-8 rounded-full cursor-pointer relative ${c} ${newCatColor === c ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110' : ''} ${locked ? 'opacity-50' : ''}`}>
+                                                            {locked && <i className="fa-solid fa-lock absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white/80 text-[10px]"></i>}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <label className="text-xs text-gray-500 dark:text-gray-400 ml-1">Выберите иконку</label>
+                                                <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+                                                    <button type="button" onClick={() => setIconTab('icons')} className={`px-3 py-1 text-[10px] font-bold rounded-md ${iconTab==='icons'?'bg-white dark:bg-gray-700 shadow text-textDark dark:text-white':'text-gray-500'}`}>Иконки</button>
+                                                    <button type="button" onClick={() => setIconTab('emojis')} className={`px-3 py-1 text-[10px] font-bold rounded-md ${iconTab==='emojis'?'bg-white dark:bg-gray-700 shadow text-textDark dark:text-white':'text-gray-500'}`}>Эмодзи 👑</button>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto no-scrollbar p-1 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900">
+                                                {iconTab === 'icons' && TOP_ICONS.map((ic, i) => (
+                                                    <div key={i} onClick={() => {triggerHaptic('light'); setNewCatIcon(ic);}} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer text-lg transition-colors ${newCatIcon === ic ? 'bg-primary text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
+                                                        <i className={`fa-solid ${ic}`}></i>
+                                                    </div>
+                                                ))}
+                                                {iconTab === 'emojis' && PRO_EMOJIS.map((em, i) => {
+                                                    const locked = !isPremium && i >= 10;
+                                                    return (
+                                                        <div key={i} onClick={() => { if(!locked) { triggerHaptic('light'); setNewCatIcon(em); } else { alert("Требуется PRO версия!"); } }} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer text-xl relative transition-colors ${newCatIcon === em ? 'bg-primary text-white shadow-md' : 'hover:bg-gray-200 dark:hover:bg-gray-800'} ${locked ? 'opacity-30' : ''}`}>
+                                                            {em}
+                                                            {locked && <i className="fa-solid fa-lock absolute top-1 right-1 text-gray-500 text-[8px]"></i>}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm ${newCatColor}`}>
+                                                {newCatIcon.startsWith('fa-') ? <i className={`fa-solid ${newCatIcon}`}></i> : <span>{newCatIcon}</span>}
+                                            </div>
+                                            <span className="font-bold text-textDark dark:text-white">{newCatName || 'Предпросмотр'}</span>
+                                        </div>
+                                        <button type="submit" className="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-500/30 mt-2 hover:bg-primaryDark transition-colors">Создать категорию</button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 animate-fade-in">
+                                        <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 rounded-xl p-1 mb-2">
+                                            <button type="button" onClick={() => setWallet('card')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${wallet === 'card' ? 'bg-white dark:bg-gray-700 shadow text-textDark dark:text-white' : 'text-gray-500'}`}><i className="fa-regular fa-credit-card mr-2 text-primary"></i>Карта</button>
+                                            <button type="button" onClick={() => setWallet('cash')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${wallet === 'cash' ? 'bg-white dark:bg-gray-700 shadow text-textDark dark:text-white' : 'text-gray-500'}`}><i className="fa-solid fa-money-bill mr-2 text-emerald-500"></i>Наличные</button>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 dark:text-gray-400 ml-1">Сумма</label>
+                                            <input required type="text" inputMode="numeric" value={amount} onChange={(e) => setAmount(formatMoneyInput(e.target.value))} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-2xl font-bold mt-1 text-textDark dark:text-white focus:outline-none focus:border-primary transition-colors" placeholder="0" />
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <label className="text-xs text-gray-500 dark:text-gray-400 ml-1">Название / Место</label>
+                                                <div className="flex gap-2">
+                                                    <button type="button" onClick={() => setAddMethod('voice')} className="text-primary text-xs font-bold bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded"><i className="fa-solid fa-microphone"></i></button>
+                                                    <button type="button" onClick={() => setAddMethod('scan')} className="text-green-500 text-xs font-bold bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded"><i className="fa-solid fa-camera"></i></button>
+                                                    <button type="button" onClick={() => setAddMethod('sms')} className="text-orange-500 text-xs font-bold bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded"><i className="fa-solid fa-comment-sms"></i> SMS</button>
+                                                </div>
+                                            </div>
+                                            <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 mt-1 text-textDark dark:text-white focus:outline-none focus:border-primary transition-colors" placeholder="Например: Супермаркет" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 dark:text-gray-400 ml-1">Категория</label>
+                                            <div className="relative mt-1">
+                                                <select value={selCat} onChange={(e) => setSelCat(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-12 py-3 text-textDark dark:text-white focus:outline-none focus:border-primary transition-colors appearance-none font-bold">
+                                                    {categories.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                                                </select>
+                                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center text-sm shadow-sm" style={{backgroundColor: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED'}}>
+                                                    {categories.find(c=>c.name===selCat)?.icon?.startsWith('fa-') ? <i className={`fa-solid ${categories.find(c=>c.name===selCat)?.icon}`}></i> : categories.find(c=>c.name===selCat)?.icon}
+                                                </div>
+                                                <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                                            </div>
+                                        </div>
+                                        <button type="submit" className={`w-full text-white font-bold py-4 rounded-2xl shadow-lg mt-2 transition-transform hover:scale-[1.02] ${tab === 'expense' ? 'bg-red-500 shadow-red-500/30' : 'bg-green-500 shadow-green-500/30'}`}>
+                                            Добавить {tab === 'expense' ? 'расход' : 'доход'}
+                                        </button>
+                                    </div>
+                                )}
+                            </form>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const ScreenCalculator = ({ onBack, debts, setDebts }) => {
+            const [tab, setTab] = useState('deposit');
+            const [amount, setAmount] = useState('10000000');
+            const [percent, setPercent] = useState('18');
+            const [months, setMonths] = useState('12');
+
+            // Debts State
+            const [debtName, setDebtName] = useState('');
+            const [debtAmount, setDebtAmount] = useState('');
+            const [debtType, setDebtType] = useState('they_owe'); // they_owe, i_owe
+
+            const numAmt = parseInt(amount.replace(/\s/g, '')) || 0;
+            const numPerc = parseFloat(percent) || 0;
+            const numMonths = parseInt(months) || 1;
+
+            // Deposit Math
+            const depositProfit = Math.round((numAmt * (numPerc / 100) * (numMonths / 12)));
+            const depositMonthly = Math.round(depositProfit / numMonths);
+
+            // Credit Math
+            const i = (numPerc / 100) / 12;
+            const creditMonthly = i === 0 ? Math.round(numAmt / numMonths) : Math.round(numAmt * (i + (i / (Math.pow(1 + i, numMonths) - 1))));
+            const creditTotal = creditMonthly * numMonths;
+            const creditOverpay = creditTotal - numAmt;
+
+            const handleAddDebt = () => {
+                if(!debtName || !debtAmount) return;
+                const newDebt = {
+                    id: Date.now(),
+                    name: debtName,
+                    amount: parseInt(debtAmount.replace(/\s/g, '')),
+                    type: debtType,
+                    date: new Date().toLocaleDateString('ru-RU')
+                };
+                setDebts([newDebt, ...debts]);
+                setDebtName('');
+                setDebtAmount('');
+                triggerHaptic('success');
+            };
+
+            const shareDebt = (debt) => {
+                triggerHaptic('light');
+                const text = debt.type === 'they_owe' 
+                    ? `Привет! Напоминаю про долг в размере ${formatMoneyInput(debt.amount.toString())} сум (${debt.name}). Заранее спасибо! 🤝`
+                    : `Привет! Помню про свой долг в размере ${formatMoneyInput(debt.amount.toString())} сум (${debt.name}). Скоро верну! 🙏`;
+                window.location.href = `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
+            };
+
+            return (
+                <div className="bg-[#F9FAFB] dark:bg-gray-950 min-h-screen animate-fade-in pb-20 z-50 relative transition-colors duration-300">
+                    <TopHeader title="Финансовые инструменты" showBack={true} onBack={onBack} />
+                    <div className="px-4 py-4 space-y-4">
+                        <div className="flex bg-gray-200 dark:bg-gray-800 rounded-xl p-1 overflow-x-auto no-scrollbar">
+                            <button onClick={() => {triggerHaptic(); setTab('deposit');}} className={`min-w-fit px-3 py-2 text-sm font-bold rounded-lg transition-colors ${tab === 'deposit' ? 'bg-white dark:bg-gray-700 shadow text-primary' : 'text-gray-500'}`}>Вклад</button>
+                            <button onClick={() => {triggerHaptic(); setTab('credit');}} className={`min-w-fit px-3 py-2 text-sm font-bold rounded-lg transition-colors ${tab === 'credit' ? 'bg-white dark:bg-gray-700 shadow text-red-500' : 'text-gray-500'}`}>Кредит</button>
+                            <button onClick={() => {triggerHaptic(); setTab('goals');}} className={`min-w-fit px-3 py-2 text-sm font-bold rounded-lg transition-colors ${tab === 'goals' ? 'bg-white dark:bg-gray-700 shadow text-green-500' : 'text-gray-500'}`}>Копилки</button>
+                            <button onClick={() => {triggerHaptic(); setTab('debts');}} className={`min-w-fit px-3 py-2 text-sm font-bold rounded-lg transition-colors ${tab === 'debts' ? 'bg-white dark:bg-gray-700 shadow text-orange-500' : 'text-gray-500'}`}>Долги</button>
+                        </div>
+
+                        {tab === 'debts' ? (
+                            <div className="space-y-4 animate-fade-in">
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-50 dark:border-gray-800 space-y-3">
+                                    <div className="flex bg-gray-50 dark:bg-gray-800 rounded-xl p-1">
+                                        <button onClick={() => setDebtType('they_owe')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${debtType === 'they_owe' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' : 'text-gray-500'}`}>Мне должны</button>
+                                        <button onClick={() => setDebtType('i_owe')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${debtType === 'i_owe' ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'text-gray-500'}`}>Я должен</button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <div className="flex-1">
+                                            <input type="text" placeholder="Имя / За что" value={debtName} onChange={e=>setDebtName(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-textDark dark:text-white focus:outline-none focus:border-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <input type="text" placeholder="Сумма" value={debtAmount} onChange={e=>setDebtAmount(formatMoneyInput(e.target.value))} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-textDark dark:text-white focus:outline-none focus:border-primary font-bold" />
+                                        </div>
+                                    </div>
+                                    <button onClick={handleAddDebt} className="w-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform">Добавить запись</button>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {debts.length === 0 && <p className="text-center text-sm text-gray-400 py-4">У вас нет активных долгов.</p>}
+                                    {debts.map(d => (
+                                        <div key={d.id} className="bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm border border-gray-50 dark:border-gray-800 flex justify-between items-center transition-colors">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`w-2 h-2 rounded-full ${d.type === 'they_owe' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                    <h4 className="font-bold text-sm text-textDark dark:text-white">{d.name}</h4>
+                                                </div>
+                                                <p className={`font-bold text-lg ${d.type === 'they_owe' ? 'text-green-500' : 'text-red-500'}`}>{formatMoneyInput(d.amount.toString())} сум</p>
+                                                <p className="text-[10px] text-gray-400">{d.date}</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => shareDebt(d)} className="w-10 h-10 bg-blue-50 text-blue-500 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-lg transition-colors hover:bg-blue-100"><i className="fa-brands fa-telegram"></i></button>
+                                                <button onClick={() => {triggerHaptic('medium'); setDebts(debts.filter(item => item.id !== d.id));}} className="w-10 h-10 bg-gray-100 text-gray-400 dark:bg-gray-800 rounded-xl flex items-center justify-center transition-colors hover:bg-green-100 hover:text-green-500"><i className="fa-solid fa-check"></i></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : tab === 'goals' ? (
+                            <div className="space-y-4 animate-fade-in">
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-300">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 className="font-bold text-textDark dark:text-white transition-colors">Новая машина</h4>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">10 000 000 / 50 000 000 сум</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-xl transition-colors">🚗</div>
+                                    </div>
+                                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 mb-2 transition-colors">
+                                        <div className="bg-blue-500 h-2.5 rounded-full" style={{width: '20%'}}></div>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Осталось 10 месяцев</p>
+                                            <p className="text-xs font-bold text-primary mt-0.5">Откладывать: 4 000 000 / мес</p>
+                                        </div>
+                                        <span className="font-bold text-textDark dark:text-gray-300">20%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="animate-fade-in space-y-4">
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-50 dark:border-gray-800 space-y-3">
+                                    <div>
+                                        <label className="text-xs text-gray-500 dark:text-gray-400">Сумма</label>
+                                        <input type="text" value={formatMoneyInput(amount.toString())} onChange={e=>setAmount(e.target.value.replace(/\D/g, ''))} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 mt-1 font-bold text-textDark dark:text-white focus:outline-none focus:border-primary" />
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <label className="text-xs text-gray-500 dark:text-gray-400">Ставка (%)</label>
+                                            <input type="number" value={percent} onChange={e=>setPercent(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 mt-1 font-bold text-textDark dark:text-white focus:outline-none focus:border-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-xs text-gray-500 dark:text-gray-400">Срок (мес)</label>
+                                            <input type="number" value={months} onChange={e=>setMonths(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 mt-1 font-bold text-textDark dark:text-white focus:outline-none focus:border-primary" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {tab === 'deposit' ? (
+                                    <div className="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden animate-fade-in">
+                                        <i className="fa-solid fa-piggy-bank absolute -right-4 -bottom-4 opacity-10 text-7xl"></i>
+                                        <p className="text-sm text-purple-200 mb-1 relative z-10">Итоговая сумма</p>
+                                        <h2 className="text-3xl font-bold mb-4 relative z-10">{formatMoneyInput((numAmt + depositProfit).toString())}</h2>
+                                        <div className="flex justify-between bg-white/10 rounded-xl p-3 relative z-10">
+                                            <div><p className="text-xs text-purple-200">Прибыль</p><p className="font-bold">+{formatMoneyInput(depositProfit.toString())}</p></div>
+                                            <div className="text-right"><p className="text-xs text-purple-200">В месяц</p><p className="font-bold">+{formatMoneyInput(depositMonthly.toString())}</p></div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden animate-fade-in">
+                                        <i className="fa-solid fa-file-invoice-dollar absolute -right-4 -bottom-4 opacity-10 text-7xl"></i>
+                                        <p className="text-sm text-red-100 mb-1 relative z-10">Ежемесячный платеж</p>
+                                        <h2 className="text-3xl font-bold mb-4 relative z-10">{formatMoneyInput(creditMonthly.toString())}</h2>
+                                        <div className="flex justify-between bg-white/10 rounded-xl p-3 relative z-10">
+                                            <div><p className="text-xs text-red-100">Итого выплатить</p><p className="font-bold">{formatMoneyInput(creditTotal.toString())}</p></div>
+                                            <div className="text-right"><p className="text-xs text-red-100">Переплата</p><p className="font-bold">{formatMoneyInput(creditOverpay.toString())}</p></div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const ScreenCategories = ({ onBack, categories, setCategories, isPremium, openPaywall, transactions }) => {
+            const [editingLimitCat, setEditingLimitCat] = useState(null);
+            const [limitVal, setLimitVal] = useState('');
+
+            const handleEditLimitClick = (c) => {
+                if (!isPremium) return openPaywall();
+                if (editingLimitCat === c.name) {
+                    setEditingLimitCat(null);
+                } else {
+                    setLimitVal(c.limit ? formatMoneyInput(c.limit.toString()) : '');
+                    setEditingLimitCat(c.name);
+                }
+            };
+
+            const saveLimit = (cName) => {
+                const num = parseInt(limitVal.replace(/\D/g, '')) || null;
+                setCategories(categories.map(c => c.name === cName ? { ...c, limit: num } : c));
+                setEditingLimitCat(null);
+                triggerHaptic('success');
+            };
+
+            return (
+                <div className="bg-[#F9FAFB] dark:bg-gray-950 min-h-screen animate-fade-in pb-20 z-50 relative transition-colors duration-300">
+                    <TopHeader title="Категории и Лимиты" showBack={true} onBack={onBack} />
+                    <div className="px-4 py-4 space-y-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Управление вашими категориями и бюджетом</p>
+                        {categories.map((c, i) => {
+                            const totalSpent = transactions.filter(t => t.category === c.name && t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                            const limit = c.limit || 0;
+                            const progress = limit > 0 ? Math.min((totalSpent / limit) * 100, 100) : 0;
+                            const isWarning = progress >= 90;
+
+                            return (
+                                <div key={i} className="bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm border border-gray-50 dark:border-gray-800 transition-colors">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${c.colorClass}`}>
+                                                {c.icon.startsWith('fa-') ? <i className={`fa-solid ${c.icon}`}></i> : <span>{c.icon}</span>}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-textDark dark:text-white">{c.name}</h4>
+                                                <p className="text-xs text-gray-500">{totalSpent > 0 ? formatMoneyInput(totalSpent.toString()) + ' сум' : 'Нет трат'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleEditLimitClick(c)} className={`w-10 h-10 rounded-xl transition-colors flex items-center justify-center ${c.limit ? 'bg-orange-50 text-orange-500 dark:bg-orange-900/30' : 'bg-gray-50 text-gray-400 dark:bg-gray-800'}`}>
+                                                {c.limit ? <i className="fa-solid fa-pen"></i> : <i className="fa-solid fa-bullseye"></i>}
+                                                {!isPremium && <i className="fa-solid fa-lock ml-1 text-[8px]"></i>}
+                                            </button>
+                                            <button onClick={() => {triggerHaptic('medium'); setCategories(categories.filter(cat => cat.name !== c.name));}} className="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl transition-colors hover:bg-red-100 flex items-center justify-center"><i className="fa-solid fa-trash-can"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    {editingLimitCat === c.name && (
+                                        <div className="mt-4 flex gap-2 animate-fade-in border-t border-gray-50 dark:border-gray-800 pt-3">
+                                            <input type="text" value={limitVal} onChange={e => setLimitVal(formatMoneyInput(e.target.value))} placeholder="Сумма лимита (0 для удаления)" className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary border border-gray-200 dark:border-gray-700 text-textDark dark:text-white"/>
+                                            <button onClick={() => saveLimit(c.name)} className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm">ОК</button>
+                                        </div>
+                                    )}
+
+                                    {limit > 0 && (
+                                        <div className="mt-4">
+                                            <div className="flex justify-between text-[10px] mb-1.5">
+                                                <span className={isWarning ? 'text-red-500 font-bold' : 'text-gray-500 font-bold'}>
+                                                    {isWarning ? '⚠️ Лимит почти исчерпан!' : `${Math.round(progress)}%`}
+                                                </span>
+                                                <span className="text-gray-400 font-medium">из {formatMoneyInput(limit.toString())} сум</span>
+                                            </div>
+                                            <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+                                                <div className={`h-2 rounded-full transition-all duration-500 ${isWarning ? 'bg-red-500' : 'bg-primary'}`} style={{width: `${progress}%`}}></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const ScreenTips = ({ openAIChat }) => {
+            const tipsData = [
+                { title: "Правило 50/30/20", text: "Разделите доход: 50% на базовые нужды (жилье, еда), 30% на желания (развлечения), 20% в накопления и инвестиции." },
+                { title: "Сложный процент", text: "Восьмое чудо света. Проценты начисляются на проценты. Начните инвестировать раньше, даже малыми суммами." },
+                { title: "Инфляция", text: "Обесценивание денег со временем. Храните деньги на вкладах, чтобы обогнать инфляцию." },
+                { title: "Подушка безопасности", text: "Накопите сумму, равную вашим расходам за 3-6 месяцев. Храните её на ликвидном вкладе." },
+                { title: "Диверсификация", text: "Не кладите все яйца в одну корзину. Разделяйте инвестиции по классам активов." }
+            ];
+
+            return (
+                <div className="bg-[#F9FAFB] dark:bg-gray-950 min-h-screen animate-fade-in pb-20 transition-colors duration-300 relative">
+                    <TopHeader title="Финансовая Грамотность" rightIcon="fa-graduation-cap" />
+                    
+                    <div className="px-4 space-y-4 pt-4">
+                        <div className="bg-gradient-to-r from-primary to-purple-600 rounded-2xl p-4 shadow-sm flex gap-4 items-center text-white relative overflow-hidden">
+                            <i className="fa-solid fa-brain absolute -right-4 -bottom-4 opacity-10 text-7xl"></i>
+                            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0 relative z-10"><i className="fa-solid fa-robot"></i></div>
+                            <div className="relative z-10">
+                                <h4 className="font-bold text-sm">Ваш личный ИИ-ментор</h4>
+                                <p className="text-xs text-purple-100 mt-1">Готов проанализировать вашу ситуацию.</p>
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-textDark dark:text-white mt-6 mb-2">Золотые Правила</h3>
+                        <div className="space-y-3">
+                            {tipsData.map((tip, idx) => (
+                                <details key={idx} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 shadow-sm group transition-colors duration-300">
+                                    <summary className="font-bold text-sm text-textDark dark:text-white cursor-pointer list-none flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-primary opacity-50 font-mono text-xs">{String(idx+1).padStart(2, '0')}</span>
+                                            {tip.title}
+                                        </div>
+                                        <i className="fa-solid fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+                                    </summary>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed border-t border-gray-50 dark:border-gray-800 pt-3">{tip.text}</p>
+                                </details>
+                            ))}
+                        </div>
+                    </div>
+
+                    <button onClick={openAIChat} className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-r from-primary to-purple-600 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center text-white text-2xl z-40 hover:scale-105 transition-transform">
+                        <i className="fa-solid fa-robot"></i>
+                        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-[#F9FAFB] dark:border-gray-950 rounded-full"></span>
+                    </button>
+                </div>
+            );
+        };
+
+        const ScreenAIChat = ({ onBack, userId }) => {
+            const [messages, setMessages] = useState([{ type: 'bot', text: 'Привет! Я подключен к Gemini и вижу ваши расходы в базе данных. Чем могу помочь?' }]);
+            const [isTyping, setIsTyping] = useState(false);
+            const [inputText, setInputText] = useState('');
+
+            const sendPrompt = async (text) => {
+                if (!text.trim()) return;
+                setMessages(prev => [...prev, { type: 'user', text }]);
+                setInputText('');
+                setIsTyping(true);
                 
-                ${o.status === 4 && isAdmin ? `
-                <button class="btn btn-outline" style="font-size:12px; padding:10px; margin-top:16px; width:100%; border-color:var(--primary); color:var(--primary);" onclick="sendBossReport(${o.id})">📊 Отправить отчет боссу</button>
-                ` : ''}
+                try {
+                    const res = await fetch(`${API_URL}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-tg-user-id': userId },
+                        body: JSON.stringify({ message: text })
+                    });
+                    const data = await res.json();
+                    setMessages(prev => [...prev, { type: 'bot', text: data.reply || "Извините, не смог получить ответ от ИИ." }]);
+                } catch (error) {
+                    setMessages(prev => [...prev, { type: 'bot', text: "Серверы Google временно перегружены. Попробуйте через пару минут." }]);
+                } finally {
+                    setIsTyping(false);
+                }
+            };
 
-                ${isAdmin ? `
-                <div style="display:flex; gap:8px; margin-top:12px;">
-                    <button class="btn btn-outline" style="font-size:12px; padding:10px; border-color:rgba(220,53,69,0.3); color:var(--red);" onclick="deleteOrder(${o.id})">🗑 Удалить заказ</button>
+            return (
+                <div className="bg-[#F9FAFB] dark:bg-gray-950 min-h-screen flex flex-col animate-fade-in z-50 relative transition-colors duration-300">
+                    <TopHeader title="Финансовый помощник" showBack={true} onBack={onBack} rightIcon="fa-broom" />
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-40">
+                        <p className="text-center text-xs text-gray-400">Ваш AI ассистент (Gemini)</p>
+                        {messages.map((msg, i) => (
+                            <div key={i} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[80%] rounded-2xl p-3 text-sm ${msg.type === 'user' ? 'bg-gray-200 dark:bg-gray-800 text-textDark dark:text-white rounded-tr-sm' : 'bg-primary text-white rounded-tl-sm shadow-md'}`}>
+                                    {msg.text.split('\n').map((line, j) => <p key={j} className="mb-1 last:mb-0">{line}</p>)}
+                                </div>
+                            </div>
+                        ))}
+                        {isTyping && (
+                            <div className="flex justify-start">
+                                <div className="bg-primary text-white rounded-2xl rounded-tl-sm p-3 shadow-md flex items-center gap-1">
+                                    <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+                                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
+                                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="fixed bottom-0 w-full max-w-md p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 transition-colors z-50">
+                        {messages.length === 1 && (
+                            <div className="mb-4 space-y-2">
+                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">Примеры вопросов:</p>
+                                {['Проанализируй мои расходы', 'Как мне накопить деньги?', 'Где я больше всего трачу?'].map(q => (
+                                    <button key={q} onClick={() => sendPrompt(q)} className="block w-full text-left px-4 py-2 text-sm text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors">
+                                        {q}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                            <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendPrompt(inputText)} placeholder="Спросите Gemini..." className="flex-1 bg-gray-100 dark:bg-gray-800 text-textDark dark:text-white rounded-full px-4 py-3 text-sm focus:outline-none transition-colors" />
+                            <button onClick={() => sendPrompt(inputText)} className="w-11 h-11 bg-primary text-white rounded-full flex items-center justify-center shadow-md">
+                                <i className="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                ` : ''}
-            `;
-            if(o.status === 4) archiveContainer.appendChild(card);
-            else listContainer.appendChild(card);
-        });
-    }
+            );
+        };
 
-    function renderStats() {
-        let rev = 0, mat = 0, work = 0;
-        let masterMap = {};
-        orders.forEach(o => {
-            rev += o.price;
-            if(o.expenses) o.expenses.forEach(e => {
-                if(e.cat === 'work') {
-                    work += e.cost;
-                    masterMap[e.name] = (masterMap[e.name] || 0) + e.cost;
-                } else mat += e.cost;
+        const ScreenProfile = ({ user, isDarkMode, toggleDarkMode, transactions, isPremium, openPaywall }) => {
+            const userName = (user && user.first_name) ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Ильхом';
+            const username = (user && user.username) ? `@${user.username}` : '@ilkhom_finance';
+            const userPhoto = (user && user.photo_url) ? user.photo_url : `https://placehold.co/150x150/7C3AED/ffffff?text=${userName.charAt(0)}`;
+
+            return (
+                <div className="bg-[#F3F4F6] dark:bg-gray-950 min-h-screen animate-fade-in pb-20 transition-colors duration-300">
+                    <TopHeader title="Профиль" rightIcon="fa-gear" />
+                    
+                    <div className="bg-white dark:bg-gray-900 px-4 py-6 mb-2 flex items-center gap-4 transition-colors duration-300">
+                        <img src={userPhoto} alt="Аватар" className="w-16 h-16 rounded-full border-2 border-primaryLight shadow-sm object-cover" />
+                        <div>
+                            <h2 className="text-xl font-bold text-textDark dark:text-white transition-colors duration-300 flex items-center gap-2">
+                                {userName} {isPremium && <i className="fa-solid fa-crown text-yellow-500 text-sm"></i>}
+                            </h2>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium transition-colors">{username}</p>
+                        </div>
+                    </div>
+
+                    {!isPremium && (
+                        <div className="px-4 py-2 mb-2" onClick={openPaywall}>
+                            <div className="bg-gradient-to-r from-gray-900 to-indigo-900 rounded-2xl p-4 flex items-center justify-between shadow-md relative overflow-hidden cursor-pointer transform transition-transform hover:scale-[1.02]">
+                                <i className="fa-solid fa-gem absolute -right-4 -bottom-4 text-white opacity-10 text-6xl transform -rotate-12"></i>
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                                        <i className="fa-solid fa-crown text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white text-sm">FinanceAI PRO</h3>
+                                        <p className="text-xs text-gray-300 mt-0.5">Разблокировать все функции</p>
+                                    </div>
+                                </div>
+                                <i className="fa-solid fa-chevron-right text-white opacity-50"></i>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="bg-white dark:bg-gray-900 px-4 py-2 space-y-1 transition-colors duration-300 mt-2">
+                        {[
+                            { id: 'theme', icon: 'fa-moon', title: 'Темная тема', value: isDarkMode ? 'Вкл' : 'Выкл', color: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/30' },
+                            { id: 'lang', icon: 'fa-globe', title: 'Язык', value: 'Русский', color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+                            { id: 'currency', icon: 'fa-coins', title: 'Основная валюта', value: 'UZS', color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30' }
+                        ].map((item, i) => (
+                            <div key={i} onClick={() => { if(item.id==='theme') toggleDarkMode(); }} className="flex items-center justify-between py-3.5 border-b border-gray-50 dark:border-gray-800/50 last:border-0 active:bg-gray-50 dark:active:bg-gray-800 transition-colors cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center ${item.bg} ${item.color} transition-colors`}>
+                                        <i className={`fa-solid ${item.icon} text-sm`}></i>
+                                    </div>
+                                    <span className="text-textDark dark:text-white font-bold text-sm transition-colors flex items-center gap-2">
+                                        {item.title} {item.lock && <i className="fa-solid fa-lock text-gray-400 text-[10px]"></i>}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {item.value && <span className="text-xs font-medium text-gray-400">{item.value}</span>}
+                                    <i className="fa-solid fa-chevron-right text-gray-300 dark:text-gray-600 text-xs transition-colors"></i>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [currentScreen, setCurrentScreen] = useState('home');
+            const [isAddingMode, setIsAddingMode] = useState(false);
+            const [addingTab, setAddingTab] = useState('expense');
+            const [isLoading, setIsLoading] = useState(false);
+            const [isSplashVisible, setIsSplashVisible] = useState(true);
+            const [transactions, setTransactions] = useState([]);
+            const [isPremium, setIsPremium] = useState(false);
+            const [tgUser, setTgUser] = useState(null);
+            const [selectedTransaction, setSelectedTransaction] = useState(null);
+            const [activeMonth, setActiveMonth] = useState('05.2026');
+            const [showPaywall, setShowPaywall] = useState(false);
+            const [selectedPlan, setSelectedPlan] = useState('year');
+
+            const [categories, setCategories] = useState(() => {
+                const saved = localStorage.getItem('finance_categories');
+                return saved ? JSON.parse(saved) : [
+                    { name: 'Продукты', icon: 'fa-basket-shopping', colorClass: CATEGORY_COLORS[1], limit: null },
+                    { name: 'Транспорт', icon: 'fa-bus', colorClass: CATEGORY_COLORS[4], limit: null },
+                    { name: 'Еда вне дома', icon: 'fa-utensils', colorClass: CATEGORY_COLORS[2], limit: null },
+                    { name: 'Развлечения', icon: 'fa-play', colorClass: CATEGORY_COLORS[15], limit: null }
+                ];
             });
-        });
-        document.getElementById('stat-rev').innerText = fMoney(rev);
-        document.getElementById('stat-mat').innerText = fMoney(mat);
-        document.getElementById('stat-work').innerText = fMoney(work);
-        document.getElementById('stat-profit').innerText = fMoney(rev - mat - work);
-        
-        const mDiv = document.getElementById('master-salaries');
-        mDiv.innerHTML = Object.entries(masterMap).map(([name, sum]) => 
-            `<div class="fin-row"><span>${name}:</span> <b class="word-wrap">${fMoney(sum)}</b></div>`).join('') || 'Нет выплат';
-    }
-</script>
+
+            const [debts, setDebts] = useState(() => {
+                const saved = localStorage.getItem('finance_debts');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('financeAppTheme') === 'dark');
+
+            useEffect(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.expand();
+                }
+                
+                if (isDarkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('financeAppTheme', 'dark'); } 
+                else { document.documentElement.classList.remove('dark'); localStorage.setItem('financeAppTheme', 'light'); }
+            }, [isDarkMode]);
+
+            useEffect(() => { localStorage.setItem('finance_categories', JSON.stringify(categories)); }, [categories]);
+            useEffect(() => { localStorage.setItem('finance_debts', JSON.stringify(debts)); }, [debts]);
+
+            useEffect(() => {
+                const saved = localStorage.getItem('finance_txs');
+                if (saved) {
+                    setTransactions(JSON.parse(saved));
+                } else {
+                    const t = [];
+                    let id = 1;
+                    const generateDemoDataForMonth = (m, y) => {
+                        t.push({ id: id++, title: 'Зарплата', category: 'Доход', wallet: 'card', amount: 6500000, date: `10.${m}.${y} 10:00`, icon: 'fa-briefcase', color: 'text-green-500', bg: 'bg-green-100' });
+                        t.push({ id: id++, title: 'Яндекс Такси', category: 'Транспорт', wallet: 'card', amount: -25000, date: `15.${m}.${y} 18:30`, icon: 'fa-bus', color: 'text-blue-500', bg: 'bg-blue-100' });
+                        t.push({ id: id++, title: 'Яндекс Такси', category: 'Транспорт', wallet: 'card', amount: -32000, date: `16.${m}.${y} 19:00`, icon: 'fa-bus', color: 'text-blue-500', bg: 'bg-blue-100' });
+                        t.push({ id: id++, title: 'Кофейня', category: 'Еда вне дома', wallet: 'cash', amount: -45000, date: `12.${m}.${y} 09:00`, icon: 'fa-utensils', color: 'text-amber-500', bg: 'bg-amber-100' });
+                        t.push({ id: id++, title: 'Кофейня', category: 'Еда вне дома', wallet: 'card', amount: -55000, date: `18.${m}.${y} 13:00`, icon: 'fa-utensils', color: 'text-amber-500', bg: 'bg-amber-100' });
+                        t.push({ id: id++, title: 'Супермаркет Korzinka', category: 'Продукты', wallet: 'card', amount: -150000, date: `20.${m}.${y} 20:00`, icon: 'fa-basket-shopping', color: 'text-orange-500', bg: 'bg-orange-100' });
+                    };
+                    generateDemoDataForMonth('04', '2026');
+                    generateDemoDataForMonth('05', '2026');
+                    const sortedTxs = t.sort((a,b) => b.id - a.id);
+                    setTransactions(sortedTxs);
+                    localStorage.setItem('finance_txs', JSON.stringify(sortedTxs));
+                }
+                setTimeout(() => setIsSplashVisible(false), 2000);
+            }, []);
+
+            const currentMonthTransactions = transactions.filter(t => {
+                const parts = t.date.split(' ');
+                if(!parts[0]) return false;
+                const dmy = parts[0].split('.');
+                return `${dmy[1]}.${dmy[2]}` === activeMonth;
+            });
+
+            const prevMonth = () => { let [m, y] = activeMonth.split('.'); m = parseInt(m)-1; if(m<1){m=12;y=parseInt(y)-1;} setActiveMonth(`${m.toString().padStart(2,'0')}.${y}`); };
+            const nextMonth = () => { let [m, y] = activeMonth.split('.'); m = parseInt(m)+1; if(m>12){m=1;y=parseInt(y)+1;} setActiveMonth(`${m.toString().padStart(2,'0')}.${y}`); };
+
+            const handleSaveTx = (tx) => {
+                const d = new Date();
+                const ds = `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}.${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                const newTxs = [{...tx, id: Date.now(), date: ds}, ...transactions];
+                setTransactions(newTxs);
+                localStorage.setItem('finance_txs', JSON.stringify(newTxs));
+                setIsAddingMode(false);
+            };
+
+            const handleDeleteTx = (id) => {
+                const newTxs = transactions.filter(t => t.id !== id);
+                setTransactions(newTxs);
+                localStorage.setItem('finance_txs', JSON.stringify(newTxs));
+                setSelectedTransaction(null);
+                triggerHaptic('medium');
+            };
+
+            const openAddModal = (tabType) => {
+                setAddingTab(tabType);
+                setIsAddingMode(true);
+            };
+
+            const renderScreen = () => {
+                switch(currentScreen) {
+                    case 'home': return <ScreenHome setScreen={setCurrentScreen} transactions={currentMonthTransactions} activeMonth={activeMonth} prevMonth={prevMonth} nextMonth={nextMonth} currency="UZS" rates={{USD:12650, EUR:13600}} onTransactionClick={setSelectedTransaction} openAddModal={openAddModal} />;
+                    case 'analytics': return <ScreenAnalytics transactions={currentMonthTransactions} activeMonth={activeMonth} prevMonth={prevMonth} nextMonth={nextMonth} currency="UZS" rates={{USD:12650, EUR:13600}} onTransactionClick={setSelectedTransaction} />;
+                    case 'calculator': return <ScreenCalculator onBack={() => setCurrentScreen('home')} debts={debts} setDebts={setDebts} />;
+                    case 'categories': return <ScreenCategories onBack={() => setCurrentScreen('home')} categories={categories} setCategories={setCategories} isPremium={isPremium} openPaywall={() => setShowPaywall(true)} transactions={currentMonthTransactions} />;
+                    case 'tips': return <ScreenTips openAIChat={() => setCurrentScreen('aichat')} />;
+                    case 'aichat': return <ScreenAIChat onBack={() => setCurrentScreen('tips')} userId={tgUser ? tgUser.id : 'browser'} />;
+                    case 'profile': return <ScreenProfile user={tgUser} isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} transactions={transactions} isPremium={isPremium} openPaywall={() => setShowPaywall(true)} />;
+                    case 'product': return (
+                        <div className="bg-[#F9FAFB] dark:bg-gray-950 min-h-screen animate-fade-in pb-20 z-50 relative transition-colors duration-300">
+                            <TopHeader title="Динамика цен" showBack={true} onBack={() => setCurrentScreen('home')} rightIcon="fa-star" />
+                            <div className="px-4 py-10 text-center text-gray-500">
+                                <i className="fa-solid fa-chart-line text-6xl mb-4 text-primary opacity-50"></i>
+                                <p>Здесь будет график изменения цен для выбранного продукта.</p>
+                            </div>
+                        </div>
+                    );
+                    default: return <ScreenHome setScreen={setCurrentScreen} transactions={currentMonthTransactions} activeMonth={activeMonth} prevMonth={prevMonth} nextMonth={nextMonth} currency="UZS" rates={{USD:12650, EUR:13600}} onTransactionClick={setSelectedTransaction} openAddModal={openAddModal} />;
+                }
+            };
+
+            if (isSplashVisible) {
+                return (
+                    <div className="h-screen w-full bg-primary flex flex-col items-center justify-center text-white z-[100] relative">
+                        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl mb-6 animate-pulse text-primary text-5xl"><i className="fa-solid fa-wallet"></i></div>
+                        <h1 className="text-3xl font-bold tracking-wide">Finance<span className="font-light">AI</span></h1>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-md mx-auto bg-bgLight dark:bg-bgDark min-h-screen relative shadow-2xl overflow-hidden transition-colors duration-300">
+                    {renderScreen()}
+
+                    {/* Модальное окно покупки PRO */}
+                    {showPaywall && (
+                        <div className="fixed inset-0 z-[100] flex items-end">
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setShowPaywall(false)}></div>
+                            <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl p-6 pb-12 relative z-10 animate-fade-in transition-colors max-h-[90vh] overflow-y-auto no-scrollbar">
+                                <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full mx-auto mb-6"></div>
+                                <div className="text-center mb-6">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-orange-500/30 transform rotate-3">
+                                        <i className="fa-solid fa-crown text-white text-4xl transform -rotate-3"></i>
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-textDark dark:text-white mb-2">FinanceAI PRO</h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Откройте все возможности для умного контроля финансов.</p>
+                                    
+                                    <div className="space-y-3 mb-6 text-left">
+                                        <div onClick={() => {triggerHaptic('light'); setSelectedPlan('month');}} className={`p-4 rounded-2xl border-2 flex justify-between items-center cursor-pointer transition-colors ${selectedPlan === 'month' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50'}`}>
+                                            <div>
+                                                <h4 className={`font-bold ${selectedPlan === 'month' ? 'text-orange-600 dark:text-orange-400' : 'text-textDark dark:text-white'}`}>1 Месяц</h4>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Базовый доступ</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-bold text-lg text-textDark dark:text-white">50 ⭐️</span>
+                                            </div>
+                                        </div>
+
+                                        <div onClick={() => {triggerHaptic('light'); setSelectedPlan('year');}} className={`p-4 rounded-2xl border-2 flex justify-between items-center cursor-pointer transition-colors relative ${selectedPlan === 'year' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50'}`}>
+                                            <div className="absolute -top-3 left-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">ВЫГОДНО</div>
+                                            <div>
+                                                <h4 className={`font-bold mt-1 ${selectedPlan === 'year' ? 'text-orange-600 dark:text-orange-400' : 'text-textDark dark:text-white'}`}>1 Год</h4>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">~16 ⭐️ в месяц</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-bold text-lg text-textDark dark:text-white">200 ⭐️</span>
+                                                <p className="text-[10px] text-gray-400 line-through">600 ⭐️</p>
+                                            </div>
+                                        </div>
+
+                                        <div onClick={() => {triggerHaptic('light'); setSelectedPlan('forever');}} className={`p-4 rounded-2xl border-2 flex justify-between items-center cursor-pointer transition-colors relative ${selectedPlan === 'forever' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50'}`}>
+                                             <div className="absolute -top-3 left-4 bg-gray-900 dark:bg-gray-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">НАВСЕГДА</div>
+                                            <div>
+                                                <h4 className={`font-bold mt-1 ${selectedPlan === 'forever' ? 'text-orange-600 dark:text-orange-400' : 'text-textDark dark:text-white'}`}>Безлимит</h4>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Плати один раз</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-bold text-lg text-textDark dark:text-white">500 ⭐️</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onClick={() => {
+                                    triggerHaptic('success');
+                                    setTimeout(() => {
+                                        setIsPremium(true);
+                                        setShowPaywall(false);
+                                    }, 1500);
+                                }} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-500/30 mb-3 hover:scale-[1.02] transition-transform">
+                                    Оплатить {selectedPlan === 'month' ? 50 : selectedPlan === 'year' ? 200 : 500} ⭐️
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedTransaction && (
+                        <div className="fixed inset-0 z-[60] flex items-end">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setSelectedTransaction(null)}></div>
+                            <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl p-6 relative z-10 animate-fade-in transition-colors">
+                                <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full mx-auto mb-6"></div>
+                                <div className="text-center mb-6">
+                                    <div className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-3 ${selectedTransaction.bg} dark:bg-opacity-20 ${selectedTransaction.color} text-2xl`}>
+                                        {selectedTransaction.icon.startsWith('fa-') ? <i className={`fa-solid ${selectedTransaction.icon}`}></i> : <span>{selectedTransaction.icon}</span>}
+                                    </div>
+                                    <h3 className="text-xl font-bold text-textDark dark:text-white mb-1 transition-colors">{selectedTransaction.title}</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{selectedTransaction.category} • {selectedTransaction.date}</p>
+                                    <h2 className={`text-3xl font-bold mt-4 ${selectedTransaction.amount > 0 ? 'text-green-500' : 'text-textDark dark:text-white transition-colors'}`}>
+                                        {selectedTransaction.amount > 0 ? '+' : ''}{formatMoneyInput(Math.abs(selectedTransaction.amount).toString())} сум
+                                    </h2>
+                                </div>
+                                
+                                {selectedTransaction.category === 'Продукты' && (
+                                    <button onClick={() => { setCurrentScreen('product'); setSelectedTransaction(null); }} className="w-full bg-purple-50 text-primary dark:bg-purple-900/20 font-bold py-3.5 rounded-2xl mb-3 transition-colors">
+                                        📈 Динамика цен продукта
+                                    </button>
+                                )}
+
+                                <button onClick={() => handleDeleteTx(selectedTransaction.id)} className="w-full bg-red-50 text-red-500 dark:bg-red-900/20 font-bold py-3.5 rounded-2xl mb-4 transition-colors">Удалить операцию</button>
+                                <button onClick={() => setSelectedTransaction(null)} className="w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3.5 rounded-2xl transition-colors">Закрыть</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {isAddingMode && (
+                        <AddTransactionModal 
+                            close={() => setIsAddingMode(false)} 
+                            saveTx={handleSaveTx} 
+                            categories={categories} 
+                            addCategory={(c) => setCategories([...categories, c])} 
+                            isPremium={isPremium}
+                            initialTab={addingTab}
+                        />
+                    )}
+
+                    {currentScreen !== 'aichat' && currentScreen !== 'product' && (
+                        <div className="fixed bottom-0 w-full max-w-md bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-6 py-2 flex justify-between items-center z-40 transition-colors duration-300">
+                            <button onClick={() => setCurrentScreen('home')} className={`flex flex-col items-center p-2 transition-colors ${currentScreen === 'home' ? 'text-primary' : 'text-gray-400'}`}><i className="fa-solid fa-house text-xl mb-1"></i><span className="text-[10px] font-medium">Главная</span></button>
+                            <button onClick={() => setCurrentScreen('analytics')} className={`flex flex-col items-center p-2 transition-colors ${currentScreen === 'analytics' ? 'text-primary' : 'text-gray-400'}`}><i className="fa-solid fa-chart-pie text-xl mb-1"></i><span className="text-[10px] font-medium">Отчеты</span></button>
+                            <div className="relative -top-5">
+                                <button onClick={() => openAddModal('expense')} className="w-14 h-14 bg-primary rounded-full flex items-center justify-center text-white text-2xl shadow-lg shadow-purple-500/40 transform hover:scale-105 transition-all"><i className="fa-solid fa-plus"></i></button>
+                            </div>
+                            <button onClick={() => setCurrentScreen('tips')} className={`flex flex-col items-center p-2 transition-colors ${currentScreen === 'tips' ? 'text-primary' : 'text-gray-400'}`}><i className="fa-regular fa-lightbulb text-xl mb-1"></i><span className="text-[10px] font-medium">Советы</span></button>
+                            <button onClick={() => setCurrentScreen('profile')} className={`flex flex-col items-center p-2 transition-colors ${currentScreen === 'profile' ? 'text-primary' : 'text-gray-400'}`}><i className="fa-regular fa-user text-xl mb-1"></i><span className="text-[10px] font-medium">Профиль</span></button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
 </html>
